@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+ 
 use App\Models\Homework;
 use App\Models\HomeworkEvaluation;
 use App\Models\DailyAssignment;
@@ -19,6 +19,11 @@ use DB;
  */
 class HomeworkController extends Controller
 {
+    public function __construct()
+    {
+        $this->setControllerName('HomeworkController');
+        }
+
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -26,7 +31,9 @@ class HomeworkController extends Controller
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
-        }
+            }
+
+
         
         $homeworklist = Homework::where('class_id', $studentSession->class_id)
             ->where('section_id', $studentSession->section_id)
@@ -39,7 +46,9 @@ class HomeworkController extends Controller
                 ->count();
             
             $homeworklist[$key]['status'] = $checkstatus > 0 ? 'submitted' : '';
-        }
+            }
+
+
         
         $closedhomeworklist = Homework::where('class_id', $studentSession->class_id)
             ->where('section_id', $studentSession->section_id)
@@ -52,7 +61,9 @@ class HomeworkController extends Controller
                 ->count();
             
             $closedhomeworklist[$key]['status'] = $checkstatus > 0 ? 'submitted' : '';
-        }
+            }
+
+
         
         $data = [
             'created_by' => '',
@@ -62,7 +73,9 @@ class HomeworkController extends Controller
         ];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function upload_docs(Request $request): JsonResponse
     {
@@ -83,7 +96,9 @@ class HomeworkController extends Controller
         
         if ($isRequired == 0 && !$request->hasFile('file')) {
             return $this->errorResponse('File is required');
-        }
+            }
+
+
         
         $data = [
             'homework_id' => $homeworkId,
@@ -98,12 +113,16 @@ class HomeworkController extends Controller
             $filename = time() . '_' . $file->getClientOriginalName();
             $file->move(public_path('uploads/homework/assignment'), $filename);
             $data['docs'] = $filename;
-        }
+            }
+
+
         
         HomeworkEvaluation::create($data);
         
         return $this->successResponse(null, 'Homework submitted successfully');
-    }
+        }
+
+
 
     public function homework_detail($id, $status): JsonResponse
     {
@@ -111,7 +130,9 @@ class HomeworkController extends Controller
         
         if (!$result) {
             return $this->errorResponse('Homework not found', null, 404);
-        }
+            }
+
+
         
         $setting = Setting::first();
         $superadminRestriction = $setting ? ($setting->superadmin_restriction ?? false) : false;
@@ -127,7 +148,9 @@ class HomeworkController extends Controller
         ];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function download($id): JsonResponse
     {
@@ -135,10 +158,14 @@ class HomeworkController extends Controller
         
         if (!$homework) {
             return $this->errorResponse('Homework not found', null, 404);
-        }
+            }
+
+
         
         return $this->successResponse(['document' => $homework->document]);
-    }
+        }
+
+
 
     public function dailyassignment(Request $request): JsonResponse
     {
@@ -147,7 +174,9 @@ class HomeworkController extends Controller
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
-        }
+            }
+
+
         
         $dailyassignmentlist = DailyAssignment::where('student_session_id', $studentSession->id)
             ->orderBy('date', 'desc')
@@ -158,7 +187,9 @@ class HomeworkController extends Controller
         ];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     private function getStudentSession($user)
     {
@@ -166,14 +197,18 @@ class HomeworkController extends Controller
         
         if (!$studentId) {
             return null;
-        }
+            }
+
+
         
         $setting = Setting::where('is_active', 1)->first();
         
         return StudentSession::where('student_id', $studentId)
             ->when($setting, fn($q) => $q->where('session_id', $setting->id))
             ->first();
-    }
+        }
+
+
 
     private function getStudentId($user)
     {
@@ -182,7 +217,11 @@ class HomeworkController extends Controller
         } elseif ($user->role === 'parent') {
             $student = Student::where('parent_id', $user->id)->first();
             return $student ? $student->id : null;
-        }
+            }
+
+
         return null;
+        }
+
+
     }
-}

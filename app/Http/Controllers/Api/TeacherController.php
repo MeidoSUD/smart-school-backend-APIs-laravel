@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+ 
 use App\Models\Staff;
 use App\Models\StaffRating;
 use App\Models\ClassSection;
@@ -19,6 +19,11 @@ use DB;
  */
 class TeacherController extends Controller
 {
+    public function __construct()
+    {
+        $this->setControllerName('TeacherController');
+        }
+
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -26,7 +31,9 @@ class TeacherController extends Controller
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
-        }
+            }
+
+
         
         $teachers = DB::table('teacher_subjects')
             ->join('staff', 'staff.id', '=', 'teacher_subjects.teacher_id')
@@ -38,7 +45,9 @@ class TeacherController extends Controller
         $teacherList = [];
         foreach ($teachers as $value) {
             $teacherList[$value->id][] = $value;
-        }
+            }
+
+
         
         $genderList = ['Male', 'Female', 'Other'];
         
@@ -55,7 +64,9 @@ class TeacherController extends Controller
         foreach ($getRatingByStudent as $value) {
             $reviews[$value->staff_id] = $value->rate;
             $comments[$value->staff_id] = $value->comment;
-        }
+            }
+
+
         
         $data = [
             'title' => 'Teachers',
@@ -72,7 +83,9 @@ class TeacherController extends Controller
         ];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function getSubjctByClassandSection(Request $request): JsonResponse
     {
@@ -85,7 +98,9 @@ class TeacherController extends Controller
         
         if (!$classSection) {
             return $this->errorResponse('Class section not found');
-        }
+            }
+
+
         
         $subjects = DB::table('teacher_subjects')
             ->join('subjects', 'subjects.id', '=', 'teacher_subjects.subject_id')
@@ -94,7 +109,9 @@ class TeacherController extends Controller
             ->get();
         
         return $this->successResponse(['subjects' => $subjects]);
-    }
+        }
+
+
 
     public function getSubjectTeachers(Request $request): JsonResponse
     {
@@ -107,7 +124,9 @@ class TeacherController extends Controller
         
         if (!$classSection) {
             return $this->errorResponse('Class section not found');
-        }
+            }
+
+
         
         $teachers = DB::table('teacher_subjects')
             ->join('staff', 'staff.id', '=', 'teacher_subjects.teacher_id')
@@ -117,7 +136,9 @@ class TeacherController extends Controller
             ->get();
         
         return $this->successResponse(['teachers' => $teachers]);
-    }
+        }
+
+
 
     public function view($id): JsonResponse
     {
@@ -125,10 +146,14 @@ class TeacherController extends Controller
         
         if (!$teacher) {
             return $this->errorResponse('Teacher not found', null, 404);
-        }
+            }
+
+
         
         return $this->successResponse(['teacher' => $teacher]);
-    }
+        }
+
+
 
     public function rating(Request $request): JsonResponse
     {
@@ -150,7 +175,9 @@ class TeacherController extends Controller
         );
         
         return $this->successResponse(null, 'Rating saved successfully');
-    }
+        }
+
+
 
     private function getStudentSession($user)
     {
@@ -161,16 +188,22 @@ class TeacherController extends Controller
         } elseif ($user->role === 'parent') {
             $student = Student::where('parent_id', $user->id)->first();
             $studentId = $student ? $student->id : null;
-        }
+            }
+
+
         
         if (!$studentId) {
             return null;
-        }
+            }
+
+
         
         $setting = Setting::where('is_active', 1)->first();
         
         return StudentSession::where('student_id', $studentId)
             ->when($setting, fn($q) => $q->where('session_id', $setting->id))
             ->first();
+        }
+
+
     }
-}

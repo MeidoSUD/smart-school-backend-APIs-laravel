@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+ 
 use App\Models\Route;
 use App\Models\PickupPoint;
 use App\Models\StudentSession;
@@ -16,6 +16,11 @@ use Illuminate\Http\Request;
  */
 class RouteController extends Controller
 {
+    public function __construct()
+    {
+        $this->setControllerName('RouteController');
+        }
+
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -25,19 +30,25 @@ class RouteController extends Controller
         
         if (!$studentList) {
             return $this->errorResponse('Student not found', null, 404);
-        }
+            }
+
+
         
         $pickupPoint = [];
         if ($studentList->route_id) {
             $pickupPoint = PickupPoint::where('route_id', $studentList->route_id)->get();
-        }
+            }
+
+
         
         $studentList->pickup_point = $pickupPoint;
         
         $data = ['listroute' => $studentList];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function getbusdetail(Request $request): JsonResponse
     {
@@ -46,7 +57,9 @@ class RouteController extends Controller
         $result = [];
         
         return $this->successResponse($result);
-    }
+        }
+
+
 
     private function getStudentId($user)
     {
@@ -55,7 +68,11 @@ class RouteController extends Controller
         } elseif ($user->role === 'parent') {
             $student = Student::where('parent_id', $user->id)->first();
             return $student ? $student->id : null;
-        }
+            }
+
+
         return null;
+        }
+
+
     }
-}

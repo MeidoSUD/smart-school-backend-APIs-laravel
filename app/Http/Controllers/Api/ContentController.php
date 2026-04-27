@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+ 
 use App\Models\Content;
 use App\Models\ShareContent;
 use App\Models\StudentSession;
@@ -16,10 +16,17 @@ use Illuminate\Http\Request;
  */
 class ContentController extends Controller
 {
+    public function __construct()
+    {
+        $this->setControllerName('ContentController');
+        }
+
     public function list(): JsonResponse
     {
         return $this->successResponse(['title' => 'Downloads']);
-    }
+        }
+
+
 
     public function getsharelist(Request $request): JsonResponse
     {
@@ -28,7 +35,9 @@ class ContentController extends Controller
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
-        }
+            }
+
+
         
         $role = $user->role;
         
@@ -43,7 +52,9 @@ class ContentController extends Controller
             ->get();
         
         return $this->successResponse(['contents' => $contents]);
-    }
+        }
+
+
 
     public function view($id): JsonResponse
     {
@@ -51,7 +62,9 @@ class ContentController extends Controller
         
         if (!$content) {
             return $this->errorResponse('Content not found', null, 404);
-        }
+            }
+
+
         
         $data = [
             'title' => 'Upload Content',
@@ -60,7 +73,9 @@ class ContentController extends Controller
         ];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function index(): JsonResponse
     {
@@ -73,7 +88,9 @@ class ContentController extends Controller
         ];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function assignment(Request $request): JsonResponse
     {
@@ -82,7 +99,9 @@ class ContentController extends Controller
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
-        }
+            }
+
+
         
         $list = Content::where('is_active', 'yes')
             ->where('type', 'assignments')
@@ -96,7 +115,9 @@ class ContentController extends Controller
         ];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function studymaterial(Request $request): JsonResponse
     {
@@ -105,7 +126,9 @@ class ContentController extends Controller
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
-        }
+            }
+
+
         
         $list = Content::where('is_active', 'yes')
             ->where('type', 'study_material')
@@ -119,7 +142,9 @@ class ContentController extends Controller
         ];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     private function getStudentSession($user)
     {
@@ -130,16 +155,22 @@ class ContentController extends Controller
         } elseif ($user->role === 'parent') {
             $student = Student::where('parent_id', $user->id)->first();
             $studentId = $student ? $student->id : null;
-        }
+            }
+
+
         
         if (!$studentId) {
             return null;
-        }
+            }
+
+
         
         $setting = Setting::where('is_active', 1)->first();
         
         return StudentSession::where('student_id', $studentId)
             ->when($setting, fn($q) => $q->where('session_id', $setting->id))
             ->first();
+        }
+
+
     }
-}

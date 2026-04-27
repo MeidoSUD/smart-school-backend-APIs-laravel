@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+ 
 use App\Models\OnlineExam;
 use App\Models\OnlineExamQuestion;
 use App\Models\OnlineExamResult;
@@ -18,6 +18,11 @@ use Carbon\Carbon;
  */
 class OnlineExamController extends Controller
 {
+    public function __construct()
+    {
+        $this->setControllerName('OnlineExamController');
+        }
+
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -25,7 +30,9 @@ class OnlineExamController extends Controller
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
-        }
+            }
+
+
         
         $student = Student::find($studentSession->student_id);
         
@@ -40,7 +47,9 @@ class OnlineExamController extends Controller
         ];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function exam_detail($id): JsonResponse
     {
@@ -51,7 +60,9 @@ class OnlineExamController extends Controller
         
         if (!$result) {
             return $this->errorResponse('Exam not found', null, 404);
-        }
+            }
+
+
         
         $questions = OnlineExamQuestion::where('online_exam_id', $id)->get();
         
@@ -61,7 +72,9 @@ class OnlineExamController extends Controller
         ];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function submit(Request $request): JsonResponse
     {
@@ -84,7 +97,9 @@ class OnlineExamController extends Controller
         ]);
         
         return $this->successResponse(['result' => $result], 'Exam submitted successfully');
-    }
+        }
+
+
 
     private function getStudentSession($user)
     {
@@ -92,14 +107,18 @@ class OnlineExamController extends Controller
         
         if (!$studentId) {
             return null;
-        }
+            }
+
+
         
         $setting = Setting::where('is_active', 1)->first();
         
         return StudentSession::where('student_id', $studentId)
             ->when($setting, fn($q) => $q->where('session_id', $setting->id))
             ->first();
-    }
+        }
+
+
 
     private function getStudentId($user)
     {
@@ -108,7 +127,11 @@ class OnlineExamController extends Controller
         } elseif ($user->role === 'parent') {
             $student = Student::where('parent_id', $user->id)->first();
             return $student ? $student->id : null;
-        }
+            }
+
+
         return null;
+        }
+
+
     }
-}

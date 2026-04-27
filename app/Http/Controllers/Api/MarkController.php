@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+ 
 use App\Models\ExamSchedule;
 use App\Models\ExamResult;
 use App\Models\StudentSession;
@@ -17,6 +17,11 @@ use Illuminate\Http\Request;
  */
 class MarkController extends Controller
 {
+    public function __construct()
+    {
+        $this->setControllerName('MarkController');
+        }
+
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -24,7 +29,9 @@ class MarkController extends Controller
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
-        }
+            }
+
+
         
         $reportcard = ExamSchedule::where('session_id', $studentSession->session_id)
             ->where('class_id', $studentSession->class_id)
@@ -46,8 +53,12 @@ class MarkController extends Controller
                 ];
                 
                 $examSchedule[] = $examArray;
+                }
+
+
             }
-        }
+
+
         
         $data = [
             'class_id' => $studentSession->class_id,
@@ -56,7 +67,9 @@ class MarkController extends Controller
         ];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function marklist(Request $request): JsonResponse
     {
@@ -65,7 +78,9 @@ class MarkController extends Controller
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
-        }
+            }
+
+
         
         $student = Student::find($studentSession->student_id);
         
@@ -87,7 +102,9 @@ class MarkController extends Controller
             ];
             
             $examSchedule[] = $examArray;
-        }
+            }
+
+
         
         $data = [
             'title' => 'Student Details',
@@ -97,7 +114,9 @@ class MarkController extends Controller
         ];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function view($id): JsonResponse
     {
@@ -105,10 +124,14 @@ class MarkController extends Controller
         
         if (!$mark) {
             return $this->errorResponse('Mark not found', null, 404);
-        }
+            }
+
+
         
         return $this->successResponse(['mark' => $mark]);
-    }
+        }
+
+
 
     private function getStudentSession($user)
     {
@@ -119,16 +142,22 @@ class MarkController extends Controller
         } elseif ($user->role === 'parent') {
             $student = Student::where('parent_id', $user->id)->first();
             $studentId = $student ? $student->id : null;
-        }
+            }
+
+
         
         if (!$studentId) {
             return null;
-        }
+            }
+
+
         
         $setting = Setting::where('is_active', 1)->first();
         
         return StudentSession::where('student_id', $studentId)
             ->when($setting, fn($q) => $q->where('session_id', $setting->id))
             ->first();
+        }
+
+
     }
-}

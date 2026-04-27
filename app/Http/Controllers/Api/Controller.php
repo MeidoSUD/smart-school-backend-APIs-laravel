@@ -1,27 +1,42 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller as BaseController;
+use App\Services\ApiLogger;
 
 class Controller extends BaseController
 {
     use AuthorizesRequests, ValidatesRequests;
 
     /**
-     * Return a success JSON response
-     * Maps to: CodeIgniter's $this->api_success()
-     *
-     * @param mixed $data
-     * @param string|null $message
-     * @param int $statusCode
-     * @return JsonResponse
+     * Track controller name for logging
+     */
+    protected $controllerName = '';
+
+    protected function setControllerName($name)
+    {
+        $this->controllerName = $name;
+    }
+
+    /**
+     * Return a success JSON response with logging
      */
     protected function successResponse(mixed $data = null, ?string $message = null, int $statusCode = 200): JsonResponse
     {
+        // Log successful response
+        if ($this->controllerName) {
+            ApiLogger::logResponse(
+                $this->controllerName,
+                $this->getCurrentMethod(),
+                $data,
+                $statusCode
+            );
+        }
+
         $response = [
             'status' => 'success',
         ];
@@ -34,6 +49,8 @@ class Controller extends BaseController
             $response['message'] = $message;
         }
 
+        $response['timestamp'] = now()->toDateTimeString();
+
         return response()->json($response, $statusCode)
             ->header('Access-Control-Allow-Origin', '*')
             ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
@@ -41,16 +58,20 @@ class Controller extends BaseController
     }
 
     /**
-     * Return an error JSON response
-     * Maps to: CodeIgniter's $this->api_error()
-     *
-     * @param string|null $message
-     * @param mixed $errors
-     * @param int $statusCode
-     * @return JsonResponse
+     * Return an error JSON response with logging
      */
     protected function errorResponse(?string $message = null, mixed $errors = null, int $statusCode = 400): JsonResponse
     {
+        // Log error response
+        if ($this->controllerName) {
+            ApiLogger::logError(
+                $this->controllerName,
+                $this->getCurrentMethod(),
+                $message ?? 'Unknown error',
+                ['errors' => $errors]
+            );
+        }
+
         $response = [
             'status' => 'error',
         ];
@@ -63,9 +84,37 @@ class Controller extends BaseController
             $response['errors'] = $errors;
         }
 
+        $response['timestamp'] = now()->toDateTimeString();
+
         return response()->json($response, $statusCode)
             ->header('Access-Control-Allow-Origin', '*')
             ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
             ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    }
+
+    /**
+     * Get current method name
+     */
+    private function getCurrentMethod(): string
+    {
+        $trace = [];
+        return $trace[1]['function'] ?? 'unknown';
+    }
+
+    /**
+     * Log incoming request
+     */
+    protected function logRequest($data = null)
+    {
+        if ($this->controllerName) {
+            // Get request input (sanitized)
+            $input = request()->except(['password', 'token']);
+            
+            ApiLogger::logRequest(
+                $this->controllerName,
+                $this->getCurrentMethod(),
+                $input
+            );
+        }
     }
 }

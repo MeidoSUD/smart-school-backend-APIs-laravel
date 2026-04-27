@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+ 
 use App\Models\VideoTutorial;
 use App\Models\StudentSession;
 use App\Models\Student;
@@ -15,6 +15,11 @@ use Illuminate\Http\Request;
  */
 class VideoTutorialController extends Controller
 {
+    public function __construct()
+    {
+        $this->setControllerName('VideoTutorialController');
+        }
+
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -22,7 +27,9 @@ class VideoTutorialController extends Controller
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
-        }
+            }
+
+
         
         $student = Student::find($studentSession->student_id);
         
@@ -36,7 +43,9 @@ class VideoTutorialController extends Controller
         ];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function view($id): JsonResponse
     {
@@ -44,10 +53,14 @@ class VideoTutorialController extends Controller
         
         if (!$video) {
             return $this->errorResponse('Video not found', null, 404);
-        }
+            }
+
+
         
         return $this->successResponse(['video' => $video]);
-    }
+        }
+
+
 
     private function getStudentSession($user)
     {
@@ -58,16 +71,22 @@ class VideoTutorialController extends Controller
         } elseif ($user->role === 'parent') {
             $student = Student::where('parent_id', $user->id)->first();
             $studentId = $student ? $student->id : null;
-        }
+            }
+
+
         
         if (!$studentId) {
             return null;
-        }
+            }
+
+
         
         $setting = Setting::where('is_active', 1)->first();
         
         return StudentSession::where('student_id', $studentId)
             ->when($setting, fn($q) => $q->where('session_id', $setting->id))
             ->first();
+        }
+
+
     }
-}

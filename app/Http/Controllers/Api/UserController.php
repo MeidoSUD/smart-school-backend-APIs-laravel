@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+ 
 use App\Models\Student;
 use App\Models\StudentSession;
 use App\Models\Setting;
@@ -15,6 +15,11 @@ use Carbon\Carbon;
 
 class UserController extends Controller
 {
+    public function __construct()
+    {
+        $this->setControllerName('UserController');
+    }
+
     /**
      * Get user dashboard data
      *

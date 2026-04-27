@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+ 
 use App\Models\Exam;
 use App\Models\ExamSchedule;
 use App\Models\ExamGroupStudent;
@@ -17,6 +17,11 @@ use Illuminate\Http\Request;
  */
 class ExamController extends Controller
 {
+    public function __construct()
+    {
+        $this->setControllerName('ExamController');
+        }
+
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -24,7 +29,9 @@ class ExamController extends Controller
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
-        }
+            }
+
+
         
         $examResult = ExamSchedule::where('session_id', $studentSession->session_id)->get();
         
@@ -35,7 +42,9 @@ class ExamController extends Controller
         ];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function view($id): JsonResponse
     {
@@ -43,10 +52,14 @@ class ExamController extends Controller
         
         if (!$exam) {
             return $this->errorResponse('Exam not found', null, 404);
-        }
+            }
+
+
         
         return $this->successResponse(['exam' => $exam]);
-    }
+        }
+
+
 
     public function getByFeecategory(Request $request): JsonResponse
     {
@@ -55,7 +68,9 @@ class ExamController extends Controller
         $data = Exam::where('sesion_id', $feecategoryId)->get();
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function getStudentCategoryFee(Request $request): JsonResponse
     {
@@ -69,7 +84,9 @@ class ExamController extends Controller
         $status = $data->isEmpty() ? 'fail' : 'success';
         
         return $this->successResponse($data, null, $status);
-    }
+        }
+
+
 
     public function examSearch(Request $request): JsonResponse
     {
@@ -89,11 +106,17 @@ class ExamController extends Controller
                 $searchText = $request->post('search_text');
                 $resultList = Exam::where('name', 'like', '%' . $searchText . '%')->get();
                 $data['resultList'] = $resultList;
+                }
+
+
             }
-        }
+
+
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function examresult(Request $request): JsonResponse
     {
@@ -102,7 +125,9 @@ class ExamController extends Controller
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
-        }
+            }
+
+
         
         $examResult = ExamGroupStudent::where('student_session_id', $studentSession->id)
             ->with('examGroup')
@@ -113,7 +138,9 @@ class ExamController extends Controller
         ];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     private function getStudentSession($user)
     {
@@ -124,16 +151,22 @@ class ExamController extends Controller
         } elseif ($user->role === 'parent') {
             $student = Student::where('parent_id', $user->id)->first();
             $studentId = $student ? $student->id : null;
-        }
+            }
+
+
         
         if (!$studentId) {
             return null;
-        }
+            }
+
+
         
         $setting = Setting::where('is_active', 1)->first();
         
         return StudentSession::where('student_id', $studentId)
             ->when($setting, fn($q) => $q->where('session_id', $setting->id))
             ->first();
+        }
+
+
     }
-}

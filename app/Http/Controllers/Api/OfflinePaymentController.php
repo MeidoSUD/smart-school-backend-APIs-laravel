@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+ 
 use App\Models\OfflinePayment;
 use App\Models\StudentSession;
 use App\Models\Student;
@@ -15,6 +15,11 @@ use Illuminate\Http\Request;
  */
 class OfflinePaymentController extends Controller
 {
+    public function __construct()
+    {
+        $this->setControllerName('OfflinePaymentController');
+        }
+
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -22,7 +27,9 @@ class OfflinePaymentController extends Controller
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
-        }
+            }
+
+
         
         $student = Student::find($studentSession->student_id);
         $paymentList = OfflinePayment::where('student_session_id', $studentSession->id)
@@ -35,7 +42,9 @@ class OfflinePaymentController extends Controller
         ];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function add(Request $request): JsonResponse
     {
@@ -49,7 +58,9 @@ class OfflinePaymentController extends Controller
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
-        }
+            }
+
+
         
         $offlinePayment = OfflinePayment::create([
             'student_session_id' => $studentSession->id,
@@ -60,7 +71,9 @@ class OfflinePaymentController extends Controller
         ]);
         
         return $this->successResponse(['id' => $offlinePayment->id], 'Payment request submitted successfully');
-    }
+        }
+
+
 
     private function getStudentSession($user)
     {
@@ -71,16 +84,22 @@ class OfflinePaymentController extends Controller
         } elseif ($user->role === 'parent') {
             $student = Student::where('parent_id', $user->id)->first();
             $studentId = $student ? $student->id : null;
-        }
+            }
+
+
         
         if (!$studentId) {
             return null;
-        }
+            }
+
+
         
         $setting = Setting::where('is_active', 1)->first();
         
         return StudentSession::where('student_id', $studentId)
             ->when($setting, fn($q) => $q->where('session_id', $setting->id))
             ->first();
+        }
+
+
     }
-}

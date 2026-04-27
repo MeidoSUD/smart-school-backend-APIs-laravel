@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+ 
 use App\Models\ChatUser;
 use App\Models\ChatConnection;
 use App\Models\ChatMessage;
@@ -19,10 +19,17 @@ use DB;
  */
 class ChatController extends Controller
 {
+    public function __construct()
+    {
+        $this->setControllerName('ChatController');
+        }
+
     public function index(): JsonResponse
     {
         return $this->successResponse(['title' => 'Chat']);
-    }
+        }
+
+
 
     public function myuser(Request $request): JsonResponse
     {
@@ -37,10 +44,14 @@ class ChatController extends Controller
         
         if ($chatUser) {
             $data['userList'] = $this->getMyUserList($studentId, $chatUser->id);
-        }
+            }
+
+
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function getChatRecord(Request $request): JsonResponse
     {
@@ -61,8 +72,12 @@ class ChatController extends Controller
             $chatToUser = $chatConnection->chat_user_one;
             if ($chatConnection->chat_user_one == ($chatUser ? $chatUser->id : 0)) {
                 $chatToUser = $chatConnection->chat_user_two;
+                }
+
+
             }
-        }
+
+
         
         $chatList = ChatMessage::where('chat_connection_id', $chatConnectionId)
             ->where('chat_user_id', '!=', $chatUser ? $chatUser->id : 0)
@@ -78,7 +93,9 @@ class ChatController extends Controller
             'chat_connection_id' => $chatConnectionId,
             'user_last_chat' => $userLastChat,
         ]);
-    }
+        }
+
+
 
     public function newMessage(Request $request): JsonResponse
     {
@@ -96,7 +113,9 @@ class ChatController extends Controller
         ]);
         
         return $this->successResponse(['last_insert_id' => $insertRecord->id], 'Message sent');
-    }
+        }
+
+
 
     private function getStudentId($user)
     {
@@ -105,9 +124,13 @@ class ChatController extends Controller
         } elseif ($user->role === 'parent') {
             $student = Student::where('parent_id', $user->id)->first();
             return $student ? $student->id : null;
-        }
+            }
+
+
         return null;
-    }
+        }
+
+
 
     private function getMyUserList($studentId, $chatUserId)
     {
@@ -121,9 +144,15 @@ class ChatController extends Controller
             $otherUser = ChatUser::find($otherUserId);
             if ($otherUser) {
                 $userList[] = $otherUser;
+                }
+
+
             }
-        }
+
+
         
         return $userList;
+        }
+
+
     }
-}

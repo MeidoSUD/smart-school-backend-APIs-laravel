@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+ 
 use App\Models\Notification;
 use App\Models\NotificationStatus;
 use App\Models\StudentSession;
@@ -17,6 +17,11 @@ use Illuminate\Http\Request;
  */
 class NotificationController extends Controller
 {
+    public function __construct()
+    {
+        $this->setControllerName('NotificationController');
+        }
+
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -33,15 +38,21 @@ class NotificationController extends Controller
         foreach ($notifications as $value) {
             if (strtotime(date('Y-m-d')) >= strtotime($value->publish_date)) {
                 $notificationList[] = $value;
+                }
+
+
             }
-        }
+
+
         
         $data = [
             'notificationlist' => $notificationList,
         ];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function updatestatus(Request $request): JsonResponse
     {
@@ -55,7 +66,9 @@ class NotificationController extends Controller
         );
         
         return $this->successResponse(['notification' => true], 'Status updated successfully');
-    }
+        }
+
+
 
     public function read(Request $request): JsonResponse
     {
@@ -70,10 +83,14 @@ class NotificationController extends Controller
             );
             
             return $this->successResponse(null, 'Notification marked as read');
-        }
+            }
+
+
         
         return $this->errorResponse('Invalid notification ID');
-    }
+        }
+
+
 
     public function download($id): JsonResponse
     {
@@ -81,10 +98,14 @@ class NotificationController extends Controller
         
         if (!$notification) {
             return $this->errorResponse('Notification not found', null, 404);
-        }
+            }
+
+
         
         return $this->successResponse(['attachment' => $notification->attachment]);
-    }
+        }
+
+
 
     public function notification(Request $request): JsonResponse
     {
@@ -94,7 +115,9 @@ class NotificationController extends Controller
         
         if (!$notificationlist) {
             return $this->errorResponse('Notification not found', null, 404);
-        }
+            }
+
+
         
         $setting = Setting::first();
         $superadminRestriction = $setting ? ($setting->superadmin_restriction ?? false) : false;
@@ -105,13 +128,19 @@ class NotificationController extends Controller
                 $notificationlist->created_by = ($staff->surname ? $staff->name . ' ' . $staff->surname : $staff->name) . ' (' . $staff->employee_id . ')';
             } else {
                 $notificationlist->created_by = '';
+                }
+
+
             }
-        }
+
+
         
         $data = ['notificationlist' => $notificationlist];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     private function getStudentId($user)
     {
@@ -119,7 +148,11 @@ class NotificationController extends Controller
             return $user->user_id;
         } elseif ($user->role === 'parent') {
             return $user->id;
-        }
+            }
+
+
         return null;
+        }
+
+
     }
-}

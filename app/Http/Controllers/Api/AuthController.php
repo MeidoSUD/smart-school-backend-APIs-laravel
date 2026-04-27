@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\ChangePasswordRequest;
 use App\Models\User;
@@ -12,30 +11,19 @@ use App\Models\StudentSession;
 use App\Models\Setting;
 use App\Models\Classe;
 use App\Models\Section;
+use App\Models\StudentFeeMaster;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Services\ApiLogger;
 
-/**
- * Authentication Controller
- *
- * Converts CodeIgniter Auth.php to Laravel
- *
- * ═══════════════════════════════════════════════════════════════════════════════
- * CODEIGNITER (OLD)                           LARAVEL (NEW)
- * ═══════════════════════════════════════════════════════════════════════════════
- * $this->form_validation->set_rules()       → Form Request classes
- * $this->input->post('username')            → $request->validated() or request()
- * $this->user_model->checkLogin()           → User::where()->first()
- * $this->user_model->updateToken()           → $user->token = $token; $user->save()
- * $this->api_success($data, $msg)            → $this->successResponse($data, $msg)
- * $this->api_error($msg, null, 401)          → $this->errorResponse($msg, null, 401)
- * $this->user                                → $request->user() (via middleware)
- * bin2hex(random_bytes(32))                  → Str::random(64)
- * ═══════════════════════════════════════════════════════════════════════════════
- */
 class AuthController extends Controller
 {
+    public function __construct()
+    {
+        $this->setControllerName('AuthController');
+    }
+
     /**
      * Login user and generate token
      *
@@ -45,53 +33,44 @@ class AuthController extends Controller
      * @param LoginRequest $request Validated login credentials
      * @return JsonResponse
      */
-    public function login(LoginRequest $request): JsonResponse
+public function login(LoginRequest $request): JsonResponse
     {
         $credentials = $request->validated();
 
-        // ═══════════════════════════════════════════════════════════════════════════
-        // CODEIGNITER EQUIVALENT:
-        // $login_post = array('username' => $this->input->post('username'),
-        //                     'password' => $this->input->post('password'));
-        // $login_details = $this->user_model->checkLogin($login_post);
-        // ═══════════════════════════════════════════════════════════════════════════
+        // Log the login attempt
+        ApiLogger::logAuth('login_attempt', $credentials['username'], false);
 
+        // Find user by username
         $user = User::where('username', $credentials['username'])->first();
 
         if (!$user) {
+            ApiLogger::logAuth('login_failed', $credentials['username'], false);
             return $this->errorResponse('Invalid username or password', null, 401);
         }
 
-        // ═══════════════════════════════════════════════════════════════════════════
-        // CODEIGNITER EQUIVALENT:
-        // if ($user->is_active == "yes") { ... }
-        // ═══════════════════════════════════════════════════════════════════════════
-
+        // Check if user is active
         if (!$user->isActive()) {
+            ApiLogger::logAuth('login_disabled', $credentials['username'], false, $user->id);
             return $this->errorResponse('Your account is disabled, please contact administrator.', null, 403);
         }
 
-        // ═══════════════════════════════════════════════════════════════════════════
-        // CODEIGNITER EQUIVALENT:
-        // Plain text password check (no hashing)
-        // if ($user->password === $password) { ... }
-        // ═══════════════════════════════════════════════════════════════════════════
-
+        // Validate plain text password (legacy compatibility)
         if ($user->password !== $credentials['password']) {
+            ApiLogger::logAuth('login_failed', $credentials['username'], false, $user->id);
             return $this->errorResponse('Invalid username or password', null, 401);
         }
 
-        // ═══════════════════════════════════════════════════════════════════════════
-        // CODEIGNITER EQUIVALENT:
-        // $token = bin2hex(random_bytes(32));
-        // $this->user_model->updateToken($user->id, $token);
-        // ═══════════════════════════════════════════════════════════════════════════
-
+        // Generate secure token
         $token = Str::random(64);
+
+        // Save token to user
         $user->token = $token;
         $user->save();
 
-        // Build user response data based on role
+        // Log successful login
+        ApiLogger::logAuth('login_success', $credentials['username'], true, $user->id);
+
+        // Get user profile data based on role
         $userData = $this->buildUserResponse($user);
 
         // ═══════════════════════════════════════════════════════════════════════════
@@ -115,21 +94,20 @@ class AuthController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function logout(Request $request): JsonResponse
+public function logout(Request $request): JsonResponse
     {
-        // ═══════════════════════════════════════════════════════════════════════════
-        // CODEIGNITER EQUIVALENT:
-        // if ($this->user) {
-        //     $this->user_model->updateToken($this->user->id, null);
-        //     return $this->api_success(null, 'Logged out successfully');
-        // }
-        // ═══════════════════════════════════════════════════════════════════════════
-
         $user = $request->user();
 
         if ($user) {
+            $userId = $user->id;
+            $username = $user->username;
+            
+            // Clear the token
             $user->token = null;
             $user->save();
+            
+            // Log logout
+            ApiLogger::logAuth('logout', $username, true, $userId);
 
             return $this->successResponse(null, 'Logged out successfully');
         }
@@ -137,7 +115,7 @@ class AuthController extends Controller
         return $this->errorResponse('Not logged in', null, 401);
     }
 
-    /**
+   /**
      * Change user password
      *
      * CodeIgniter Route: POST /api/auth/changepass
@@ -215,6 +193,15 @@ class AuthController extends Controller
                         $data['class_id'] = $studentSession->class_id;
                         $data['section_id'] = $studentSession->section_id;
                         $data['student_session_id'] = $studentSession->id;
+
+                        // Add class and section names
+                        $class = Classe::find($studentSession->class_id);
+                        $section = Section::find($studentSession->section_id);
+                        $data['class'] = $class ? $class->class : null;
+                        $data['section'] = $section ? $section->section : null;
+                        
+                        // Add fee summary
+                        $data['fees'] = $this->getStudentFeeSummary($studentSession->id);
                     }
                 }
                 break;
@@ -229,6 +216,15 @@ class AuthController extends Controller
                         $data['class_id'] = $studentSession->class_id;
                         $data['section_id'] = $studentSession->section_id;
                         $data['student_session_id'] = $studentSession->id;
+                        
+                        // Add class and section names
+                        $class = Classe::find($studentSession->class_id);
+                        $section = Section::find($studentSession->section_id);
+                        $data['class'] = $class ? $class->class : null;
+                        $data['section'] = $section ? $section->section : null;
+                        
+                        // Add fee summary
+                        $data['fees'] = $this->getStudentFeeSummary($studentSession->id);
                     }
                 }
                 $data['childs'] = json_decode($user->childs, true) ?? [];
@@ -283,5 +279,22 @@ class AuthController extends Controller
         }
 
         return $studentSession;
+    }
+
+    /**
+     * Get student's fee summary
+     * 
+     * @param int $studentSessionId
+     * @return array
+     */
+    private function getStudentFeeSummary(int $studentSessionId): array
+    {
+        $fees = StudentFeeMaster::where('student_session_id', $studentSessionId)
+            ->get();
+            
+        return [
+            'total_fees' => $fees->sum('amount'),
+            'fees_list' => $fees->toArray()
+        ];
     }
 }

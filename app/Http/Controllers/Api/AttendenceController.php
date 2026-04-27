@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+ 
 use App\Models\AttendenceType;
 use App\Models\StudentAttendence;
 use App\Models\CalendarEvent;
@@ -19,6 +19,11 @@ use DB;
  */
 class AttendenceController extends Controller
 {
+    public function __construct()
+    {
+        $this->setControllerName('AttendenceController');
+        }
+
     public function index(): JsonResponse
     {
         $setting = Setting::first();
@@ -29,7 +34,9 @@ class AttendenceController extends Controller
         ];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function getdaysubattendence(Request $request): JsonResponse
     {
@@ -43,7 +50,9 @@ class AttendenceController extends Controller
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
-        }
+            }
+
+
         
         $attendance = StudentAttendence::with('attendenceType')
             ->where('student_session_id', $studentSession->id)
@@ -56,7 +65,9 @@ class AttendenceController extends Controller
         ];
         
         return $this->successResponse($result);
-    }
+        }
+
+
 
     public function getAttendence(Request $request): JsonResponse
     {
@@ -68,7 +79,9 @@ class AttendenceController extends Controller
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
-        }
+            }
+
+
         
         $attendance = StudentAttendence::with('attendenceType')
             ->where('student_session_id', $studentSession->id)
@@ -87,7 +100,9 @@ class AttendenceController extends Controller
                 $color = '#a7a7a7';
             } elseif ($row->attendenceType && $row->attendenceType->type == 'Half Day') {
                 $color = '#fa8a00';
-            }
+                }
+
+
             
             $eventdata[] = [
                 'title' => $row->attendenceType ? $row->attendenceType->type : 'Unknown',
@@ -98,10 +113,14 @@ class AttendenceController extends Controller
                 'borderColor' => $color,
                 'event_type' => $row->attendenceType ? $row->attendenceType->type : 'Unknown',
             ];
-        }
+            }
+
+
         
         return $this->successResponse($eventdata);
-    }
+        }
+
+
 
     public function getevents(): JsonResponse
     {
@@ -121,10 +140,14 @@ class AttendenceController extends Controller
                 'borderColor' => $value->event_color,
                 'event_type' => $value->event_type,
             ];
-        }
+            }
+
+
         
         return $this->successResponse($eventdata);
-    }
+        }
+
+
 
     private function getStudentSession($user)
     {
@@ -135,16 +158,22 @@ class AttendenceController extends Controller
         } elseif ($user->role === 'parent') {
             $student = Student::where('parent_id', $user->id)->first();
             $studentId = $student ? $student->id : null;
-        }
+            }
+
+
         
         if (!$studentId) {
             return null;
-        }
+            }
+
+
         
         $setting = Setting::where('is_active', 1)->first();
         
         return StudentSession::where('student_id', $studentId)
             ->when($setting, fn($q) => $q->where('session_id', $setting->id))
             ->first();
+        }
+
+
     }
-}

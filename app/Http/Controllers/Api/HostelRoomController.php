@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+ 
 use App\Models\HostelRoom;
 use Illuminate\Http\JsonResponse;
 
@@ -11,6 +11,11 @@ use Illuminate\Http\JsonResponse;
  */
 class HostelRoomController extends Controller
 {
+    public function __construct()
+    {
+        $this->setControllerName('HostelRoomController');
+        }
+
     public function index(): JsonResponse
     {
         $listroom = HostelRoom::where('is_active', 'yes')->get();
@@ -20,5 +25,7 @@ class HostelRoomController extends Controller
         ];
         
         return $this->successResponse($data);
+        }
+
+
     }
-}

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+ 
 use App\Models\ApplyLeave;
 use App\Models\StudentSession;
 use App\Models\Student;
@@ -17,6 +17,11 @@ use DB;
  */
 class ApplyLeaveController extends Controller
 {
+    public function __construct()
+    {
+        $this->setControllerName('ApplyLeaveController');
+        }
+
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -24,7 +29,9 @@ class ApplyLeaveController extends Controller
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
-        }
+            }
+
+
         
         $studentId = $this->getStudentId($user);
         $student = Student::find($studentId);
@@ -41,7 +48,9 @@ class ApplyLeaveController extends Controller
         ];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function get_details($id): JsonResponse
     {
@@ -49,14 +58,18 @@ class ApplyLeaveController extends Controller
         
         if (!$data) {
             return $this->errorResponse('Leave not found', null, 404);
-        }
+            }
+
+
         
         $data->from_date = Carbon::parse($data->from_date)->format('d-m-Y');
         $data->to_date = Carbon::parse($data->to_date)->format('d-m-Y');
         $data->apply_date = Carbon::parse($data->apply_date)->format('d-m-Y');
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function add(Request $request): JsonResponse
     {
@@ -72,7 +85,9 @@ class ApplyLeaveController extends Controller
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
-        }
+            }
+
+
         
         $data = [
             'apply_date' => Carbon::parse($request->apply_date)->format('Y-m-d'),
@@ -90,7 +105,9 @@ class ApplyLeaveController extends Controller
         } else {
             $leave = ApplyLeave::create($data);
             $leaveId = $leave->id;
-        }
+            }
+
+
         
         $document = null;
         if ($request->hasFile('files')) {
@@ -98,10 +115,14 @@ class ApplyLeaveController extends Controller
             $document = time() . '_' . $file->getClientOriginalName();
             $file->move(public_path('uploads/student_leavedocuments'), $document);
             ApplyLeave::where('id', $leaveId)->update(['docs' => $document]);
-        }
+            }
+
+
         
         return $this->successResponse(['leave_id' => $leaveId], 'Leave application submitted successfully');
-    }
+        }
+
+
 
     public function remove_leave($id): JsonResponse
     {
@@ -111,13 +132,19 @@ class ApplyLeaveController extends Controller
             $filePath = public_path('uploads/student_leavedocuments/' . $row->docs);
             if (file_exists($filePath)) {
                 unlink($filePath);
+                }
+
+
             }
-        }
+
+
         
         ApplyLeave::destroy($id);
         
         return $this->successResponse(null, 'Leave removed successfully');
-    }
+        }
+
+
 
     private function getStudentSession($user)
     {
@@ -125,14 +152,18 @@ class ApplyLeaveController extends Controller
         
         if (!$studentId) {
             return null;
-        }
+            }
+
+
         
         $setting = Setting::where('is_active', 1)->first();
         
         return StudentSession::where('student_id', $studentId)
             ->when($setting, fn($q) => $q->where('session_id', $setting->id))
             ->first();
-    }
+        }
+
+
 
     private function getStudentId($user)
     {
@@ -141,7 +172,11 @@ class ApplyLeaveController extends Controller
         } elseif ($user->role === 'parent') {
             $student = Student::where('parent_id', $user->id)->first();
             return $student ? $student->id : null;
-        }
+            }
+
+
         return null;
+        }
+
+
     }
-}

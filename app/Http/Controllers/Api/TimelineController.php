@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+ 
 use App\Models\StudentTimeline;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,6 +13,11 @@ use Carbon\Carbon;
  */
 class TimelineController extends Controller
 {
+    public function __construct()
+    {
+        $this->setControllerName('TimelineController');
+        }
+
     public function add(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -26,7 +31,9 @@ class TimelineController extends Controller
             $file = $request->file('timeline_doc');
             $document = time() . '_' . $file->getClientOriginalName();
             $file->move(public_path('uploads/student_timeline'), $document);
-        }
+            }
+
+
         
         $timeline = StudentTimeline::create([
             'title' => $request->timeline_title,
@@ -39,7 +46,9 @@ class TimelineController extends Controller
         ]);
         
         return $this->successResponse(['id' => $timeline->id], 'Timeline added successfully');
-    }
+        }
+
+
 
     public function getstudentsingletimeline(Request $request): JsonResponse
     {
@@ -48,7 +57,9 @@ class TimelineController extends Controller
         $singletimelinelist = StudentTimeline::find($id);
         
         return $this->successResponse(['singletimelinelist' => $singletimelinelist]);
-    }
+        }
+
+
 
     public function edit(Request $request): JsonResponse
     {
@@ -62,14 +73,18 @@ class TimelineController extends Controller
         
         if (!$timeline) {
             return $this->errorResponse('Timeline not found', null, 404);
-        }
+            }
+
+
         
         $document = $timeline->document;
         if ($request->hasFile('timeline_doc')) {
             $file = $request->file('timeline_doc');
             $document = time() . '_' . $file->getClientOriginalName();
             $file->move(public_path('uploads/student_timeline'), $document);
-        }
+            }
+
+
         
         $timeline->update([
             'title' => $request->timeline_title,
@@ -79,7 +94,9 @@ class TimelineController extends Controller
         ]);
         
         return $this->successResponse(null, 'Timeline updated successfully');
-    }
+        }
+
+
 
     public function download($id): JsonResponse
     {
@@ -87,10 +104,14 @@ class TimelineController extends Controller
         
         if (!$timelinelist) {
             return $this->errorResponse('Timeline not found', null, 404);
-        }
+            }
+
+
         
         return $this->successResponse(['document' => $timelinelist->document]);
-    }
+        }
+
+
 
     public function delete_timeline(Request $request): JsonResponse
     {
@@ -102,11 +123,17 @@ class TimelineController extends Controller
             $filePath = public_path('uploads/student_timeline/' . $timeline->document);
             if (file_exists($filePath)) {
                 unlink($filePath);
+                }
+
+
             }
-        }
+
+
         
         StudentTimeline::destroy($id);
         
         return $this->successResponse(null, 'Timeline deleted successfully');
+        }
+
+
     }
-}

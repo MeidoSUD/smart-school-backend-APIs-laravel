@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+ 
 use App\Models\Subject;
 use App\Models\SubjectGroup;
 use App\Models\SubjectGroupSubject;
@@ -20,6 +20,11 @@ use DB;
  */
 class SubjectController extends Controller
 {
+    public function __construct()
+    {
+        $this->setControllerName('SubjectController');
+        }
+
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -27,7 +32,9 @@ class SubjectController extends Controller
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
-        }
+            }
+
+
         
         $subjects = SubjectGroupClassSection::where('class_section_id', $studentSession->class_id)
             ->where('session_id', $studentSession->session_id)
@@ -44,12 +51,20 @@ class SubjectController extends Controller
                         'type' => $subject->type,
                         'code' => $subject->code,
                     ];
+                    }
+
+
                 }
+
+
             }
-        }
+
+
         
         return $this->successResponse(['subjects' => $subjectList]);
-    }
+        }
+
+
 
     public function view($id): JsonResponse
     {
@@ -57,10 +72,14 @@ class SubjectController extends Controller
         
         if (!$subject) {
             return $this->errorResponse('Subject not found', null, 404);
-        }
+            }
+
+
         
         return $this->successResponse(['subject' => $subject]);
-    }
+        }
+
+
 
     public function getSubjctByClassandSection(Request $request): JsonResponse
     {
@@ -69,7 +88,9 @@ class SubjectController extends Controller
         
         if (!$classId || !$sectionId) {
             return $this->errorResponse('class_id and section_id are required');
-        }
+            }
+
+
         
         $classSection = DB::table('class_sections')
             ->where('class_id', $classId)
@@ -78,7 +99,9 @@ class SubjectController extends Controller
         
         if (!$classSection) {
             return $this->errorResponse('Class section not found');
-        }
+            }
+
+
         
         $currentSession = Setting::where('is_active', 1)->first();
         
@@ -91,7 +114,9 @@ class SubjectController extends Controller
             ->get();
         
         return $this->successResponse(['subjects' => $subjects]);
-    }
+        }
+
+
 
     private function getStudentSession($user)
     {
@@ -102,16 +127,22 @@ class SubjectController extends Controller
         } elseif ($user->role === 'parent') {
             $student = Student::where('parent_id', $user->id)->first();
             $studentId = $student ? $student->id : null;
-        }
+            }
+
+
         
         if (!$studentId) {
             return null;
-        }
+            }
+
+
         
         $setting = Setting::where('is_active', 1)->first();
         
         return StudentSession::where('student_id', $studentId)
             ->when($setting, fn($q) => $q->where('session_id', $setting->id))
             ->first();
+        }
+
+
     }
-}

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+ 
 use App\Models\CalendarEvent;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,6 +14,11 @@ use DB;
  */
 class CalendarController extends Controller
 {
+    public function __construct()
+    {
+        $this->setControllerName('CalendarController');
+        }
+
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -35,7 +40,9 @@ class CalendarController extends Controller
         ];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function getevents(Request $request): JsonResponse
     {
@@ -53,7 +60,9 @@ class CalendarController extends Controller
             if ($eventType == 'task') {
                 $eventFor = $user->id;
                 $status = ($eventFor == $value->event_for) ? 1 : 0;
-            }
+                }
+
+
             
             if ($status == 1) {
                 $eventdata[] = [
@@ -66,11 +75,17 @@ class CalendarController extends Controller
                     'borderColor' => $value->event_color,
                     'event_type' => $value->event_type,
                 ];
+                }
+
+
             }
-        }
+
+
         
         return $this->successResponse($eventdata);
-    }
+        }
+
+
 
     public function addtodo(Request $request): JsonResponse
     {
@@ -110,16 +125,22 @@ class CalendarController extends Controller
                 'event_for' => $user->id,
             ]);
             $msg = 'Task created successfully';
-        }
+            }
+
+
         
         return $this->successResponse(null, $msg);
-    }
+        }
+
+
 
     public function gettaskbyid($id): JsonResponse
     {
         $result = CalendarEvent::find($id);
         return $this->successResponse($result);
-    }
+        }
+
+
 
     public function markcomplete(Request $request, $id): JsonResponse
     {
@@ -128,11 +149,15 @@ class CalendarController extends Controller
         CalendarEvent::where('id', $id)->update(['is_active' => $status]);
         
         return $this->successResponse(null, 'Marked as completed successfully');
-    }
+        }
+
+
 
     public function delete_event($id): JsonResponse
     {
         CalendarEvent::destroy($id);
         return $this->successResponse(null, 'Event deleted successfully');
+        }
+
+
     }
-}

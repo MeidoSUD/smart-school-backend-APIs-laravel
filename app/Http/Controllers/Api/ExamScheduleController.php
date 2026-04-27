@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+ 
 use App\Models\ExamGroupStudent;
 use App\Models\StudentSession;
 use App\Models\Student;
@@ -15,6 +15,11 @@ use Illuminate\Http\Request;
  */
 class ExamScheduleController extends Controller
 {
+    public function __construct()
+    {
+        $this->setControllerName('ExamScheduleController');
+        }
+
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -22,7 +27,9 @@ class ExamScheduleController extends Controller
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
-        }
+            }
+
+
         
         $examSchedule = ExamGroupStudent::where('student_session_id', $studentSession->id)
             ->with('examGroup')
@@ -31,7 +38,9 @@ class ExamScheduleController extends Controller
         $data = ['examSchedule' => $examSchedule];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function getexamscheduledetail(Request $request): JsonResponse
     {
@@ -40,7 +49,9 @@ class ExamScheduleController extends Controller
         $subjectList = [];
         
         return $this->successResponse(['subject_list' => $subjectList]);
-    }
+        }
+
+
 
     private function getStudentSession($user)
     {
@@ -51,16 +62,22 @@ class ExamScheduleController extends Controller
         } elseif ($user->role === 'parent') {
             $student = Student::where('parent_id', $user->id)->first();
             $studentId = $student ? $student->id : null;
-        }
+            }
+
+
         
         if (!$studentId) {
             return null;
-        }
+            }
+
+
         
         $setting = Setting::where('is_active', 1)->first();
         
         return StudentSession::where('student_id', $studentId)
             ->when($setting, fn($q) => $q->where('session_id', $setting->id))
             ->first();
+        }
+
+
     }
-}

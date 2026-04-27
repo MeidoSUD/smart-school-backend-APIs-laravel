@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+ 
 use App\Models\Syllabus;
 use App\Models\SyllabusStatus;
 use App\Models\SyllabusMessage;
@@ -18,6 +18,11 @@ use Carbon\Carbon;
  */
 class SyllabusController extends Controller
 {
+    public function __construct()
+    {
+        $this->setControllerName('SyllabusController');
+        }
+
     public function index(): JsonResponse
     {
         $startWeekday = Setting::first()->start_month ?? 4;
@@ -29,7 +34,9 @@ class SyllabusController extends Controller
         ];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function status(Request $request): JsonResponse
     {
@@ -38,7 +45,9 @@ class SyllabusController extends Controller
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
-        }
+            }
+
+
         
         $subjects = Syllabus::where('class_section_id', $studentSession->class_id)->get();
         
@@ -53,7 +62,9 @@ class SyllabusController extends Controller
                 $total = $statuses->count();
                 $complete = $statuses->where('status', 1)->count();
                 $incomplete = $total - $complete;
-            }
+                }
+
+
             
             $completePercent = $total > 0 ? round(($complete / $total) * 100) : 0;
             $incompletePercent = $total > 0 ? round(($incomplete / $total) * 100) : 0;
@@ -66,7 +77,9 @@ class SyllabusController extends Controller
                 'total' => $total,
                 'name' => $value->topic,
             ];
-        }
+            }
+
+
         
         $data = [
             'subjects_data' => $subjectsData,
@@ -74,7 +87,9 @@ class SyllabusController extends Controller
         ];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function download($id): JsonResponse
     {
@@ -82,10 +97,14 @@ class SyllabusController extends Controller
         
         if (!$result) {
             return $this->errorResponse('Syllabus not found', null, 404);
-        }
+            }
+
+
         
         return $this->successResponse(['attachment' => $result->attachment]);
-    }
+        }
+
+
 
     public function addmessage(Request $request): JsonResponse
     {
@@ -106,7 +125,9 @@ class SyllabusController extends Controller
         ]);
         
         return $this->successResponse(null, 'Message added successfully');
-    }
+        }
+
+
 
     public function getmessage(Request $request): JsonResponse
     {
@@ -119,7 +140,9 @@ class SyllabusController extends Controller
         ];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     private function getStudentSession($user)
     {
@@ -127,14 +150,18 @@ class SyllabusController extends Controller
         
         if (!$studentId) {
             return null;
-        }
+            }
+
+
         
         $setting = Setting::where('is_active', 1)->first();
         
         return StudentSession::where('student_id', $studentId)
             ->when($setting, fn($q) => $q->where('session_id', $setting->id))
             ->first();
-    }
+        }
+
+
 
     private function getStudentId($user)
     {
@@ -143,7 +170,11 @@ class SyllabusController extends Controller
         } elseif ($user->role === 'parent') {
             $student = Student::where('parent_id', $user->id)->first();
             return $student ? $student->id : null;
-        }
+            }
+
+
         return null;
+        }
+
+
     }
-}

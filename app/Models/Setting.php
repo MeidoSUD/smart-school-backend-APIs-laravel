@@ -9,7 +9,7 @@ class Setting extends Model
 {
     use HasFactory;
 
-    protected $table = 'settings';
+    protected $table = 'sch_settings';
 
     protected $primaryKey = 'id';
 
@@ -22,7 +22,7 @@ class Setting extends Model
         'biometric',
         'admin_login',
         'superadmin_restriction',
-        ' languagd_id',
+        'lang_id',
         'start_month',
         'end_month',
         'currency',

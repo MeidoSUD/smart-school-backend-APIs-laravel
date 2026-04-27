@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+ 
 use App\Models\OnlineStudent;
 use App\Models\Setting;
 use App\Models\Classe;
@@ -23,6 +23,11 @@ use Carbon\Carbon;
  */
 class AdmissionController extends Controller
 {
+    public function __construct()
+    {
+        $this->setControllerName('AdmissionController');
+        }
+
     public function index(): JsonResponse
     {
         $setting = Setting::first();
@@ -36,7 +41,9 @@ class AdmissionController extends Controller
         ];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function form_config(): JsonResponse
     {
@@ -58,13 +65,17 @@ class AdmissionController extends Controller
         ];
         
         return $this->successResponse($data);
-    }
+        }
+
+
 
     public function classes(): JsonResponse
     {
         $classlist = Classe::where('is_active', 'yes')->get();
         return $this->successResponse($classlist);
-    }
+        }
+
+
 
     public function sections(Request $request): JsonResponse
     {
@@ -72,14 +83,18 @@ class AdmissionController extends Controller
         
         if (!$classId) {
             return $this->errorResponse('class_id is required');
-        }
+            }
+
+
         
         $sections = Section::whereHas('classSections', function ($q) use ($classId) {
             $q->where('class_id', $classId);
         })->where('is_active', 'yes')->get();
         
         return $this->successResponse($sections);
-    }
+        }
+
+
 
     public function submit(Request $request): JsonResponse
     {
@@ -87,7 +102,9 @@ class AdmissionController extends Controller
         
         if (!($setting->online_admission ?? false)) {
             return $this->errorResponse('Online admission is currently disabled');
-        }
+            }
+
+
         
         $validated = $request->validate([
             'firstname' => 'required|string|max:100',
@@ -108,7 +125,9 @@ class AdmissionController extends Controller
         
         if (!$classSection) {
             return $this->errorResponse('Invalid class or section');
-        }
+            }
+
+
         
         $data = [
             'firstname' => $request->firstname,
@@ -128,8 +147,12 @@ class AdmissionController extends Controller
         foreach ($optionalFields as $field) {
             if ($request->has($field) && $request->$field) {
                 $data[$field] = $request->$field;
+                }
+
+
             }
-        }
+
+
         
         // Guardian fields
         if ($request->has('guardian_is') && $request->guardian_is) {
@@ -137,33 +160,51 @@ class AdmissionController extends Controller
             foreach ($guardianFields as $field) {
                 if ($request->has($field)) {
                     $data[$field] = $request->$field;
+                    }
+
+
                 }
+
+
             }
-        }
+
+
         
         // Father fields
         $fatherFields = ['father_name', 'father_phone', 'father_occupation'];
         foreach ($fatherFields as $field) {
             if ($request->has($field) && $request->$field) {
                 $data[$field] = $request->$field;
+                }
+
+
             }
-        }
+
+
         
         // Mother fields
         $motherFields = ['mother_name', 'mother_phone', 'mother_occupation'];
         foreach ($motherFields as $field) {
             if ($request->has($field) && $request->$field) {
                 $data[$field] = $request->$field;
+                }
+
+
             }
-        }
+
+
         
         if ($request->has('school_house_id')) {
             $data['school_house_id'] = $request->school_house_id;
-        }
+            }
+
+
         
         if ($request->has('blood_group')) {
             $data['blood_group'] = $request->blood_group;
-        }
+            }
+
+
         
         // Generate reference number
         do {
@@ -182,7 +223,9 @@ class AdmissionController extends Controller
         ];
         
         return $this->successResponse($response, 'Admission form submitted successfully');
-    }
+        }
+
+
 
     public function status(Request $request): JsonResponse
     {
@@ -190,13 +233,17 @@ class AdmissionController extends Controller
         
         if (!$referenceNo) {
             return $this->errorResponse('reference_no is required');
-        }
+            }
+
+
         
         $admission = OnlineStudent::where('reference_no', $referenceNo)->first();
         
         if (!$admission) {
             return $this->errorResponse('No admission found with this reference number', null, 404);
-        }
+            }
+
+
         
         $data = [
             'reference_no' => $admission->reference_no,
@@ -208,5 +255,7 @@ class AdmissionController extends Controller
         ];
         
         return $this->successResponse($data);
+        }
+
+
     }
-}

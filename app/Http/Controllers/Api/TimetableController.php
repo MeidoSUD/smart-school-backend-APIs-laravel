@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+ 
 use App\Models\ClassTimetable;
 use App\Models\StudentSession;
 use App\Models\Student;
@@ -16,6 +16,11 @@ use DB;
  */
 class TimetableController extends Controller
 {
+    public function __construct()
+    {
+        $this->setControllerName('TimetableController');
+        }
+
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -23,7 +28,9 @@ class TimetableController extends Controller
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
-        }
+            }
+
+
         
         $classSection = DB::table('class_sections')
             ->where('class_id', $studentSession->class_id)
@@ -32,7 +39,9 @@ class TimetableController extends Controller
         
         if (!$classSection) {
             return $this->successResponse(['timetable' => []], 'No timetable found');
-        }
+            }
+
+
         
         $timetable = ClassTimetable::where('class_section_id', $classSection->id)
             ->where('session_id', $studentSession->session_id)
@@ -47,7 +56,9 @@ class TimetableController extends Controller
             $day = $row->day;
             if (!isset($result[$day])) {
                 $result[$day] = [];
-            }
+                }
+
+
             $result[$day][] = [
                 'id' => $row->id,
                 'subject' => $row->subject ? $row->subject->name : 'N/A',
@@ -58,10 +69,14 @@ class TimetableController extends Controller
                 'room' => $row->room_no ?? '',
                 'day' => $row->day,
             ];
-        }
+            }
+
+
         
         return $this->successResponse(['timetable' => $result]);
-    }
+        }
+
+
 
     private function getStudentSession($user)
     {
@@ -72,16 +87,22 @@ class TimetableController extends Controller
         } elseif ($user->role === 'parent') {
             $student = Student::where('parent_id', $user->id)->first();
             $studentId = $student ? $student->id : null;
-        }
+            }
+
+
         
         if (!$studentId) {
             return null;
-        }
+            }
+
+
         
         $setting = Setting::where('is_active', 1)->first();
         
         return StudentSession::where('student_id', $studentId)
             ->when($setting, fn($q) => $q->where('session_id', $setting->id))
             ->first();
+        }
+
+
     }
-}
