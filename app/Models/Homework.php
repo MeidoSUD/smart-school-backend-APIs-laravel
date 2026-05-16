@@ -12,7 +12,7 @@ class Homework extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'class_id', 'section_id', 'subject_id', 'homework_date', 'submission_date',
+        'class_id', 'section_id', 'subject_id', 'homework_date', 'submit_date', 'submission_date',
         'description', 'created_by', 'evaluated_by', 'evaluation_date', 'created_at',
     ];
 

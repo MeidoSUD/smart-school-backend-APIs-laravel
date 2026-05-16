@@ -1,7 +1,9 @@
 class ApiEndpoints {
   // 💡 TIP: 'localhost' refers to the phone itself.
   // Use '10.0.2.2' for Android Emulator OR your machine's IP (e.g. 10.80.64.185) for physical devices.
-  static const String baseUrl = "http://10.80.64.185/smart-school/api";
+//   static const String baseUrl = "http://10.80.64.185/smart-school/api";
+  static const String baseUrl =
+      "https://origin-person-specialties-puts.trycloudflare.com/api";
 
   // LMS Auth
   static const String lmsLogin = "$baseUrl/auth/login";
