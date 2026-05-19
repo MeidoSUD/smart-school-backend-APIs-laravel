@@ -8,6 +8,7 @@ use App\Models\PickupPoint;
 use App\Models\StudentSession;
 use App\Models\Student;
 use App\Models\Setting;
+use Dedoc\Scramble\Attributes\BodyParameter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -50,6 +51,7 @@ class RouteController extends Controller
 
 
 
+    #[BodyParameter('vehrouteid', description: 'Vehicle route ID', type: 'integer', required: true, example: 1)]
     public function getbusdetail(Request $request): JsonResponse
     {
         $vehrouteid = $request->post('vehrouteid');

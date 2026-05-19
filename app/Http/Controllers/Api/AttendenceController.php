@@ -9,6 +9,7 @@ use App\Models\CalendarEvent;
 use App\Models\Setting;
 use App\Models\StudentSession;
 use App\Models\Student;
+use Dedoc\Scramble\Attributes\BodyParameter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -38,6 +39,7 @@ class AttendenceController extends Controller
 
 
 
+    #[BodyParameter('date', description: 'Date to check attendance (Y-m-d format). Defaults to today.', type: 'string', example: '2024-01-15')]
     public function getdaysubattendence(Request $request): JsonResponse
     {
         $date = $request->get('date') ?? date('Y-m-d');
@@ -69,6 +71,8 @@ class AttendenceController extends Controller
 
 
 
+    #[BodyParameter('start', description: 'Start date (Y-m-d). Defaults to first day of month.', type: 'string', example: '2024-01-01')]
+    #[BodyParameter('end', description: 'End date (Y-m-d). Defaults to last day of month.', type: 'string', example: '2024-01-31')]
     public function getAttendence(Request $request): JsonResponse
     {
         $start = $request->get('start') ?? date('Y-m-01');

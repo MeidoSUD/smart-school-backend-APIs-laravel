@@ -10,6 +10,7 @@ use App\Models\StudentSession;
 use App\Models\Student;
 use App\Models\Staff;
 use App\Models\Setting;
+use Dedoc\Scramble\Attributes\BodyParameter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use DB;
@@ -53,6 +54,7 @@ class ChatController extends Controller
 
 
 
+    #[BodyParameter('chat_connection_id', description: 'Chat connection ID', type: 'integer', required: true, example: 1)]
     public function getChatRecord(Request $request): JsonResponse
     {
         $user = $request->user();

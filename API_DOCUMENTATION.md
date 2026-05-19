@@ -1,1191 +1,1610 @@
-# Smart School LMS API Documentation
+# Smart School LMS - API Documentation
 
-## Overview
+**Version:** 1.0.0
 
-This documentation describes all API endpoints for the Smart School LMS mobile application (Flutter/Dart). The API is built using Laravel and provides authentication, user management, attendance, fees, homework, and other student-related features.
+Smart School LMS - Mobile Application API
+
+This API powers the Smart School Learning Management System mobile application. It provides endpoints for student and parent access to:
+
+- **Authentication** - Login, logout, password management
+- **Admissions** - Online admission forms and status tracking
+- **Dashboard** - Student overview with attendance percentages
+- **Profile & Fees** - Student profiles and fee management
+- **Attendance** - Daily and monthly attendance records
+- **Exams & Marks** - Exam schedules, results, and grade reports
+- **Homework** - View and submit homework assignments
+- **Timetable** - Class schedules
+- **Content** - Study materials and assignments
+- **Notifications** - Push and in-app notifications
+- **Calendar** - Events, tasks, and todo management
+- **Chat** - Messaging system
+- **Library** - Book catalog and issues
+- **Transport** - Route and bus details
+- **Hostel** - Hostel and room listings
+- **Online Exams** - Take and submit online examinations
+- **Syllabus** - Syllabus tracking and progress
+- **Teachers** - Teacher listings and ratings
+- **Video Tutorials** - Educational video content
+- **Visitors** - Visitor logs
+- **Leave Applications** - Apply for and manage leave
+- **Timeline** - Student activity timeline
+
+### Authentication
+Most endpoints require authentication via Bearer token. Obtain a token by calling the login endpoint with valid credentials.
+
+---
 
 ## Base URL
 
-```
-http://your-domain.com/api
-```
+- `http://localhost/api`
 
 ## Authentication
 
-The API uses token-based authentication with Laravel Sanctum. Include the token in the request header:
+All protected endpoints require a Bearer token. Include it in the Authorization header:
 
 ```
-Authorization: Bearer YOUR_TOKEN
-```
-
-Or as a query parameter:
-```
-?token=YOUR_TOKEN
+Authorization: Bearer <your-token>
 ```
 
 ---
 
-## Response Format
+## Admission
 
-### Success Response
-```json
-{
-    "status": "success",
-    "data": { ... },
-    "message": "Success message",
-    "timestamp": "2024-01-15 10:30:00"
-}
-```
+### GET `/admission` 🔓 Public
 
-### Error Response
-```json
-{
-    "status": "error",
-    "message": "Error message",
-    "timestamp": "2024-01-15 10:30:00"
-}
-```
-
----
-
-## Public Endpoints (No Authentication Required)
-
-### 1. Authentication
-
-#### POST /api/auth/login
-**Description:** User login with username and password
-
-**Request Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| username | string | Yes | User's username |
-| password | string | User's password (plain text) |
+**Check if online admission is enabled**
 
 **Response:**
+
 ```json
 {
-    "status": "success",
-    "data": {
-        "token": "64-character-token-string",
-        "user": {
-            "id": 1,
-            "user_id": 1,
-            "username": "student001",
-            "role": "student",
-            "is_active": true
-        }
-    },
-    "message": "Login successful"
+  "status": "success",
+  "data": {
+    "enabled": true,
+    "instructions": null,
+    "conditions": null,
+    "amount": null,
+    "payment_enabled": true
+  },
+  "message": null,
+  "timestamp": "string"
 }
 ```
 
-**Error Responses:**
-- 401: Invalid username or password
-- 403: Account is disabled
+### GET `/admission/classes` 🔓 Public
 
----
-
-## Protected Endpoints (Authentication Required)
-
-### 2. Authentication
-
-#### POST /api/auth/logout
-**Description:** Logout user and invalidate token
-
-**Headers:** `Authorization: Bearer TOKEN`
+**Get list of active classes**
 
 **Response:**
+
 ```json
 {
-    "status": "success",
-    "message": "Logged out successfully"
+  "status": "success",
+  "data": null,
+  "message": null,
+  "timestamp": "string"
 }
 ```
 
-#### POST /api/auth/changepass
-**Description:** Change user password
+### GET `/admission/form_config` 🔓 Public
 
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Request Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| current_pass | string | Yes | Current password |
-| new_pass | string | Yes | New password |
-| new_pass_confirmation | string | Yes | Confirm new password |
+**Get admission form configuration (classes, categories, blood groups, etc.)**
 
 **Response:**
+
 ```json
 {
-    "status": "success",
-    "message": "Password changed successfully"
+  "status": "success",
+  "data": {
+    "gender_list": [
+      null
+    ],
+    "class_list": null,
+    "category_list": "string",
+    "blood_group_list": "string",
+    "house_list": "string",
+    "custom_fields": "string"
+  },
+  "message": null,
+  "timestamp": "string"
 }
 ```
 
----
+### GET `/admission/sections` 🔓 Public
 
-### 3. User Management
-
-#### GET /api/user/dashboard
-**Description:** Get user dashboard data
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "attendence_percentage": 85.5,
-        "studentsession_username": "student001",
-        "student_data": { ... },
-        "low_attendance_limit": 75
-    }
-}
-```
-
-#### GET /api/user/profile
-**Description:** Get user profile
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "sch_setting": { ... },
-        "student": {
-            "id": 1,
-            "admission_no": "ADM001",
-            "firstname": "John",
-            "lastname": "Doe",
-            "class": "Class 5",
-            "section": "A"
-        },
-        "role": "student"
-    }
-}
-```
-
-#### GET /api/user/fees
-**Description:** Get student fees overview
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "sch_setting": { ... },
-        "student": { ... },
-        "payment_method": false,
-        "student_due_fee": [],
-        "transport_fees": []
-    }
-}
-```
-
-#### GET /api/user/getfees
-**Description:** Get detailed fees
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "sch_setting": { ... },
-        "student": { ... },
-        "student_due_fee": [],
-        "student_discount_fee": [],
-        "transport_fees": []
-    }
-}
-```
-
----
-
-### 4. Attendance
-
-#### GET /api/attendence
-**Description:** Get attendance types
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "attendence_type": "day",
-        "language": "english"
-    }
-}
-```
-
-#### GET /api/attendence/getAttendence
-**Description:** Get attendance records for date range
-
-**Headers:** `Authorization: Bearer TOKEN`
+**Get sections for a given class**
 
 **Query Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| start | date | No | Start date (Y-m-d), defaults to first of month |
-| end | date | No | End date (Y-m-d), defaults to last of month |
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `class_id` | string | No |  |
 
 **Response:**
+
 ```json
 {
-    "status": "success",
-    "data": [
-        {
-            "title": "Present",
-            "start": "2024-01-15",
-            "end": "2024-01-15",
-            "backgroundColor": "#27ab00",
-            "borderColor": "#27ab00",
-            "event_type": "Present"
-        }
+  "status": "success",
+  "data": "string",
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+### GET `/admission/status` 🔓 Public
+
+**Check admission status by reference number**
+
+**Query Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `reference_no` | string | No |  |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "reference_no": "string",
+    "firstname": "string",
+    "lastname": "string",
+    "form_status": "string",
+    "paid_status": "string",
+    "submitted_date": "string"
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+### POST `/admission/submit` 🔓 Public
+
+**Submit online admission form**
+
+**Request Body (`application/json`):**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `firstname` | string (max: 100) | Yes | |
+| `dob` | string | Yes | |
+| `class_id` | string | Yes | |
+| `section_id` | string | Yes | |
+| `gender` | string (Male, Female, Other) | Yes | |
+| `email` | string | null | No | |
+| `guardian_is` | string | null | No | |
+| `guardian_name` | string | null | No | |
+| `guardian_relation` | string | null | No | |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "admission_id": "string",
+    "reference_no": 1,
+    "message": "Registration successful. Please note your reference number for further communication."
+  },
+  "message": "Admission form submitted successfully",
+  "timestamp": "string"
+}
+```
+
+---
+
+## ApplyLeave
+
+### GET `/apply_leave` 🔒 Requires Authentication
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "results": null,
+    "studentclasses": null
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+### POST `/apply_leave/add` 🔒 Requires Authentication
+
+**Request Body (`application/json`):**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `apply_date` | string | Yes | |
+| `from_date` | string | Yes | |
+| `to_date` | string | Yes | |
+| `message` | string | Yes | |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "leave_id": "string"
+  },
+  "message": "Leave application submitted successfully",
+  "timestamp": "string"
+}
+```
+
+### GET `/apply_leave/{id}` 🔒 Requires Authentication
+
+**Body Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `id` | string | Yes |  |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": null,
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+### DELETE `/apply_leave/{id}` 🔒 Requires Authentication
+
+**Body Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `id` | string | Yes |  |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": null,
+  "message": "Leave removed successfully",
+  "timestamp": "string"
+}
+```
+
+---
+
+## Attendence
+
+### GET `/attendence` 🔒 Requires Authentication
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "attendence_type": null,
+    "language": null
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+### GET `/attendence/getAttendence` 🔒 Requires Authentication
+
+**Body Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `start` | string | No | Start date (Y-m-d). Defaults to first day of month. |
+| `end` | string | No | End date (Y-m-d). Defaults to last day of month. |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "title": null,
+      "start": "string",
+      "end": "string",
+      "description": "string",
+      "backgroundColor": "#fa8a00",
+      "borderColor": "#fa8a00",
+      "event_type": null
+    }
+  ],
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+### POST `/attendence/getdaysubattendence` 🔒 Requires Authentication
+
+**Request Body (`application/json`):**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `date` | string | No | |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "attendencetypeslist": null,
+    "attendence": null
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+---
+
+## Auth
+
+### POST `/auth/changepass` 🔒 Requires Authentication
+
+**Change user password**
+
+CodeIgniter Route: POST /api/auth/changepass
+Laravel Route: POST /api/auth/changepass
+
+**Request Body (`application/json`):**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `current_pass` | string | Yes | |
+| `new_pass` | string | Yes | |
+| `new_pass_confirmation` | string | Yes | |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": null,
+  "message": "Password changed successfully",
+  "timestamp": "string"
+}
+```
+
+### POST `/auth/login` 🔓 Public
+
+**Login user and generate token**
+
+**Request Body (`application/json`):**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `username` | string (max: 50) | Yes | |
+| `password` | string (max: 50) | Yes | |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "token": "string",
+    "user": [
+      null
     ]
+  },
+  "message": "Login successful",
+  "timestamp": "string"
 }
 ```
 
-#### POST /api/attendence/getdaysubattendence
-**Description:** Get attendance for specific date
+### POST `/auth/logout` 🔒 Requires Authentication
 
-**Headers:** `Authorization: Bearer TOKEN`
+**Logout user and clear token**
 
-**Request Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| date | date | No | Date (Y-m-d), defaults to today |
+CodeIgniter Route: POST /api/auth/logout
+Laravel Route: POST /api/auth/logout
 
 **Response:**
+
 ```json
 {
-    "status": "success",
-    "data": {
-        "attendencetypeslist": [
-            { "id": 1, "type": "Present" },
-            { "id": 2, "type": "Absent" }
-        ],
-        "attendence": []
-    }
-}
-```
-
----
-
-### 5. Books & Library
-
-#### GET /api/book
-**Description:** Get list of books
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "title": "Add Book",
-        "title_list": "Book Details",
-        "listbook": []
-    }
-}
-```
-
-#### GET /api/book/issue
-**Description:** Get book issue status
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "title": "Add Book",
-        "title_list": "Book Details",
-        "isCheck": "1",
-        "bookList": []
-    }
+  "status": "success",
+  "data": null,
+  "message": "Logged out successfully",
+  "timestamp": "string"
 }
 ```
 
 ---
 
-### 6. Calendar
+## Book
 
-#### GET /api/calendar
-**Description:** Get calendar events
-
-**Headers:** `Authorization: Bearer TOKEN`
+### GET `/book` 🔒 Requires Authentication
 
 **Response:**
+
 ```json
 {
-    "status": "success",
-    "data": {
-        "event_colors": ["#03a9f4", "#c53da9"],
-        "tasklist": { ... }
-    }
+  "status": "success",
+  "data": {
+    "title": "Add Book",
+    "title_list": "Book Details",
+    "listbook": null
+  },
+  "message": null,
+  "timestamp": "string"
 }
 ```
 
-#### GET /api/calendar/getevents
-**Description:** Get all calendar events
-
-**Headers:** `Authorization: Bearer TOKEN`
+### GET `/book/issue` 🔒 Requires Authentication
 
 **Response:**
+
 ```json
 {
-    "status": "success",
-    "data": [
+  "status": "success",
+  "data": {
+    "title": "Add Book",
+    "title_list": "Book Details",
+    "bookList": null,
+    "isCheck": "string"
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+---
+
+## Calendar
+
+### GET `/calendar` 🔒 Requires Authentication
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "event_colors": [
+      null
+    ],
+    "tasklist": {
+      "current_page": 1,
+      "data": [
+        null
+      ],
+      "first_page_url": "string",
+      "from": "integer",
+      "last_page_url": "string",
+      "last_page": 1,
+      "links": [
         {
-            "title": "Holiday",
-            "start": "2024-01-26",
-            "end": "2024-01-26",
-            "description": "Republic Day",
-            "backgroundColor": "#03a9f4",
-            "event_type": "public"
+          "url": "string",
+          "label": "string",
+          "active": true
         }
+      ],
+      "next_page_url": "string",
+      "path": "string",
+      "per_page": 1,
+      "prev_page_url": "string",
+      "to": "integer",
+      "total": 1
+    },
+    "title": "Event Calendar"
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+### POST `/calendar/addtodo` 🔒 Requires Authentication
+
+**Request Body (`application/json`):**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `task_title` | string (max: 255) | Yes | |
+| `task_date` | string | Yes | |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": null,
+  "message": "Task created successfully",
+  "timestamp": "string"
+}
+```
+
+### GET `/calendar/getevents` 🔒 Requires Authentication
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "title": "string",
+      "start": "string",
+      "end": "string",
+      "description": "string",
+      "id": "string",
+      "backgroundColor": "string",
+      "borderColor": "string",
+      "event_type": "string"
+    }
+  ],
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+### POST `/calendar/markcomplete/{id}` 🔒 Requires Authentication
+
+**Body Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `id` | string | Yes |  |
+
+**Request Body (`application/json`):**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `active` | string | No | |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": null,
+  "message": "Marked as completed successfully",
+  "timestamp": "string"
+}
+```
+
+### GET `/calendar/{id}` 🔒 Requires Authentication
+
+**Body Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `id` | string | Yes |  |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": null,
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+### DELETE `/calendar/{id}` 🔒 Requires Authentication
+
+**Body Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `id` | string | Yes |  |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": null,
+  "message": "Event deleted successfully",
+  "timestamp": "string"
+}
+```
+
+---
+
+## Chat
+
+### POST `/chat/getChatRecord` 🔒 Requires Authentication
+
+**Request Body (`application/json`):**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `chat_connection_id` | integer | Yes | |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "chatList": null,
+    "chat_to_user": "string",
+    "chat_connection_id": "string",
+    "user_last_chat": null
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+### GET `/chat/myuser` 🔒 Requires Authentication
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "chat_user": null,
+    "userList": [
+      null
     ]
+  },
+  "message": null,
+  "timestamp": "string"
 }
 ```
 
-#### POST /api/calendar/addtodo
-**Description:** Add new task
+### POST `/chat/newMessage` 🔒 Requires Authentication
 
-**Headers:** `Authorization: Bearer TOKEN`
+**Request Body (`application/json`):**
 
-**Request Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| task_title | string | Yes | Task title |
-| task_date | date | Yes | Task date |
-| eventid | integer | No | Event ID for edit |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `chat_connection_id` | string | Yes | |
+| `chat_to_user` | string | Yes | |
+| `message` | string | Yes | |
 
 **Response:**
+
 ```json
 {
-    "status": "success",
-    "message": "Task created successfully"
+  "status": "success",
+  "data": {
+    "last_insert_id": "string"
+  },
+  "message": "Message sent",
+  "timestamp": "string"
 }
 ```
 
 ---
 
-### 7. Chat
+## Content
 
-#### GET /api/chat/myuser
-**Description:** Get chat users
-
-**Headers:** `Authorization: Bearer TOKEN`
+### GET `/content/assignment` 🔒 Requires Authentication
 
 **Response:**
+
 ```json
 {
-    "status": "success",
-    "data": {
-        "chat_user": [],
-        "userList": []
-    }
+  "status": "success",
+  "data": {
+    "title_list": "List of Assignment",
+    "list": null
+  },
+  "message": null,
+  "timestamp": "string"
 }
 ```
 
-#### POST /api/chat/getChatRecord
-**Description:** Get chat records
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Request Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| chat_connection_id | integer | Yes | Connection ID |
+### GET `/content/getsharelist` 🔒 Requires Authentication
 
 **Response:**
+
 ```json
 {
-    "status": "success",
-    "data": {
-        "chatList": [],
-        "chat_to_user": 0,
-        "chat_connection_id": 0
-    }
+  "status": "success",
+  "data": {
+    "contents": null
+  },
+  "message": null,
+  "timestamp": "string"
 }
 ```
 
-#### POST /api/chat/newMessage
-**Description:** Send new message
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Request Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| chat_connection_id | integer | Yes | Connection ID |
-| chat_to_user | integer | Yes | Recipient user ID |
-| message | string | Yes | Message content |
+### GET `/content/list` 🔒 Requires Authentication
 
 **Response:**
+
 ```json
 {
-    "status": "success",
-    "data": {
-        "last_insert_id": 1
+  "status": "success",
+  "data": {
+    "title": "Downloads"
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+### GET `/content/studymaterial` 🔒 Requires Authentication
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "title_list": "List of Study Material",
+    "list": null
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+### GET `/content/{id}` 🔒 Requires Authentication
+
+**Body Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `id` | string | Yes |  |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "title": "Upload Content",
+    "content": null,
+    "superadmin_restriction": true
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+---
+
+## Exam
+
+### GET `/exam` 🔒 Requires Authentication
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "class_id": "string",
+    "section_id": "string",
+    "examlist": null
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+### POST `/exam/examresult` 🔒 Requires Authentication
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "exam_result": null
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+### GET `/exam/{id}` 🔒 Requires Authentication
+
+**Body Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `id` | string | Yes |  |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "exam": null
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+---
+
+## ExamSchedule
+
+### GET `/examschedule` 🔒 Requires Authentication
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "examSchedule": null
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+---
+
+## General
+
+### GET `/ping` 🔒 Requires Authentication
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "message": "API is working",
+  "timestamp": "string",
+  "php_version": "string"
+}
+```
+
+---
+
+## Homework
+
+### GET `/homework` 🔒 Requires Authentication
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "created_by": "string",
+    "evaluated_by": "string",
+    "homeworklist": "string",
+    "closedhomeworklist": "string"
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+### GET `/homework/homework_detail/{id}/{status}` 🔒 Requires Authentication
+
+**Body Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `id` | string | Yes |  |
+| `status` | string | Yes |  |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "homework_status": "string",
+    "homework_id": "string",
+    "title": "Homework Evaluation",
+    "result": null
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+### POST `/homework/upload_docs` 🔒 Requires Authentication
+
+**Request Body (`multipart/form-data`):**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `homework_id` | string | Yes | |
+| `message` | string | Yes | |
+| `file` | file (binary) (max: 10240) | No | |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": null,
+  "message": "Homework submitted successfully",
+  "timestamp": "string"
+}
+```
+
+---
+
+## Hostel
+
+### GET `/hostel` 🔒 Requires Authentication
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "listhostel": null
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+---
+
+## HostelRoom
+
+### GET `/hostel/room` 🔒 Requires Authentication
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "listroom": null
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+---
+
+## Mark
+
+### GET `/mark/marklist` 🔒 Requires Authentication
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "title": "Student Details",
+    "gradeList": null,
+    "examSchedule": [
+      {
+        "exam_name": null,
+        "exam_result": null
+      }
+    ],
+    "student": null
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+---
+
+## Notification
+
+### GET `/notification` 🔒 Requires Authentication
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "notificationlist": [
+      "string"
+    ]
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+### POST `/notification/updatestatus` 🔒 Requires Authentication
+
+**Request Body (`application/json`):**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `notification_id` | integer | Yes | |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "notification": true
+  },
+  "message": "Status updated successfully",
+  "timestamp": "string"
+}
+```
+
+---
+
+## OfflinePayment
+
+### GET `/offlinepayment` 🔒 Requires Authentication
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "student": null,
+    "payment_list": null
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+### POST `/offlinepayment/add` 🔒 Requires Authentication
+
+**Request Body (`application/json`):**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `amount` | number | Yes | |
+| `payment_mode` | string | Yes | |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "id": "string"
+  },
+  "message": "Payment request submitted successfully",
+  "timestamp": "string"
+}
+```
+
+---
+
+## OnlineExam
+
+### GET `/onlineexam` 🔒 Requires Authentication
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "student": null,
+    "examList": null
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+### POST `/onlineexam/submit` 🔒 Requires Authentication
+
+**Request Body (`application/json`):**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `onlineexam_id` | string | Yes | |
+| `answers` | string | Yes | |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "result": {}
+  },
+  "message": "Exam submitted successfully",
+  "timestamp": "string"
+}
+```
+
+### GET `/onlineexam/{id}` 🔒 Requires Authentication
+
+**Body Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `id` | string | Yes |  |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "result": null,
+    "questions": null
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+---
+
+## Route
+
+### GET `/route` 🔒 Requires Authentication
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "listroute": null
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+### POST `/route/getbusdetail` 🔒 Requires Authentication
+
+**Request Body (`application/json`):**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `vehrouteid` | integer | Yes | |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": [
+    "string"
+  ],
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+---
+
+## Subject
+
+### GET `/subject` 🔒 Requires Authentication
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "subjects": [
+      {
+        "id": "string",
+        "name": "string",
+        "type": "string",
+        "code": "string"
+      }
+    ]
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+### GET `/subject/{id}` 🔒 Requires Authentication
+
+**Body Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `id` | string | Yes |  |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "subject": null
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+---
+
+## Syllabus
+
+### GET `/syllabus` 🔒 Requires Authentication
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "this_week_start": "string",
+    "this_week_end": "string"
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+### POST `/syllabus/addmessage` 🔒 Requires Authentication
+
+**Request Body (`application/json`):**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `syllabus_id` | string | Yes | |
+| `message` | string | Yes | |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": null,
+  "message": "Message added successfully",
+  "timestamp": "string"
+}
+```
+
+### GET `/syllabus/download/{id}` 🔒 Requires Authentication
+
+**Body Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `id` | string | Yes |  |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "attachment": "string"
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+### GET `/syllabus/status` 🔒 Requires Authentication
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "subjects_data": "string",
+    "status": [
+      null
+    ]
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+---
+
+## Teacher
+
+### GET `/teacher` 🔒 Requires Authentication
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "title": "Teachers",
+    "teachers": "string",
+    "class_id": "string",
+    "section_id": "string",
+    "user_id": 1,
+    "role": "string",
+    "teacherlist": "string",
+    "genderList": [
+      null
+    ],
+    "user_ratedstafflist": null,
+    "reviews": "string",
+    "comment": "string"
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+### POST `/teacher/rating` 🔒 Requires Authentication
+
+**Request Body (`application/json`):**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `staff_id` | string | Yes | |
+| `comment` | string | Yes | |
+| `rate` | number | Yes | |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": null,
+  "message": "Rating saved successfully",
+  "timestamp": "string"
+}
+```
+
+---
+
+## Timeline
+
+### POST `/timeline/add` 🔒 Requires Authentication
+
+**Request Body (`application/json`):**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `timeline_title` | string (max: 255) | Yes | |
+| `timeline_date` | string | Yes | |
+| `student_id` | string | Yes | |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "id": "string"
+  },
+  "message": "Timeline added successfully",
+  "timestamp": "string"
+}
+```
+
+---
+
+## Timetable
+
+### GET `/timetable` 🔒 Requires Authentication
+
+---
+
+## User
+
+### GET `/user/dashboard` 🔒 Requires Authentication
+
+**Get user dashboard data**
+
+GET /api/user/dashboard
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "attendence_percentage": 0.0,
+    "studentsession_username": "string",
+    "student_data": {
+      "id": 1,
+      "username": "string",
+      "role": "string",
+      "student_id": "string",
+      "class": "string",
+      "section": "string"
     },
-    "message": "Message sent"
+    "low_attendance_limit": null
+  },
+  "message": null,
+  "timestamp": "string"
 }
 ```
 
----
+### GET `/user/fees` 🔒 Requires Authentication
 
-### 8. Content & Downloads
+**Get user fees**
 
-#### GET /api/content/list
-**Description:** Get content list
-
-**Headers:** `Authorization: Bearer TOKEN`
+GET /api/user/fees
 
 **Response:**
+
 ```json
 {
-    "status": "success",
-    "data": {
-        "title": "Downloads"
-    }
-}
-```
-
-#### GET /api/content/getsharelist
-**Description:** Get shared content
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "contents": []
-    }
-}
-```
-
-#### GET /api/content/assignment
-**Description:** Get assignments
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "title_list": "List of Assignment",
-        "list": []
-    }
-}
-```
-
-#### GET /api/content/studymaterial
-**Description:** Get study materials
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "title_list": "List of Study Material",
-        "list": []
-    }
-}
-```
-
----
-
-### 9. Exams
-
-#### GET /api/exam
-**Description:** Get exam list
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "class_id": 1,
-        "section_id": 1,
-        "examlist": []
-    }
-}
-```
-
-#### GET /api/exam/{id}
-**Description:** Get exam details
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "exam": { ... }
-    }
-}
-```
-
-#### POST /api/exam/examresult
-**Description:** Get exam results
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "exam_result": []
-    }
-}
-```
-
-#### GET /api/examschedule
-**Description:** Get exam schedule
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "examSchedule": []
-    }
-}
-```
-
----
-
-### 10. Homework
-
-#### GET /api/homework
-**Description:** Get homework list
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "created_by": "",
-        "evaluated_by": "",
-        "homeworklist": [],
-        "closedhomeworklist": []
-    }
-}
-```
-
-#### GET /api/homework/homework_detail/{id}/{status}
-**Description:** Get homework details
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Parameters:**
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| id | integer | Homework ID |
-| status | string | Status |
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "homework_status": "active",
-        "homework_id": 1,
-        "result": { ... }
-    }
-}
-```
-
-#### POST /api/homework/upload_docs
-**Description:** Upload homework documents
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Request Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| homework_id | integer | Yes | Homework ID |
-| message | string | Yes | Description message |
-| file | file | No | Attachment file |
-
-**Response:**
-```json
-{
-    "status": "success",
-    "message": "Homework submitted successfully"
-}
-```
-
----
-
-### 11. Hostel
-
-#### GET /api/hostel
-**Description:** Get hostel list
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "listhostel": []
-    }
-}
-```
-
-#### GET /api/hostel/room
-**Description:** Get hostel rooms
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "listroom": []
-    }
-}
-```
-
----
-
-### 12. Marks
-
-#### GET /api/mark/marklist
-**Description:** Get marks list
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "gradeList": [],
-        "examSchedule": [],
-        "student": { ... }
-    }
-}
-```
-
----
-
-### 13. Notifications
-
-#### GET /api/notification
-**Description:** Get notifications
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "notificationlist": []
-    }
-}
-```
-
-#### POST /api/notification/updatestatus
-**Description:** Update notification status
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Request Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| notification_id | integer | Yes | Notification ID |
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "notification": true
+  "status": "success",
+  "data": {
+    "sch_setting": null,
+    "student": {
+      "id": "string",
+      "firstname": "string",
+      "lastname": "string",
+      "class": "string",
+      "section": "string",
+      "student_session_id": "string"
     },
-    "message": "Status updated successfully"
+    "payment_method": true
+  },
+  "message": null,
+  "timestamp": "string"
 }
 ```
 
----
+### GET `/user/getfees` 🔒 Requires Authentication
 
-### 14. Offline Payment
+**Get detailed fees**
 
-#### GET /api/offlinepayment
-**Description:** Get offline payments
-
-**Headers:** `Authorization: Bearer TOKEN`
+GET /api/user/getfees
 
 **Response:**
+
 ```json
 {
-    "status": "success",
-    "data": {
-        "student": { ... },
-        "payment_list": []
-    }
-}
-```
-
-#### POST /api/offlinepayment/add
-**Description:** Add offline payment
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Request Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| amount | float | Yes | Payment amount |
-| payment_mode | string | Yes | Payment mode |
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "id": 1
+  "status": "success",
+  "data": {
+    "sch_setting": null,
+    "adm_auto_insert": null,
+    "student": {
+      "id": "string",
+      "firstname": "string",
+      "lastname": "string",
+      "class": "string",
+      "section": "string",
+      "student_session_id": "string",
+      "class_id": "string",
+      "section_id": "string"
     },
-    "message": "Payment request submitted successfully"
+    "payment_method": true,
+    "student_due_fee": [
+      "string"
+    ],
+    "transport_fees": [
+      "string"
+    ],
+    "student_discount_fee": [
+      "string"
+    ]
+  },
+  "message": null,
+  "timestamp": "string"
 }
 ```
 
----
+### GET `/user/profile` 🔒 Requires Authentication
 
-### 15. Online Exam
+**Get user profile**
 
-#### GET /api/onlineexam
-**Description:** Get online exam list
-
-**Headers:** `Authorization: Bearer TOKEN`
+GET /api/user/profile
 
 **Response:**
+
 ```json
 {
-    "status": "success",
-    "data": {
-        "student": { ... },
-        "examList": []
-    }
-}
-```
-
-#### GET /api/onlineexam/{id}
-**Description:** Get exam details
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "result": { ... },
-        "questions": []
-    }
-}
-```
-
-#### POST /api/onlineexam/submit
-**Description:** Submit online exam
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Request Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| onlineexam_id | integer | Yes | Exam ID |
-| answers | json | Yes | Answers JSON |
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "result": { ... }
+  "status": "success",
+  "data": {
+    "sch_setting": null,
+    "student": {
+      "id": "string",
+      "admission_no": "string",
+      "roll_no": "string",
+      "firstname": "string",
+      "middlename": "string",
+      "lastname": "string",
+      "fullname": "string",
+      "gender": "string",
+      "dob": "string",
+      "religion": "string",
+      "email": "string",
+      "mobileno": "string",
+      "admission_date": "string",
+      "image": "string",
+      "father_name": "string",
+      "father_phone": "string",
+      "mother_name": "string",
+      "mother_phone": "string",
+      "guardian_name": "string",
+      "guardian_phone": "string",
+      "guardian_relation": "string",
+      "guardian_address": "string",
+      "current_address": null,
+      "category": "string",
+      "class": "string",
+      "section": "string",
+      "student_session_id": "string",
+      "class_id": "string",
+      "section_id": "string"
     },
-    "message": "Exam submitted successfully"
+    "role": "string"
+  },
+  "message": null,
+  "timestamp": "string"
 }
 ```
 
 ---
 
-### 16. Transport
+## VideoTutorial
 
-#### GET /api/route
-**Description:** Get transport routes
-
-**Headers:** `Authorization: Bearer TOKEN`
+### GET `/video_tutorial` 🔒 Requires Authentication
 
 **Response:**
+
 ```json
 {
-    "status": "success",
-    "data": {
-        "listroute": { ... }
-    }
+  "status": "success",
+  "data": {
+    "student": null,
+    "video_list": "string"
+  },
+  "message": null,
+  "timestamp": "string"
+}
+```
+
+### GET `/video_tutorial/{id}` 🔒 Requires Authentication
+
+**Body Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `id` | string | Yes |  |
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "video": "string"
+  },
+  "message": null,
+  "timestamp": "string"
 }
 ```
 
 ---
 
-### 17. Subjects
+## Visitor
 
-#### GET /api/subject
-**Description:** Get subject list
-
-**Headers:** `Authorization: Bearer TOKEN`
+### GET `/visitors` 🔒 Requires Authentication
 
 **Response:**
+
 ```json
 {
-    "status": "success",
-    "data": {
-        "subjects": []
-    }
+  "status": "success",
+  "data": {
+    "visitor_list": null
+  },
+  "message": null,
+  "timestamp": "string"
 }
 ```
 
 ---
-
-### 18. Syllabus
-
-#### GET /api/syllabus
-**Description:** Get syllabus
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "this_week_start": "2024-01-15",
-        "this_week_end": "2024-01-21"
-    }
-}
-```
-
-#### GET /api/syllabus/status
-**Description:** Get syllabus completion status
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "subjects_data": [],
-        "status": {
-            "1": "Complete",
-            "0": "Incomplete"
-        }
-    }
-}
-```
-
----
-
-### 19. Teachers
-
-#### GET /api/teacher
-**Description:** Get teacher list
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "title": "Teachers",
-        "teachers": [],
-        "teacherlist": [],
-        "reviews": []
-    }
-}
-```
-
-#### POST /api/teacher/rating
-**Description:** Rate teacher
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Request Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| staff_id | integer | Yes | Teacher ID |
-| comment | string | Yes | Rating comment |
-| rate | integer | Yes | Rating (1-5) |
-
-**Response:**
-```json
-{
-    "status": "success",
-    "message": "Rating saved successfully"
-}
-```
-
----
-
-### 20. Timeline
-
-#### POST /api/timeline/add
-**Description:** Add timeline entry
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Request Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| timeline_title | string | Yes | Title |
-| timeline_date | date | Yes | Date |
-| student_id | integer | Yes | Student ID |
-| timeline_doc | file | No | Document |
-| timeline_desc | string | No | Description |
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "id": 1
-    },
-    "message": "Timeline added successfully"
-}
-```
-
----
-
-### 21. Timetable
-
-#### GET /api/timetable
-**Description:** Get student timetable
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "timetable": {
-            "Monday": [
-                {
-                    "subject": "Mathematics",
-                    "subject_code": "MATH",
-                    "teacher": "Mr. John",
-                    "time_from": "09:00:00",
-                    "time_to": "10:00:00",
-                    "room": "Room 101"
-                }
-            ]
-        }
-    }
-}
-```
-
----
-
-### 22. Video Tutorials
-
-#### GET /api/video_tutorial
-**Description:** Get video tutorials
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "student": { ... },
-        "video_list": []
-    }
-}
-```
-
----
-
-### 23. Visitors
-
-#### GET /api/visitors
-**Description:** Get visitor log
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "visitor_list": []
-    }
-}
-```
-
----
-
-### 24. Apply Leave
-
-#### GET /api/apply_leave
-**Description:** Get leave applications
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "results": [],
-        "studentclasses": []
-    }
-}
-```
-
-#### GET /api/apply_leave/{id}
-**Description:** Get leave details
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": { ... }
-}
-```
-
-#### POST /api/apply_leave/add
-**Description:** Apply for leave
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Request Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| apply_date | date | Yes | Application date |
-| from_date | date | Yes | Start date |
-| to_date | date | Yes | End date |
-| message | string | Yes | Reason |
-| leave_id | integer | No | Leave ID for edit |
-| files[] | files | No | Documents |
-
-**Response:**
-```json
-{
-    "status": "success",
-    "data": {
-        "leave_id": 1
-    },
-    "message": "Leave application submitted successfully"
-}
-```
-
-#### DELETE /api/apply_leave/{id}
-**Description:** Remove leave application
-
-**Headers:** `Authorization: Bearer TOKEN`
-
-**Response:**
-```json
-{
-    "status": "success",
-    "message": "Leave removed successfully"
-}
-```
-
----
-
-### 25. Ping
-
-#### GET /api/ping
-**Description:** Health check endpoint (no auth required)
-
-**Response:**
-```json
-{
-    "status": "success",
-    "message": "API is working",
-    "timestamp": "2024-01-15 10:30:00",
-    "php_version": "8.2.0"
-}
-```
-
----
-
-## Error Codes
-
-| Code | Description |
-|------|-------------|
-| 400 | Bad Request - Invalid parameters |
-| 401 | Unauthorized - Invalid or missing token |
-| 403 | Forbidden - Account disabled |
-| 404 | Not Found - Resource not found |
-| 422 | Validation Error |
-| 500 | Internal Server Error |
-
----
-
-## Rate Limiting
-
-The API is rate-limited to 60 requests per minute per IP address.
-
----
-
-## Testing with Postman
-
-### Import Collection
-
-1. Create a new Postman collection
-2. Add requests with the base URL: `http://your-domain.com/api`
-
-### Sample Test Flow
-
-1. **Login:**
-   - POST `/api/auth/login`
-   - Body: `{ "username": "student001", "password": "12345" }`
-
-2. **Copy token** from response
-
-3. **Test protected endpoints:**
-   - Add header: `Authorization: Bearer YOUR_TOKEN`
-   - GET `/api/user/dashboard`
-
----
-
-## Changelog
-
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0.0 | 2024-01-15 | Initial release - All endpoints converted from CodeIgniter |

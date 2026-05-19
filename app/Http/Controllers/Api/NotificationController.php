@@ -9,6 +9,7 @@ use App\Models\StudentSession;
 use App\Models\Student;
 use App\Models\Staff;
 use App\Models\Setting;
+use Dedoc\Scramble\Attributes\BodyParameter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -54,6 +55,7 @@ class NotificationController extends Controller
 
 
 
+    #[BodyParameter('notification_id', description: 'Notification ID to mark as read', type: 'integer', required: true, example: 1)]
     public function updatestatus(Request $request): JsonResponse
     {
         $user = $request->user();

@@ -27,8 +27,9 @@ class AuthController extends Controller
     /**
      * Login user and generate token
      *
-     * CodeIgniter Route: POST /api/auth/login
-     * Laravel Route: POST /api/auth/login
+     * @unauthenticated
+     *
+     * Accepts username and password. Returns a Bearer token for subsequent authenticated requests.
      *
      * @param LoginRequest $request Validated login credentials
      * @return JsonResponse

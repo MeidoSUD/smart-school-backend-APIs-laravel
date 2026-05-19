@@ -28,6 +28,11 @@ class AdmissionController extends Controller
         $this->setControllerName('AdmissionController');
         }
 
+    /**
+     * Check if online admission is enabled
+     *
+     * @unauthenticated
+     */
     public function index(): JsonResponse
     {
         $setting = Setting::first();
@@ -45,6 +50,11 @@ class AdmissionController extends Controller
 
 
 
+    /**
+     * Get admission form configuration (classes, categories, blood groups, etc.)
+     *
+     * @unauthenticated
+     */
     public function form_config(): JsonResponse
     {
         $classlist = Classe::where('is_active', 'yes')->get();
@@ -69,6 +79,11 @@ class AdmissionController extends Controller
 
 
 
+    /**
+     * Get list of active classes
+     *
+     * @unauthenticated
+     */
     public function classes(): JsonResponse
     {
         $classlist = Classe::where('is_active', 'yes')->get();
@@ -77,6 +92,11 @@ class AdmissionController extends Controller
 
 
 
+    /**
+     * Get sections for a given class
+     *
+     * @unauthenticated
+     */
     public function sections(Request $request): JsonResponse
     {
         $classId = $request->get('class_id');
@@ -96,6 +116,11 @@ class AdmissionController extends Controller
 
 
 
+    /**
+     * Submit online admission form
+     *
+     * @unauthenticated
+     */
     public function submit(Request $request): JsonResponse
     {
         $setting = Setting::first();
@@ -227,6 +252,11 @@ class AdmissionController extends Controller
 
 
 
+    /**
+     * Check admission status by reference number
+     *
+     * @unauthenticated
+     */
     public function status(Request $request): JsonResponse
     {
         $referenceNo = $request->get('reference_no');
