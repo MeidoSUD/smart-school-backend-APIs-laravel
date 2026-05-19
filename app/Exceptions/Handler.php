@@ -40,6 +40,7 @@ class Handler extends ExceptionHandler
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage() ?: 'Server Error',
+                'code' => $status,
                 'exception' => class_basename($e),
                 'errors' => $e instanceof ValidationException
                     ? $e->errors()
