@@ -1,0 +1,17 @@
+{
+    "name": "modules/staff",
+    "description": "Staff Module - Teachers, Staff, Ratings, Payroll",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Modules\\Staff\\": ""
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\Staff\\Providers\\StaffServiceProvider"
+            ]
+        }
+    }
+}

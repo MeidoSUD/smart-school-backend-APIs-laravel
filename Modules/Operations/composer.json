@@ -1,0 +1,17 @@
+{
+    "name": "modules/operations",
+    "description": "Operations Module - Transport, Hostel, Library, Chat, Content, Visitors",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Modules\\Operations\\": ""
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\Operations\\Providers\\OperationsServiceProvider"
+            ]
+        }
+    }
+}

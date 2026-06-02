@@ -1,0 +1,9 @@
+{
+    "name": "Academic",
+    "alias": "academic",
+    "description": "Academic Module - Students, Classes, Exams, Attendance, Homework",
+    "priority": 2,
+    "providers": [
+        "Modules\\Academic\\Providers\\AcademicServiceProvider"
+    ]
+}
