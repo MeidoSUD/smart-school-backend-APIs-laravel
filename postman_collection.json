@@ -5,7 +5,7 @@
       "description": "",
       "item": [
         {
-          "id": "1e40a4c6-ef55-456b-9160-fbb6f37de565",
+          "id": "05b66ecc-81c4-4e70-b03a-c9d8314e3b46",
           "name": "ping",
           "request": {
             "name": "ping",
@@ -32,7 +32,7 @@
           },
           "response": [
             {
-              "id": "1c772d3f-192b-4dd6-b647-27c9cee5fb6c",
+              "id": "c450363a-39e6-430d-8e34-a6432dff29c4",
               "name": "200",
               "originalRequest": {
                 "url": {
@@ -87,7 +87,7 @@
       "description": "",
       "item": [
         {
-          "id": "b7a91d35-91d1-4709-9009-ca5b9dcdb230",
+          "id": "32fd842d-2466-4efc-a994-c1df8c33cdf3",
           "name": "Check if online admission is enabled",
           "request": {
             "name": "Check if online admission is enabled",
@@ -114,7 +114,7 @@
           },
           "response": [
             {
-              "id": "c8facd00-f593-40fe-a32e-57ed2ac14426",
+              "id": "583fbfc7-05c3-48a0-853f-6e3a2c3297f4",
               "name": "200",
               "originalRequest": {
                 "url": {
@@ -167,7 +167,7 @@
           "description": "",
           "item": [
             {
-              "id": "0a0d9e71-c853-4b8f-bd27-598ccdacacd9",
+              "id": "66f6ebbb-0587-42f0-a068-590b2177a973",
               "name": "Get admission form configuration (classes, categories, blood groups, etc.)",
               "request": {
                 "name": "Get admission form configuration (classes, categories, blood groups, etc.)",
@@ -195,7 +195,7 @@
               },
               "response": [
                 {
-                  "id": "b9686019-977e-4d75-b0ee-208b2a0142d5",
+                  "id": "2c41e7eb-022b-4514-bdaf-4c5b0348ef28",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -234,7 +234,7 @@
                       "value": "application/json"
                     }
                   ],
-                  "body": "{\n  \"status\": \"<string>\",\n  \"data\": {\n    \"gender_list\": \"<array>\",\n    \"class_list\": {},\n    \"category_list\": \"<string>\",\n    \"blood_group_list\": \"<string>\",\n    \"house_list\": \"<string>\",\n    \"custom_fields\": \"<string>\"\n  },\n  \"message\": \"<null>\",\n  \"timestamp\": \"<string>\"\n}",
+                  "body": "{\n  \"status\": \"<string>\",\n  \"data\": {\n    \"gender_list\": \"<array>\",\n    \"class_list\": \"<string>\",\n    \"category_list\": {},\n    \"blood_group_list\": {},\n    \"house_list\": {},\n    \"custom_fields\": {}\n  },\n  \"message\": \"<null>\",\n  \"timestamp\": \"<string>\"\n}",
                   "cookie": [],
                   "_postman_previewlanguage": "json"
                 }
@@ -251,7 +251,7 @@
           "description": "",
           "item": [
             {
-              "id": "2231d1f9-64c9-4626-94d6-19db911eeafc",
+              "id": "de4d703c-f478-4c41-bc92-e06c506e71d7",
               "name": "Get list of active classes",
               "request": {
                 "name": "Get list of active classes",
@@ -279,7 +279,7 @@
               },
               "response": [
                 {
-                  "id": "beb3ed97-4431-4f6d-9bf7-2d1def0ac34c",
+                  "id": "739ab4dc-3b2e-4f1a-9e37-9c39bc79262c",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -318,7 +318,7 @@
                       "value": "application/json"
                     }
                   ],
-                  "body": "{\n  \"status\": \"<string>\",\n  \"data\": {},\n  \"message\": \"<null>\",\n  \"timestamp\": \"<string>\"\n}",
+                  "body": "{\n  \"status\": \"<string>\",\n  \"data\": \"<string>\",\n  \"message\": \"<null>\",\n  \"timestamp\": \"<string>\"\n}",
                   "cookie": [],
                   "_postman_previewlanguage": "json"
                 }
@@ -335,7 +335,7 @@
           "description": "",
           "item": [
             {
-              "id": "689ecf99-c084-4a33-b68f-01bee2015f9d",
+              "id": "70cbf0df-cfdf-4556-a1f8-839ee356ac5c",
               "name": "Get sections for a given class",
               "request": {
                 "name": "Get sections for a given class",
@@ -373,7 +373,7 @@
               },
               "response": [
                 {
-                  "id": "1552573b-5e19-4268-8545-97c079783e65",
+                  "id": "119f31c4-307e-40f5-9b54-34962bbd2c14",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -427,7 +427,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "4a6a3012-eef1-4b6e-9bc1-0b7d60d13ad1",
+                  "id": "d202bccd-89b4-4be6-b2bd-0da1cb998540",
                   "name": "400",
                   "originalRequest": {
                     "url": {
@@ -493,7 +493,7 @@
           "description": "",
           "item": [
             {
-              "id": "ac869183-cb9e-4079-ad44-cbb9b1a50c86",
+              "id": "31968bbb-f4a0-431d-aee1-f8910fb4c3e5",
               "name": "Submit online admission form",
               "request": {
                 "name": "Submit online admission form",
@@ -565,7 +565,7 @@
                         "type": "text/plain"
                       },
                       "key": "gender",
-                      "value": "Female",
+                      "value": "Male",
                       "type": "text"
                     },
                     {
@@ -610,7 +610,7 @@
               },
               "response": [
                 {
-                  "id": "50160b0a-e327-4e1f-bf5d-20e7f9044539",
+                  "id": "f046400b-4ef6-4bb2-93c5-27e69ceef23f",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -688,7 +688,7 @@
                             "type": "text/plain"
                           },
                           "key": "gender",
-                          "value": "Female",
+                          "value": "Male",
                           "type": "text"
                         },
                         {
@@ -743,7 +743,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "1bc24aec-ba9b-440b-904f-5e5bfb0e87a2",
+                  "id": "507529d9-c4f0-4654-8ed2-8ecc362acb3c",
                   "name": "400",
                   "originalRequest": {
                     "url": {
@@ -821,7 +821,7 @@
                             "type": "text/plain"
                           },
                           "key": "gender",
-                          "value": "Female",
+                          "value": "Male",
                           "type": "text"
                         },
                         {
@@ -876,7 +876,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "612efcc1-774e-4d7c-931f-d0383a7b5950",
+                  "id": "98af49c4-4e4e-4044-b388-6c7cb186caec",
                   "name": "Validation error",
                   "originalRequest": {
                     "url": {
@@ -954,7 +954,7 @@
                             "type": "text/plain"
                           },
                           "key": "gender",
-                          "value": "Female",
+                          "value": "Male",
                           "type": "text"
                         },
                         {
@@ -1021,7 +1021,7 @@
           "description": "",
           "item": [
             {
-              "id": "cf395f89-9b2f-46ba-a651-ba1fc4c4c0ac",
+              "id": "88d89bc4-4794-4b1b-95a6-b1af018c9c3c",
               "name": "Check admission status by reference number",
               "request": {
                 "name": "Check admission status by reference number",
@@ -1059,7 +1059,7 @@
               },
               "response": [
                 {
-                  "id": "66bd3ba3-7f2b-4e3d-be85-4cc40a1cda63",
+                  "id": "9c048498-4062-4002-a944-e19b0fa33a22",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -1113,7 +1113,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "b25b8502-68bc-4a38-9d28-ef07f5630ecf",
+                  "id": "0f6ac9df-99e3-4125-a632-4118328431ff",
                   "name": "400",
                   "originalRequest": {
                     "url": {
@@ -1167,7 +1167,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "926c7252-40ec-4310-aa00-8f6bb751452d",
+                  "id": "f5f2247b-7297-4213-b8da-2d5c66d3c9c3",
                   "name": "404",
                   "originalRequest": {
                     "url": {
@@ -1235,7 +1235,7 @@
       "description": "",
       "item": [
         {
-          "id": "1f10c3e4-8690-4c87-ba54-049658b6322a",
+          "id": "29c6b173-b5a8-4366-be06-54e40be3abba",
           "name": "apply Leave.index",
           "request": {
             "name": "apply Leave.index",
@@ -1262,7 +1262,7 @@
           },
           "response": [
             {
-              "id": "54264bbb-1b8c-4709-b673-a8b56c95ba14",
+              "id": "1cc888df-0e0a-4896-9adf-10bf259a9d2f",
               "name": "200",
               "originalRequest": {
                 "url": {
@@ -1305,7 +1305,7 @@
               "_postman_previewlanguage": "json"
             },
             {
-              "id": "9366370d-f234-408b-afe6-5fb4580d43ce",
+              "id": "6a071965-52ba-4caa-9b25-55850deb587f",
               "name": "400",
               "originalRequest": {
                 "url": {
@@ -1358,7 +1358,7 @@
           "description": "",
           "item": [
             {
-              "id": "b6292bd1-adf1-420d-83e6-19c34c1beb4b",
+              "id": "a4c1d48c-8c59-4136-8e31-85b29bfbbb33",
               "name": "apply Leave.get Details",
               "request": {
                 "name": "apply Leave.get Details",
@@ -1397,7 +1397,7 @@
               },
               "response": [
                 {
-                  "id": "08def442-bddf-43ae-a1ae-724c8a8f024d",
+                  "id": "ff376fd8-e57b-4de5-8311-bc012e943514",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -1452,7 +1452,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "1b6986ab-fff7-4f4a-9a23-6b299118afcd",
+                  "id": "74be9cc2-0e00-47f6-b6ad-5250fa4e8374",
                   "name": "404",
                   "originalRequest": {
                     "url": {
@@ -1513,7 +1513,7 @@
               }
             },
             {
-              "id": "fddfaead-9a9e-4ce4-ac0e-918ede435a81",
+              "id": "c92d5284-ca44-4cc8-9f2a-b3aa48d89d32",
               "name": "apply Leave.remove Leave",
               "request": {
                 "name": "apply Leave.remove Leave",
@@ -1552,7 +1552,7 @@
               },
               "response": [
                 {
-                  "id": "b8944676-fcc2-47e0-bdaf-4285ba2ad1d1",
+                  "id": "91adf0a1-8fa1-4eff-98f7-f366a6901fa2",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -1619,7 +1619,7 @@
           "description": "",
           "item": [
             {
-              "id": "18c2c5eb-b37a-44c0-a563-b9e20842c1dc",
+              "id": "470ba709-60d4-4918-8324-56e51eb3e2b4",
               "name": "apply Leave.add",
               "request": {
                 "name": "apply Leave.add",
@@ -1691,7 +1691,7 @@
               },
               "response": [
                 {
-                  "id": "4ab4c255-1c33-4e44-ba64-9ba9c8e76502",
+                  "id": "f670b4fd-ec18-47cc-894b-9c5efcf2c30a",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -1779,7 +1779,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "a204d31f-32bc-473c-b171-a54c08ed1089",
+                  "id": "02647f46-ee2b-4758-b312-07b2df319f29",
                   "name": "400",
                   "originalRequest": {
                     "url": {
@@ -1867,7 +1867,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "57084c56-32ab-484d-8fdf-3e893f309a7c",
+                  "id": "d897ed4f-f31e-422c-a68c-69ebb7ea73e1",
                   "name": "Validation error",
                   "originalRequest": {
                     "url": {
@@ -1969,7 +1969,7 @@
       "description": "",
       "item": [
         {
-          "id": "51e45a1d-4b2c-47d2-a520-9ec02db00a01",
+          "id": "ad29f881-96cc-4a8e-a4db-073dd4e50dca",
           "name": "attendence.index",
           "request": {
             "name": "attendence.index",
@@ -1996,7 +1996,7 @@
           },
           "response": [
             {
-              "id": "5b40fd39-e427-4058-acd5-baf8a135960a",
+              "id": "7e961e40-7f95-478b-ad8a-eabb3d376ce3",
               "name": "200",
               "originalRequest": {
                 "url": {
@@ -2049,7 +2049,7 @@
           "description": "",
           "item": [
             {
-              "id": "b12653a4-e493-4c82-bc09-247e3654159d",
+              "id": "b0d6fd6d-8279-4ac4-986f-6e219728914d",
               "name": "attendence.get Attendence",
               "request": {
                 "name": "attendence.get Attendence",
@@ -2077,7 +2077,7 @@
               },
               "response": [
                 {
-                  "id": "3db19d5e-086a-4491-8a69-90b113c118a1",
+                  "id": "632f18a1-832a-4d96-afd5-62409e9fb8a7",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -2121,7 +2121,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "38cd049c-1334-42a9-868c-0cefb51629c3",
+                  "id": "c774e546-8c88-453d-8b10-0749f86d4ca4",
                   "name": "400",
                   "originalRequest": {
                     "url": {
@@ -2177,7 +2177,7 @@
           "description": "",
           "item": [
             {
-              "id": "b455a4b4-a988-4698-b4e4-07d1dcc5c28d",
+              "id": "c91a257f-ef69-4da0-9878-84a656450d1b",
               "name": "attendence.getdaysubattendence",
               "request": {
                 "name": "attendence.getdaysubattendence",
@@ -2222,7 +2222,7 @@
               },
               "response": [
                 {
-                  "id": "5fac79c8-3f84-4599-be95-98b827c5cbfd",
+                  "id": "9f41fb5e-77f7-4543-88d1-8fd315f57c0e",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -2283,7 +2283,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "ec46851b-961f-4add-8187-321d7717d776",
+                  "id": "874fd67c-cf4a-4c3e-b186-3fdf9c660f4b",
                   "name": "400",
                   "originalRequest": {
                     "url": {
@@ -2362,10 +2362,10 @@
           "description": "",
           "item": [
             {
-              "id": "77407c16-d90f-467c-9f33-b41d625d3e8f",
-              "name": "Login user and generate token",
+              "id": "e62f94ca-216e-48e6-bb26-5d3ff7f6d291",
+              "name": "auth.login",
               "request": {
-                "name": "Login user and generate token",
+                "name": "auth.login",
                 "description": {},
                 "url": {
                   "path": [
@@ -2416,8 +2416,8 @@
               },
               "response": [
                 {
-                  "id": "35a7d643-b6cf-45e9-a1b7-d969c62a3f66",
-                  "name": "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\nCODEIGNITER EQUIVALENT:\n$response_data = ['token' => $token, 'user' => $result];\nreturn $this->api_success($response_data, 'Login successful');\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
+                  "id": "ca807818-c52e-48b3-8def-4df687b41c6d",
+                  "name": "200",
                   "originalRequest": {
                     "url": {
                       "path": [
@@ -2486,7 +2486,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "18ffdad0-b2bd-458a-a6c8-e7272ca2ef59",
+                  "id": "474ef74c-1e06-4417-906a-cfa7f8480a3b",
                   "name": "401",
                   "originalRequest": {
                     "url": {
@@ -2556,7 +2556,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "1f26711a-9a48-4c9c-9867-8575cd4c34a3",
+                  "id": "33a60336-6c34-4a53-bc73-8e8c43b58d7d",
                   "name": "403",
                   "originalRequest": {
                     "url": {
@@ -2626,7 +2626,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "ccca6c65-d82e-43a6-bec2-23b76b487e64",
+                  "id": "af1d7a5f-118b-4646-851d-d0f444987421",
                   "name": "Validation error",
                   "originalRequest": {
                     "url": {
@@ -2708,14 +2708,11 @@
           "description": "",
           "item": [
             {
-              "id": "4498adbb-ad5c-4877-a3ac-8cb011976e24",
-              "name": "Logout user and clear token",
+              "id": "8db786c5-e481-4fa5-b9bb-7a09fa3fbb19",
+              "name": "auth.logout",
               "request": {
-                "name": "Logout user and clear token",
-                "description": {
-                  "content": "CodeIgniter Route: POST /api/auth/logout\nLaravel Route: POST /api/auth/logout",
-                  "type": "text/plain"
-                },
+                "name": "auth.logout",
+                "description": {},
                 "url": {
                   "path": [
                     "auth",
@@ -2739,7 +2736,7 @@
               },
               "response": [
                 {
-                  "id": "cdde8625-fc7f-441f-9f14-f7c25b9ef186",
+                  "id": "051a33cd-e712-403e-8314-9ebbd20bbec1",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -2783,7 +2780,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "856ffc18-4f38-463d-bc5d-c43dd59e7054",
+                  "id": "bcc922f1-1abc-4c6e-af07-f69ab5dc4a26",
                   "name": "401",
                   "originalRequest": {
                     "url": {
@@ -2839,14 +2836,11 @@
           "description": "",
           "item": [
             {
-              "id": "2cee52da-5fbb-48e1-a88f-45cc5cfdb2e6",
-              "name": "Change user password",
+              "id": "bc93f22b-2766-48a4-8f50-d5b3364c5739",
+              "name": "auth.change Password",
               "request": {
-                "name": "Change user password",
-                "description": {
-                  "content": "CodeIgniter Route: POST /api/auth/changepass\nLaravel Route: POST /api/auth/changepass",
-                  "type": "text/plain"
-                },
+                "name": "auth.change Password",
+                "description": {},
                 "url": {
                   "path": [
                     "auth",
@@ -2905,7 +2899,7 @@
               },
               "response": [
                 {
-                  "id": "4b06ef03-63a9-45cf-bd68-ab9289348834",
+                  "id": "74793d9f-2097-4840-bea2-c2099274343c",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -2984,7 +2978,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "b48e4f12-d3e2-4564-9de1-f2667f21ed0c",
+                  "id": "25731191-c900-481c-841c-e3eccc0a27d5",
                   "name": "400",
                   "originalRequest": {
                     "url": {
@@ -3063,7 +3057,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "130a6861-ef2e-4b3c-b1e1-f0f60f29aa84",
+                  "id": "1e05ce3f-6eeb-4f4a-a9ca-c0ef0be20c81",
                   "name": "401",
                   "originalRequest": {
                     "url": {
@@ -3142,7 +3136,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "7befe6fc-f53e-47d8-a929-54a2195c6695",
+                  "id": "9b3bfceb-ea61-4c43-acae-01571bc45cfa",
                   "name": "Validation error",
                   "originalRequest": {
                     "url": {
@@ -3235,7 +3229,7 @@
       "description": "",
       "item": [
         {
-          "id": "88509d15-6a76-4e90-8e28-d52d79633094",
+          "id": "4dc0e238-5e2f-48d5-9e88-0cda6ceb234f",
           "name": "book.index",
           "request": {
             "name": "book.index",
@@ -3262,7 +3256,7 @@
           },
           "response": [
             {
-              "id": "1370e8b6-7c26-444b-aefe-1393e1da900b",
+              "id": "6139c1e6-c7fa-4a21-b4b3-57d7fd8340d8",
               "name": "200",
               "originalRequest": {
                 "url": {
@@ -3315,7 +3309,7 @@
           "description": "",
           "item": [
             {
-              "id": "e8be1efb-c606-47b3-ae65-b23eef4265ce",
+              "id": "bb4567a8-c2af-455c-b2fb-67e86fdee19b",
               "name": "book.issue",
               "request": {
                 "name": "book.issue",
@@ -3343,7 +3337,7 @@
               },
               "response": [
                 {
-                  "id": "27a582d2-82bc-4045-8306-fe440f82ba63",
+                  "id": "5592daf0-1cf4-4f71-8997-5dc75c3ab685",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -3387,7 +3381,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "ae7818d1-7720-42e4-83c8-4bdf828a0cb8",
+                  "id": "e9809d06-79dd-4866-8fbb-794948329bbe",
                   "name": "400",
                   "originalRequest": {
                     "url": {
@@ -3445,7 +3439,7 @@
       "description": "",
       "item": [
         {
-          "id": "22f7436d-6b85-4400-8495-9b74eb83c079",
+          "id": "7300ec52-db51-4cb7-b602-b0566f2f03b0",
           "name": "calendar.index",
           "request": {
             "name": "calendar.index",
@@ -3472,7 +3466,7 @@
           },
           "response": [
             {
-              "id": "e04a96c2-6af0-4f4a-8b95-9eb7dcd014c0",
+              "id": "d7b559af-07aa-40b0-9b71-9c37d1aa18f7",
               "name": "200",
               "originalRequest": {
                 "url": {
@@ -3510,7 +3504,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"status\": \"<string>\",\n  \"data\": {\n    \"event_colors\": \"<array>\",\n    \"tasklist\": {\n      \"current_page\": \"<integer>\",\n      \"data\": [\n        {\n          \"id\": \"<integer>\",\n          \"event_title\": \"<string>\",\n          \"event_description\": \"<string>\",\n          \"start_date\": \"<string>\",\n          \"end_date\": \"<string>\",\n          \"event_type\": \"<string>\",\n          \"status\": \"<string,null>\",\n          \"event_color\": \"<string>\",\n          \"event_for\": \"<string>\",\n          \"role_id\": \"<integer,null>\",\n          \"is_active\": \"<string>\"\n        },\n        {\n          \"id\": \"<integer>\",\n          \"event_title\": \"<string>\",\n          \"event_description\": \"<string>\",\n          \"start_date\": \"<string>\",\n          \"end_date\": \"<string>\",\n          \"event_type\": \"<string>\",\n          \"status\": \"<string,null>\",\n          \"event_color\": \"<string>\",\n          \"event_for\": \"<string>\",\n          \"role_id\": \"<integer,null>\",\n          \"is_active\": \"<string>\"\n        }\n      ],\n      \"first_page_url\": \"<string,null>\",\n      \"from\": \"<integer,null>\",\n      \"last_page_url\": \"<string,null>\",\n      \"last_page\": \"<integer>\",\n      \"links\": [\n        {\n          \"url\": \"<string,null>\",\n          \"label\": \"<string>\",\n          \"active\": \"<boolean>\"\n        },\n        {\n          \"url\": \"<string,null>\",\n          \"label\": \"<string>\",\n          \"active\": \"<boolean>\"\n        }\n      ],\n      \"next_page_url\": \"<string,null>\",\n      \"path\": \"<string,null>\",\n      \"per_page\": \"<integer>\",\n      \"prev_page_url\": \"<string,null>\",\n      \"to\": \"<integer,null>\",\n      \"total\": \"<integer>\"\n    },\n    \"title\": \"<string>\"\n  },\n  \"message\": \"<null>\",\n  \"timestamp\": \"<string>\"\n}",
+              "body": "{\n  \"status\": \"<string>\",\n  \"data\": {\n    \"event_colors\": \"<array>\",\n    \"tasklist\": {\n      \"current_page\": \"<integer>\",\n      \"data\": [\n        {\n          \"id\": \"<integer>\",\n          \"event_title\": \"<string>\",\n          \"event_description\": \"<string>\",\n          \"start_date\": \"<string>\",\n          \"end_date\": \"<string>\",\n          \"event_type\": \"<string>\",\n          \"event_color\": \"<string>\",\n          \"event_for\": \"<string>\",\n          \"role_id\": \"<integer,null>\",\n          \"is_active\": \"<string>\"\n        },\n        {\n          \"id\": \"<integer>\",\n          \"event_title\": \"<string>\",\n          \"event_description\": \"<string>\",\n          \"start_date\": \"<string>\",\n          \"end_date\": \"<string>\",\n          \"event_type\": \"<string>\",\n          \"event_color\": \"<string>\",\n          \"event_for\": \"<string>\",\n          \"role_id\": \"<integer,null>\",\n          \"is_active\": \"<string>\"\n        }\n      ],\n      \"first_page_url\": \"<string,null>\",\n      \"from\": \"<integer,null>\",\n      \"last_page_url\": \"<string,null>\",\n      \"last_page\": \"<integer>\",\n      \"links\": [\n        {\n          \"url\": \"<string,null>\",\n          \"label\": \"<string>\",\n          \"active\": \"<boolean>\"\n        },\n        {\n          \"url\": \"<string,null>\",\n          \"label\": \"<string>\",\n          \"active\": \"<boolean>\"\n        }\n      ],\n      \"next_page_url\": \"<string,null>\",\n      \"path\": \"<string,null>\",\n      \"per_page\": \"<integer>\",\n      \"prev_page_url\": \"<string,null>\",\n      \"to\": \"<integer,null>\",\n      \"total\": \"<integer>\"\n    },\n    \"title\": \"<string>\"\n  },\n  \"message\": \"<null>\",\n  \"timestamp\": \"<string>\"\n}",
               "cookie": [],
               "_postman_previewlanguage": "json"
             }
@@ -3525,7 +3519,7 @@
           "description": "",
           "item": [
             {
-              "id": "af322801-529e-48d3-9663-683b587d8f75",
+              "id": "e7569fda-6c71-45ea-b256-5b41161ebf30",
               "name": "calendar.getevents",
               "request": {
                 "name": "calendar.getevents",
@@ -3553,7 +3547,7 @@
               },
               "response": [
                 {
-                  "id": "01c034bb-c305-4c1e-8852-de421baded11",
+                  "id": "862b366d-9e1c-4539-8811-78a940efea30",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -3609,7 +3603,7 @@
           "description": "",
           "item": [
             {
-              "id": "94ca947e-9b56-48af-82e0-fa48575059b0",
+              "id": "38e1c16d-6c9c-4e3a-9922-5abbc7f7e09a",
               "name": "calendar.addtodo",
               "request": {
                 "name": "calendar.addtodo",
@@ -3663,7 +3657,7 @@
               },
               "response": [
                 {
-                  "id": "cd66113d-99be-4093-b01a-14535448af5a",
+                  "id": "20526426-bfd3-407c-89ff-ea69c4c38047",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -3733,7 +3727,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "5962789e-c734-43e5-8b90-e61415b9c325",
+                  "id": "e7ce08af-3174-4dd6-b451-2a75ba01014c",
                   "name": "Validation error",
                   "originalRequest": {
                     "url": {
@@ -3815,7 +3809,7 @@
           "description": "",
           "item": [
             {
-              "id": "c3b08808-9b3d-4163-812a-14b006cd5c01",
+              "id": "609df96c-835e-4e7e-912c-69132c2ec9ac",
               "name": "calendar.gettaskbyid",
               "request": {
                 "name": "calendar.gettaskbyid",
@@ -3854,7 +3848,7 @@
               },
               "response": [
                 {
-                  "id": "e9da3ccf-783e-48c7-a7a0-c813e07587d1",
+                  "id": "9f40e131-38f2-4399-8aab-5f35eb01a8bc",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -3915,7 +3909,7 @@
               }
             },
             {
-              "id": "8ba99edf-63c3-49ac-8c6a-0624d923cdc1",
+              "id": "9d872dc6-2a9d-46ed-b5ca-a59a39b94a5f",
               "name": "calendar.delete Event",
               "request": {
                 "name": "calendar.delete Event",
@@ -3954,7 +3948,7 @@
               },
               "response": [
                 {
-                  "id": "f4354161-d93f-4bd6-af47-8b236157e3ab",
+                  "id": "c5b6403e-5250-4ab7-a9c9-413dc2ea3346",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -4025,7 +4019,7 @@
               "description": "",
               "item": [
                 {
-                  "id": "b8e31a39-3cd3-4dc3-bf2d-848acc8a4cd3",
+                  "id": "b5cd2282-558f-40f4-9a85-5c365ec6a3b5",
                   "name": "calendar.markcomplete",
                   "request": {
                     "name": "calendar.markcomplete",
@@ -4082,7 +4076,7 @@
                   },
                   "response": [
                     {
-                      "id": "32d0530b-ba05-4bab-a33c-b1f095a6e594",
+                      "id": "909c9f4c-aa74-49d6-be02-4dd62832941d",
                       "name": "200",
                       "originalRequest": {
                         "url": {
@@ -4175,7 +4169,7 @@
           "description": "",
           "item": [
             {
-              "id": "4768714e-b39a-447d-a2b9-ba9c2dccfc54",
+              "id": "b82d8ef7-c759-4c2f-bfc3-08866e5c63d6",
               "name": "chat.myuser",
               "request": {
                 "name": "chat.myuser",
@@ -4203,7 +4197,7 @@
               },
               "response": [
                 {
-                  "id": "7080aac0-87df-4d37-943f-cc744e3dca54",
+                  "id": "29fb6024-f084-4f7e-9420-4f94447cf6b6",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -4259,7 +4253,7 @@
           "description": "",
           "item": [
             {
-              "id": "6924b9d5-a1fb-4762-95a6-feeaddd6735c",
+              "id": "5c2fa278-d85a-47cd-8eea-faf38981b0ae",
               "name": "chat.get Chat Record",
               "request": {
                 "name": "chat.get Chat Record",
@@ -4304,7 +4298,7 @@
               },
               "response": [
                 {
-                  "id": "b8c4a0ce-894e-47ae-93ed-d9e384c332ee",
+                  "id": "356a1c38-6109-4663-9db3-d0dcc8731ea7",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -4377,7 +4371,7 @@
           "description": "",
           "item": [
             {
-              "id": "eb2736d6-f007-499c-86bb-6d0935cf6674",
+              "id": "5e19b6a5-27cd-4e4f-9e17-6cceaf715cfd",
               "name": "chat.new Message",
               "request": {
                 "name": "chat.new Message",
@@ -4440,7 +4434,7 @@
               },
               "response": [
                 {
-                  "id": "da65efec-4d68-4d05-85c1-809c79b8c16a",
+                  "id": "d33c451b-75d1-444b-bd5f-07a8a5435af5",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -4519,7 +4513,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "12e22c7f-e055-4bf8-8a13-a566c6e92b12",
+                  "id": "68107ee9-8f94-4e0d-a070-75dbb8d71510",
                   "name": "Validation error",
                   "originalRequest": {
                     "url": {
@@ -4616,7 +4610,7 @@
           "description": "",
           "item": [
             {
-              "id": "8541f4a8-f0fb-4869-93ae-ed2bfec9884d",
+              "id": "11e4d702-39bb-452a-bb05-67f14116f081",
               "name": "content.list",
               "request": {
                 "name": "content.list",
@@ -4644,7 +4638,7 @@
               },
               "response": [
                 {
-                  "id": "114040b7-813f-4ecc-b44b-f30f02635395",
+                  "id": "80f8e2e3-975f-4509-95e3-c62aca2a949a",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -4700,7 +4694,7 @@
           "description": "",
           "item": [
             {
-              "id": "5e3c9894-aac0-4f75-8674-5b09ee3d301f",
+              "id": "e4f76620-8334-4b2e-b9b0-c4cd3dbbbdad",
               "name": "content.getsharelist",
               "request": {
                 "name": "content.getsharelist",
@@ -4728,7 +4722,7 @@
               },
               "response": [
                 {
-                  "id": "717f1b15-1156-42ee-bf50-f873bfedfbff",
+                  "id": "29af5700-c2dc-4cfc-9e4e-134266477398",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -4772,7 +4766,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "8850da8a-5bb2-4fcf-b0e4-2314e9e84441",
+                  "id": "c838ba8f-5713-46bc-9571-85fb3c5418ff",
                   "name": "400",
                   "originalRequest": {
                     "url": {
@@ -4828,7 +4822,7 @@
           "description": "",
           "item": [
             {
-              "id": "38776c00-4210-4b99-a351-ea648d92cfff",
+              "id": "975dc060-0bcd-426e-bfb9-6f5197d13f8d",
               "name": "content.view",
               "request": {
                 "name": "content.view",
@@ -4867,7 +4861,7 @@
               },
               "response": [
                 {
-                  "id": "bb699a78-c639-407b-94b8-acf1b4056ea1",
+                  "id": "282bf3ed-c3a2-4bdf-8238-a987441ff3fa",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -4922,7 +4916,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "79889966-618f-4ecb-83f8-97000cfc902f",
+                  "id": "f2830739-d777-4306-8bbb-c5b4c1fe1b56",
                   "name": "404",
                   "originalRequest": {
                     "url": {
@@ -4989,7 +4983,7 @@
           "description": "",
           "item": [
             {
-              "id": "32e2ad9a-b853-45f9-b387-4890737e1ee0",
+              "id": "676ebf40-936b-4e3b-b65a-ff577eac45fa",
               "name": "content.assignment",
               "request": {
                 "name": "content.assignment",
@@ -5017,7 +5011,7 @@
               },
               "response": [
                 {
-                  "id": "ca6ee0a1-fe20-4736-8774-dcd5095700c8",
+                  "id": "0b210ac6-049c-420e-9420-a1bbc7f3b9e5",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -5061,7 +5055,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "9134555a-ed51-487c-a79b-0660a58dc343",
+                  "id": "bcf6a9b4-0afa-4023-b7d8-ac912a91fbac",
                   "name": "400",
                   "originalRequest": {
                     "url": {
@@ -5117,7 +5111,7 @@
           "description": "",
           "item": [
             {
-              "id": "9b92d92a-1f9e-4b5d-8b9c-3dd712ce3548",
+              "id": "94b9bfa5-0284-40c9-a14d-ed8ab1029f6d",
               "name": "content.studymaterial",
               "request": {
                 "name": "content.studymaterial",
@@ -5145,7 +5139,7 @@
               },
               "response": [
                 {
-                  "id": "91f8a4fe-5a2e-457a-8895-f3a8b6558d73",
+                  "id": "fbd8a22f-634d-4313-ab5b-58d65899a6ac",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -5189,7 +5183,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "cb2a212a-517d-4990-8827-24c35398b1b2",
+                  "id": "d7ecabec-0989-41be-a02d-59d3b0fe6256",
                   "name": "400",
                   "originalRequest": {
                     "url": {
@@ -5247,7 +5241,7 @@
       "description": "",
       "item": [
         {
-          "id": "381804b6-586e-4422-8523-e90b42b60e74",
+          "id": "89ea1f66-1ac9-423d-b6d9-de1f41c65bfa",
           "name": "exam.index",
           "request": {
             "name": "exam.index",
@@ -5274,7 +5268,7 @@
           },
           "response": [
             {
-              "id": "0f8ae0cf-9bb5-4f69-97e1-4adb0c797410",
+              "id": "fef9b676-5126-4fb9-af4b-b01dded05f5e",
               "name": "200",
               "originalRequest": {
                 "url": {
@@ -5317,7 +5311,7 @@
               "_postman_previewlanguage": "json"
             },
             {
-              "id": "4e671293-b68a-4425-ac44-96c6128f611b",
+              "id": "e53a3753-a40c-40af-8447-5f0af643ee4b",
               "name": "400",
               "originalRequest": {
                 "url": {
@@ -5370,7 +5364,7 @@
           "description": "",
           "item": [
             {
-              "id": "b2edd3f9-178b-4564-98f4-d85b44531195",
+              "id": "e000df9a-7f95-4d8c-94bd-3c52f3d59542",
               "name": "exam.view",
               "request": {
                 "name": "exam.view",
@@ -5409,7 +5403,7 @@
               },
               "response": [
                 {
-                  "id": "d953a10a-23ea-4a18-b1f1-86ded7a097a3",
+                  "id": "f77a4d6d-94c3-4466-8479-dcfa83f762bb",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -5464,7 +5458,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "d0586200-66f3-4b1d-b841-4cbcecb192fc",
+                  "id": "dc3d3ae7-aa80-46e3-bb12-dd3dfdfacaa4",
                   "name": "404",
                   "originalRequest": {
                     "url": {
@@ -5531,7 +5525,7 @@
           "description": "",
           "item": [
             {
-              "id": "c277af0e-23f5-41a0-8dfb-16c7def84591",
+              "id": "8784558c-3cd1-42b6-a408-39c795abf263",
               "name": "exam.examresult",
               "request": {
                 "name": "exam.examresult",
@@ -5559,7 +5553,7 @@
               },
               "response": [
                 {
-                  "id": "29932e65-33e9-484a-8f8b-65f6242daeed",
+                  "id": "78afc59f-0c3d-470e-b888-57c73c94c2e5",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -5603,7 +5597,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "be93d729-5474-4efd-9223-d071ef9c0a44",
+                  "id": "d82fcff8-03a1-4b36-8bd6-0a2f6efac9af",
                   "name": "400",
                   "originalRequest": {
                     "url": {
@@ -5661,7 +5655,7 @@
       "description": "",
       "item": [
         {
-          "id": "d55f5f38-caad-4cad-8eee-a2fce7780237",
+          "id": "987f9a64-53cc-4e53-bad4-32a912fb67c6",
           "name": "exam Schedule.index",
           "request": {
             "name": "exam Schedule.index",
@@ -5688,7 +5682,7 @@
           },
           "response": [
             {
-              "id": "12b47103-bf9b-4095-85cc-4cf41f5ae91b",
+              "id": "4449909f-6c4f-4005-94fa-61c5fcb2d925",
               "name": "200",
               "originalRequest": {
                 "url": {
@@ -5731,7 +5725,7 @@
               "_postman_previewlanguage": "json"
             },
             {
-              "id": "d2003cf5-277a-4be2-b4f9-3c83275728b9",
+              "id": "7fe36266-32f6-43b0-adbe-405aaf00ea45",
               "name": "400",
               "originalRequest": {
                 "url": {
@@ -5786,7 +5780,7 @@
       "description": "",
       "item": [
         {
-          "id": "5cf1b8a4-a23a-4c43-876b-658b1acf2fe4",
+          "id": "fd050db1-1a72-4f7d-9caf-959c92a2c2c3",
           "name": "homework.index",
           "request": {
             "name": "homework.index",
@@ -5813,7 +5807,7 @@
           },
           "response": [
             {
-              "id": "61b77086-1a79-495c-b34c-3437459cd5c2",
+              "id": "27abaaf1-d1e3-407f-a660-9726ad220395",
               "name": "200",
               "originalRequest": {
                 "url": {
@@ -5856,7 +5850,7 @@
               "_postman_previewlanguage": "json"
             },
             {
-              "id": "f5bce866-dab8-44ed-b948-60a9416dcb3b",
+              "id": "10c9a114-f74c-4e63-98ee-f001844692c7",
               "name": "400",
               "originalRequest": {
                 "url": {
@@ -5917,7 +5911,7 @@
                   "description": "",
                   "item": [
                     {
-                      "id": "2341dc28-79ea-48a4-a718-a75a24887f75",
+                      "id": "13c580cd-9982-4d13-919c-ccb49382ad99",
                       "name": "homework.homework Detail",
                       "request": {
                         "name": "homework.homework Detail",
@@ -5968,7 +5962,7 @@
                       },
                       "response": [
                         {
-                          "id": "24d4d839-49be-48ee-869b-ce9fdce33c82",
+                          "id": "b4fe3170-a1e6-42c0-bcf5-afcba3b3b549",
                           "name": "200",
                           "originalRequest": {
                             "url": {
@@ -6035,7 +6029,7 @@
                           "_postman_previewlanguage": "json"
                         },
                         {
-                          "id": "c430ee65-fa63-46b3-a699-0b8e272ef472",
+                          "id": "b633f927-2786-48b4-b5df-49df3c5bbcdb",
                           "name": "404",
                           "originalRequest": {
                             "url": {
@@ -6118,7 +6112,7 @@
           "description": "",
           "item": [
             {
-              "id": "d1c0fc28-2af1-4555-ac68-7cd7ff3d1c08",
+              "id": "4b5c75b4-21ba-4a0b-beb4-307c16191931",
               "name": "homework.upload Docs",
               "request": {
                 "name": "homework.upload Docs",
@@ -6181,7 +6175,7 @@
               },
               "response": [
                 {
-                  "id": "633275a3-c5af-474c-b696-5c88b1fbf067",
+                  "id": "b5a3c420-209c-45f5-a78b-9f067349939f",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -6260,7 +6254,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "2612c73b-d451-444d-9afa-1dd26d2324e3",
+                  "id": "0b557953-8f67-4e16-aede-b7b6b1984b9a",
                   "name": "400",
                   "originalRequest": {
                     "url": {
@@ -6339,7 +6333,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "f70352f7-9632-4276-80d7-bcb442a64659",
+                  "id": "4f09bf71-19ba-4ada-8479-6d5d84017ac7",
                   "name": "Validation error",
                   "originalRequest": {
                     "url": {
@@ -6432,7 +6426,7 @@
       "description": "",
       "item": [
         {
-          "id": "d602a2d7-6837-47a1-9739-8989cd7f636b",
+          "id": "1dcad041-d67d-480d-baba-fcf85e479937",
           "name": "hostel.index",
           "request": {
             "name": "hostel.index",
@@ -6459,7 +6453,7 @@
           },
           "response": [
             {
-              "id": "d472ee31-c56b-4c8e-8522-3cb9816d16dd",
+              "id": "8d07d87f-c78e-4b6d-824f-0c9407dbf896",
               "name": "200",
               "originalRequest": {
                 "url": {
@@ -6512,7 +6506,7 @@
           "description": "",
           "item": [
             {
-              "id": "b084944b-3ba6-4527-b99c-b8ac132210f7",
+              "id": "0dc5bccd-ec1a-408b-9c39-85027f577d70",
               "name": "hostel Room.index",
               "request": {
                 "name": "hostel Room.index",
@@ -6540,7 +6534,7 @@
               },
               "response": [
                 {
-                  "id": "a21da0a7-5228-417d-8230-926126bf587f",
+                  "id": "b20591c1-cb3a-4e02-9495-069764b8fae3",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -6602,7 +6596,7 @@
           "description": "",
           "item": [
             {
-              "id": "b49e83bc-9db0-4568-bc80-b7b51173b9db",
+              "id": "4fffd4b1-506d-4180-b7d6-79fc6a7d0f0f",
               "name": "mark.marklist",
               "request": {
                 "name": "mark.marklist",
@@ -6630,7 +6624,7 @@
               },
               "response": [
                 {
-                  "id": "be824fda-943c-4e6a-a415-de2ac1a4a294",
+                  "id": "09005674-6f85-4f33-8d3e-087e762af526",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -6674,7 +6668,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "a64060b2-0a30-4549-b623-02596218b7d5",
+                  "id": "c122c3e1-cde5-421d-a65e-18d7201161b5",
                   "name": "400",
                   "originalRequest": {
                     "url": {
@@ -6732,7 +6726,7 @@
       "description": "",
       "item": [
         {
-          "id": "13839b58-62c4-4a11-8167-0ea83e7be07f",
+          "id": "73cd2699-04e1-454b-9a58-7b34e4cad455",
           "name": "notification.index",
           "request": {
             "name": "notification.index",
@@ -6759,7 +6753,7 @@
           },
           "response": [
             {
-              "id": "544cb90e-e926-4cf2-a5d3-99939fc992e4",
+              "id": "b5f1327f-3208-4b64-b8a7-af856aab3eb0",
               "name": "200",
               "originalRequest": {
                 "url": {
@@ -6812,7 +6806,7 @@
           "description": "",
           "item": [
             {
-              "id": "c758085c-8b56-40b3-b384-b4276ad9627f",
+              "id": "379e8289-d8e3-4c0c-b859-d0e4fb535e3a",
               "name": "notification.updatestatus",
               "request": {
                 "name": "notification.updatestatus",
@@ -6857,7 +6851,7 @@
               },
               "response": [
                 {
-                  "id": "16d53b9c-4087-49f5-9d55-b035a86a5da2",
+                  "id": "0fac8ce3-3eb0-4349-bf7a-5b0c390e9d54",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -6932,7 +6926,7 @@
       "description": "",
       "item": [
         {
-          "id": "f1065fa2-6e4f-40a6-b85c-3660d235e882",
+          "id": "bdda2932-89e3-45b6-9989-a17c2bb284f8",
           "name": "offline Payment.index",
           "request": {
             "name": "offline Payment.index",
@@ -6959,7 +6953,7 @@
           },
           "response": [
             {
-              "id": "445bdab1-ab77-4db0-bae4-20872aef48ff",
+              "id": "6ec106e2-46cb-4200-ac02-a1b48c87de2d",
               "name": "200",
               "originalRequest": {
                 "url": {
@@ -7002,7 +6996,7 @@
               "_postman_previewlanguage": "json"
             },
             {
-              "id": "0fdbc47b-6c98-4ecb-83fb-bf3e7e092ba2",
+              "id": "9f0fe51f-c284-4cc9-bb8f-292f10172fc8",
               "name": "400",
               "originalRequest": {
                 "url": {
@@ -7055,7 +7049,7 @@
           "description": "",
           "item": [
             {
-              "id": "f53feb9a-192d-4bfa-b17f-be76b05cce5a",
+              "id": "72b031fa-350b-4c4f-878f-f23aa651077d",
               "name": "offline Payment.add",
               "request": {
                 "name": "offline Payment.add",
@@ -7109,7 +7103,7 @@
               },
               "response": [
                 {
-                  "id": "2161b3d1-1bcc-4524-a644-e9d2b91836f8",
+                  "id": "1071b680-06ed-43ad-83bc-5de37ac2fbdb",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -7179,7 +7173,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "9a8b2af8-24c8-4141-9014-a8e9294c1b28",
+                  "id": "b697d5b1-e632-4a94-9a9b-5d2c95cd5467",
                   "name": "400",
                   "originalRequest": {
                     "url": {
@@ -7249,7 +7243,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "dc43b2ba-584f-4513-b0a9-b797b4306b4e",
+                  "id": "bcaa8151-f280-4641-8db1-46728b78a876",
                   "name": "Validation error",
                   "originalRequest": {
                     "url": {
@@ -7333,7 +7327,7 @@
       "description": "",
       "item": [
         {
-          "id": "004852a5-b174-4c7a-9e10-053b0e8dec2e",
+          "id": "2dc5aba6-44aa-4b52-8447-fbaaba2dc31d",
           "name": "online Exam.index",
           "request": {
             "name": "online Exam.index",
@@ -7360,7 +7354,7 @@
           },
           "response": [
             {
-              "id": "18f9865f-4b97-4dd4-9985-577b121ae908",
+              "id": "508fc636-de43-4ec6-bc9e-ada27c013fda",
               "name": "200",
               "originalRequest": {
                 "url": {
@@ -7403,7 +7397,7 @@
               "_postman_previewlanguage": "json"
             },
             {
-              "id": "7ac0746c-f9d1-46a5-9407-2ded7207fa77",
+              "id": "9b6b6e84-650e-4415-9d0f-828250ad3551",
               "name": "400",
               "originalRequest": {
                 "url": {
@@ -7456,7 +7450,7 @@
           "description": "",
           "item": [
             {
-              "id": "b4e369b3-7d61-416d-ab45-7462e56f0a01",
+              "id": "2f7d6444-2fc1-4d3e-8434-1175078c5e6b",
               "name": "online Exam.exam Detail",
               "request": {
                 "name": "online Exam.exam Detail",
@@ -7495,7 +7489,7 @@
               },
               "response": [
                 {
-                  "id": "967992eb-6b4a-4463-8e95-7327e88c3a67",
+                  "id": "ea6cee27-407e-4b26-a53d-1d19c2b6e375",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -7550,7 +7544,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "9dd524bb-d7e5-4b00-8dd2-9bc28a119dba",
+                  "id": "a34cff75-719c-4113-84fe-63fb75a65ea9",
                   "name": "404",
                   "originalRequest": {
                     "url": {
@@ -7617,7 +7611,7 @@
           "description": "",
           "item": [
             {
-              "id": "9dca4e0d-bc47-42c8-9532-c87abd7f2390",
+              "id": "1524771e-1467-4c87-b9e7-dbcdc948c45e",
               "name": "online Exam.submit",
               "request": {
                 "name": "online Exam.submit",
@@ -7671,7 +7665,7 @@
               },
               "response": [
                 {
-                  "id": "4e771259-6096-47ab-a0bf-25b05bdcf704",
+                  "id": "34ab9829-d6b8-428f-8a32-9bca68a79461",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -7741,7 +7735,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "e5ed1f0a-cc03-46d4-984b-0accbd608780",
+                  "id": "74043756-e1e2-455e-8388-763b3bd79627",
                   "name": "Validation error",
                   "originalRequest": {
                     "url": {
@@ -7825,7 +7819,7 @@
       "description": "",
       "item": [
         {
-          "id": "d7c62b4e-0edb-4357-b12e-45610512a943",
+          "id": "a58fbad6-53d9-4f88-b215-d78293282140",
           "name": "route.index",
           "request": {
             "name": "route.index",
@@ -7852,7 +7846,7 @@
           },
           "response": [
             {
-              "id": "8a1d8dc3-9534-4c28-8579-2c5905fc55be",
+              "id": "fb662f86-0125-4204-acfd-5022d564634a",
               "name": "200",
               "originalRequest": {
                 "url": {
@@ -7895,7 +7889,7 @@
               "_postman_previewlanguage": "json"
             },
             {
-              "id": "7edda8ff-263c-4a85-9937-1a04db76035e",
+              "id": "b3bd4329-c394-4c89-bc84-f60aaeff6137",
               "name": "404",
               "originalRequest": {
                 "url": {
@@ -7948,7 +7942,7 @@
           "description": "",
           "item": [
             {
-              "id": "d607b1a6-3021-428e-a733-6191b32c7b83",
+              "id": "9939c4f1-5b6b-473c-b9a1-bb45f401fa4d",
               "name": "route.getbusdetail",
               "request": {
                 "name": "route.getbusdetail",
@@ -7993,7 +7987,7 @@
               },
               "response": [
                 {
-                  "id": "12a7a8a3-b2b0-403b-89a3-a325f564df6d",
+                  "id": "223e64b2-92a2-42d1-9183-30938cff9a03",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -8068,7 +8062,7 @@
       "description": "",
       "item": [
         {
-          "id": "dc74ba76-bd1b-4f18-a62c-f9a2c844906b",
+          "id": "f0b6311e-f4a5-472b-9896-a39cb004f63f",
           "name": "subject.index",
           "request": {
             "name": "subject.index",
@@ -8095,7 +8089,7 @@
           },
           "response": [
             {
-              "id": "fa1a346c-9dcd-447d-9f57-987f1b9ef1fd",
+              "id": "cc2fcd5a-c8d5-496c-ae37-469bacfa7207",
               "name": "200",
               "originalRequest": {
                 "url": {
@@ -8138,7 +8132,7 @@
               "_postman_previewlanguage": "json"
             },
             {
-              "id": "1a0a97f2-9ee1-4a08-8048-95c7c9aa1247",
+              "id": "fcc4f5b8-824b-4600-979c-eca3c492a611",
               "name": "400",
               "originalRequest": {
                 "url": {
@@ -8191,7 +8185,7 @@
           "description": "",
           "item": [
             {
-              "id": "df123549-cfac-4a77-b45a-ce6aa9c28fc3",
+              "id": "4c1afab0-2e9e-42ab-833a-345f833e90ba",
               "name": "subject.view",
               "request": {
                 "name": "subject.view",
@@ -8230,7 +8224,7 @@
               },
               "response": [
                 {
-                  "id": "c7681b70-9567-4109-913e-dc9e046001c8",
+                  "id": "4e55477c-f3fa-4b54-957f-90ae4fdffd20",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -8285,7 +8279,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "ad77d36b-99fa-468a-b1a4-0ef893fea10f",
+                  "id": "797382e2-7670-44f8-b9c8-94c4d451c777",
                   "name": "404",
                   "originalRequest": {
                     "url": {
@@ -8354,7 +8348,7 @@
       "description": "",
       "item": [
         {
-          "id": "6dacb78b-7a36-41ef-939e-870094a7831f",
+          "id": "6ac38210-5088-45aa-a7bf-20a9dcd36960",
           "name": "syllabus.index",
           "request": {
             "name": "syllabus.index",
@@ -8381,7 +8375,7 @@
           },
           "response": [
             {
-              "id": "1f225076-ada1-4159-9493-7a856ca72f57",
+              "id": "3af93fe2-e693-43c5-ae63-c3ab95d4a850",
               "name": "200",
               "originalRequest": {
                 "url": {
@@ -8434,7 +8428,7 @@
           "description": "",
           "item": [
             {
-              "id": "a9a93aa4-a26b-4b8f-9555-ae65b4ade572",
+              "id": "15d11129-35d5-47f4-b8a2-e07a52a5f248",
               "name": "syllabus.status",
               "request": {
                 "name": "syllabus.status",
@@ -8462,7 +8456,7 @@
               },
               "response": [
                 {
-                  "id": "1f5a0a0c-e2cb-404c-8400-03c4de45a179",
+                  "id": "0cce5444-7804-4175-befa-0463b58cc164",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -8506,7 +8500,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "f31fe4d7-f2eb-4080-865f-5586ff725e65",
+                  "id": "3fa8c1c0-616f-4597-864a-0b07538455d9",
                   "name": "400",
                   "originalRequest": {
                     "url": {
@@ -8566,7 +8560,7 @@
               "description": "",
               "item": [
                 {
-                  "id": "6afc52d0-ecbf-4cfe-81fe-5002eab587c1",
+                  "id": "36edf186-a16e-46d6-a42a-c7e1dad21d48",
                   "name": "syllabus.download",
                   "request": {
                     "name": "syllabus.download",
@@ -8606,7 +8600,7 @@
                   },
                   "response": [
                     {
-                      "id": "54ecea93-665b-42d0-8ad9-42f45c7a3ff1",
+                      "id": "afeaf538-8f6d-49b2-aee3-6a903eb69eee",
                       "name": "200",
                       "originalRequest": {
                         "url": {
@@ -8662,7 +8656,7 @@
                       "_postman_previewlanguage": "json"
                     },
                     {
-                      "id": "51c1c7f7-923e-46af-b026-04956e908365",
+                      "id": "7e91f5a8-4ab3-4095-958e-8727eeb74e39",
                       "name": "404",
                       "originalRequest": {
                         "url": {
@@ -8732,7 +8726,7 @@
           "description": "",
           "item": [
             {
-              "id": "0521f114-7ab1-42f1-bfb2-e3574145c50c",
+              "id": "00bd6ac7-6c6b-4e81-b905-a56835af6287",
               "name": "syllabus.addmessage",
               "request": {
                 "name": "syllabus.addmessage",
@@ -8786,7 +8780,7 @@
               },
               "response": [
                 {
-                  "id": "7968a2d8-9b14-4bad-b7c4-88fbe1d68f63",
+                  "id": "1763b050-f25d-4b9a-991e-70788d1bb4ca",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -8856,7 +8850,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "1c1478a6-1def-4a9d-92cf-3e4c35cd0f78",
+                  "id": "6b7d6d21-2f44-4aaa-be45-234a5ff6adad",
                   "name": "Validation error",
                   "originalRequest": {
                     "url": {
@@ -8940,7 +8934,7 @@
       "description": "",
       "item": [
         {
-          "id": "9e0db9ed-38d5-4968-96e6-cace21c82f92",
+          "id": "ab90d807-ebb1-431c-a4e5-9443c44bc092",
           "name": "teacher.index",
           "request": {
             "name": "teacher.index",
@@ -8967,7 +8961,7 @@
           },
           "response": [
             {
-              "id": "e6e61652-ce8e-41df-8ee7-299f0a13570e",
+              "id": "9acf2d62-7f3f-462f-b61f-82912c193486",
               "name": "200",
               "originalRequest": {
                 "url": {
@@ -9010,7 +9004,7 @@
               "_postman_previewlanguage": "json"
             },
             {
-              "id": "ef6369cb-81bb-4af2-af1c-8f8a68dcbd94",
+              "id": "ec61a9f5-dbae-4575-82fb-e3b75a1c5e77",
               "name": "400",
               "originalRequest": {
                 "url": {
@@ -9063,7 +9057,7 @@
           "description": "",
           "item": [
             {
-              "id": "8facb015-acf0-4c6c-bc5e-e7effba426f3",
+              "id": "d1e06ea5-7f94-47da-8c3a-4be1e2e0454b",
               "name": "teacher.rating",
               "request": {
                 "name": "teacher.rating",
@@ -9126,7 +9120,7 @@
               },
               "response": [
                 {
-                  "id": "030932de-1a91-46f7-8a92-941bfc4dffc5",
+                  "id": "28fca704-c091-4274-9a1d-1db1183fa4f1",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -9205,7 +9199,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "d92cae67-5678-4a8e-a35c-f52c5f6d50a0",
+                  "id": "7e6674e4-3c3a-464a-ad75-8da28c8787a9",
                   "name": "Validation error",
                   "originalRequest": {
                     "url": {
@@ -9302,7 +9296,7 @@
           "description": "",
           "item": [
             {
-              "id": "9a09916c-d3bb-4005-ad6f-4f78cd5766f0",
+              "id": "eb9abf37-fb17-4d8e-b44b-4adf2235b794",
               "name": "timeline.add",
               "request": {
                 "name": "timeline.add",
@@ -9365,7 +9359,7 @@
               },
               "response": [
                 {
-                  "id": "642f88df-f88e-4450-acbd-13234ed17fff",
+                  "id": "cd116994-8123-4845-ae60-38596bf0f85f",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -9444,7 +9438,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "e414de20-20b7-4cff-96df-1fb54c92b54a",
+                  "id": "f0accf05-5d3d-49fa-b666-4fff5b8eb4da",
                   "name": "Validation error",
                   "originalRequest": {
                     "url": {
@@ -9537,7 +9531,7 @@
       "description": "",
       "item": [
         {
-          "id": "b374e750-34f7-4831-875f-522055bac5bd",
+          "id": "e40d46cf-5c57-4217-b3a4-a6e317ec8eaf",
           "name": "timetable.index",
           "request": {
             "name": "timetable.index",
@@ -9564,7 +9558,7 @@
           },
           "response": [
             {
-              "id": "cc8e4441-9ff2-41a9-a9c1-3d891770b424",
+              "id": "cc094027-cf0e-49e4-883d-56c31c62d58a",
               "name": "200",
               "originalRequest": {
                 "url": {
@@ -9607,7 +9601,7 @@
               "_postman_previewlanguage": "json"
             },
             {
-              "id": "084f0352-a05e-4723-9f5d-02c9d2d8fa5d",
+              "id": "9b60a65d-b577-4020-ad13-0de9168f721d",
               "name": "400",
               "originalRequest": {
                 "url": {
@@ -9666,14 +9660,11 @@
           "description": "",
           "item": [
             {
-              "id": "c3332666-7dd1-4f7e-ad0d-476252a902d4",
-              "name": "Get user dashboard data",
+              "id": "366c96d9-b310-4474-a414-cd91d88064a2",
+              "name": "user.dashboard",
               "request": {
-                "name": "Get user dashboard data",
-                "description": {
-                  "content": "GET /api/user/dashboard",
-                  "type": "text/plain"
-                },
+                "name": "user.dashboard",
+                "description": {},
                 "url": {
                   "path": [
                     "user",
@@ -9697,7 +9688,7 @@
               },
               "response": [
                 {
-                  "id": "d80a6e01-5846-4962-9955-73cfbce0dcc2",
+                  "id": "f35dbb3a-4ce2-4716-ad62-cda9cff25b12",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -9741,7 +9732,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "1579e4dc-dd89-44c7-b13e-815eb688c626",
+                  "id": "2d4b0a36-f38b-44de-98b0-38ccad1b5351",
                   "name": "400",
                   "originalRequest": {
                     "url": {
@@ -9797,14 +9788,11 @@
           "description": "",
           "item": [
             {
-              "id": "4d4a1694-4eee-43df-9480-4fb7a1b3c5af",
-              "name": "Get user profile",
+              "id": "5b036453-17e6-44b3-aa62-a0a1ecfc05ed",
+              "name": "user.profile",
               "request": {
-                "name": "Get user profile",
-                "description": {
-                  "content": "GET /api/user/profile",
-                  "type": "text/plain"
-                },
+                "name": "user.profile",
+                "description": {},
                 "url": {
                   "path": [
                     "user",
@@ -9828,7 +9816,7 @@
               },
               "response": [
                 {
-                  "id": "2458fe1d-1b5e-4177-a656-9d4175d6f61b",
+                  "id": "cf7d9752-5912-4fe0-a1d4-61b45030d8db",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -9872,7 +9860,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "0ff83488-5d5f-4660-b2f2-97318561d055",
+                  "id": "fc2a2b87-a54f-470d-b0ee-6f90883d4e1a",
                   "name": "400",
                   "originalRequest": {
                     "url": {
@@ -9928,14 +9916,11 @@
           "description": "",
           "item": [
             {
-              "id": "78b80966-970a-4651-8eff-2e66b5a53aa2",
-              "name": "Get user fees",
+              "id": "d862d29e-679a-4e3a-9597-c6c186fbf1a9",
+              "name": "user.fees",
               "request": {
-                "name": "Get user fees",
-                "description": {
-                  "content": "GET /api/user/fees",
-                  "type": "text/plain"
-                },
+                "name": "user.fees",
+                "description": {},
                 "url": {
                   "path": [
                     "user",
@@ -9959,8 +9944,8 @@
               },
               "response": [
                 {
-                  "id": "a8db5828-88d0-4ae3-a7aa-018dab83477d",
-                  "name": "Configure based on your payment settings",
+                  "id": "25d1db26-c90b-4291-9e9f-cdfce0bff53c",
+                  "name": "200",
                   "originalRequest": {
                     "url": {
                       "path": [
@@ -10003,7 +9988,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "cd30660c-088d-4dcc-a596-89cbe0dcc720",
+                  "id": "ccc83e18-a69e-44c2-b7f3-b4006947d568",
                   "name": "400",
                   "originalRequest": {
                     "url": {
@@ -10059,14 +10044,11 @@
           "description": "",
           "item": [
             {
-              "id": "b75fc05f-c714-4f37-b617-41743a35661f",
-              "name": "Get detailed fees",
+              "id": "8a31fcb2-1a29-4c6b-9f20-98bccf367eb0",
+              "name": "user.getfees",
               "request": {
-                "name": "Get detailed fees",
-                "description": {
-                  "content": "GET /api/user/getfees",
-                  "type": "text/plain"
-                },
+                "name": "user.getfees",
+                "description": {},
                 "url": {
                   "path": [
                     "user",
@@ -10090,7 +10072,7 @@
               },
               "response": [
                 {
-                  "id": "60b47466-cab8-4810-815d-767321b46b4f",
+                  "id": "1a868c52-a594-4c79-97ad-69b2ee638c16",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -10134,7 +10116,7 @@
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "defcfb75-2523-401b-8ad9-c68aced1f8be",
+                  "id": "28be77a1-009d-44ac-ae2c-3ba9419ce7dc",
                   "name": "400",
                   "originalRequest": {
                     "url": {
@@ -10192,7 +10174,7 @@
       "description": "",
       "item": [
         {
-          "id": "47b94662-34bb-4ee6-85e7-470bcb190475",
+          "id": "8226af7e-3823-4bc9-acad-62e1a606b9f6",
           "name": "video Tutorial.index",
           "request": {
             "name": "video Tutorial.index",
@@ -10219,7 +10201,7 @@
           },
           "response": [
             {
-              "id": "ebe46daf-5f1d-433b-ad71-5a4655b0e4ff",
+              "id": "ce5340b8-9c42-418c-84ee-cb4bdf508f3e",
               "name": "200",
               "originalRequest": {
                 "url": {
@@ -10262,7 +10244,7 @@
               "_postman_previewlanguage": "json"
             },
             {
-              "id": "09b2ab50-8b33-4a57-9ee3-ea375b09606d",
+              "id": "4164d347-1ffa-4769-925d-28f210545567",
               "name": "400",
               "originalRequest": {
                 "url": {
@@ -10315,7 +10297,7 @@
           "description": "",
           "item": [
             {
-              "id": "057f5d62-e83b-4232-bf5b-b35c36f2ba50",
+              "id": "63059ab9-0aed-44f4-a1f1-e96a75beaca0",
               "name": "video Tutorial.view",
               "request": {
                 "name": "video Tutorial.view",
@@ -10354,7 +10336,7 @@
               },
               "response": [
                 {
-                  "id": "6fdeb992-f8fc-468e-b257-83bee0f86c49",
+                  "id": "616db632-fde5-4cae-ae7c-8f04359ed714",
                   "name": "200",
                   "originalRequest": {
                     "url": {
@@ -10404,12 +10386,12 @@
                       "value": "application/json"
                     }
                   ],
-                  "body": "{\n  \"status\": \"<string>\",\n  \"data\": {\n    \"video\": \"<string>\"\n  },\n  \"message\": \"<null>\",\n  \"timestamp\": \"<string>\"\n}",
+                  "body": "{\n  \"status\": \"<string>\",\n  \"data\": {\n    \"video\": {}\n  },\n  \"message\": \"<null>\",\n  \"timestamp\": \"<string>\"\n}",
                   "cookie": [],
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "331bf4d5-ff80-4e9c-b993-7058dd4a0a4b",
+                  "id": "67a99794-ed91-48ae-b216-89efe0c4fb2e",
                   "name": "404",
                   "originalRequest": {
                     "url": {
@@ -10478,7 +10460,7 @@
       "description": "",
       "item": [
         {
-          "id": "11d1a04e-5464-4865-a2b2-75331fd31d4e",
+          "id": "281a0378-9ea6-4e26-92d9-e49398e47d7e",
           "name": "visitor.index",
           "request": {
             "name": "visitor.index",
@@ -10505,7 +10487,7 @@
           },
           "response": [
             {
-              "id": "8654f17e-e5d0-4c0b-8838-0bca96f3672d",
+              "id": "f3ab3f5e-64cf-426a-8905-f9ce84180b5b",
               "name": "200",
               "originalRequest": {
                 "url": {
@@ -10548,7 +10530,7 @@
               "_postman_previewlanguage": "json"
             },
             {
-              "id": "99650b0e-405b-43a9-8204-3d6dc262e693",
+              "id": "3e64069c-fde3-4df9-af33-7a9d90d11f06",
               "name": "400",
               "originalRequest": {
                 "url": {
@@ -10617,7 +10599,7 @@
     }
   ],
   "info": {
-    "_postman_id": "ae5dd896-376c-4b5d-b534-5d25898bb3b6",
+    "_postman_id": "fa8cbba8-0836-4075-b930-4d60aa91986a",
     "name": "Smart School LMS - API Documentation",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "description": {

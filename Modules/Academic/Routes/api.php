@@ -13,7 +13,7 @@ use Modules\Academic\Http\Controllers\Api\TimetableController;
 use Modules\Academic\Http\Controllers\Api\ApplyLeaveController;
 use Modules\Academic\Http\Controllers\Api\CalendarController;
 
-Route::middleware('api.token')->prefix('api')->group(function () {
+Route::middleware('auth:sanctum')->prefix('api')->group(function () {
     Route::get('/attendence', [AttendenceController::class, 'index']);
     Route::get('/attendence/getAttendence', [AttendenceController::class, 'getAttendence']);
     Route::post('/attendence/getdaysubattendence', [AttendenceController::class, 'getdaysubattendence']);

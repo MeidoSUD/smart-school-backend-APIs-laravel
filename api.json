@@ -195,6 +195,9 @@
                           "additionalItems": false
                         },
                         "class_list": {
+                          "type": "string"
+                        },
+                        "category_list": {
                           "anyOf": [
                             {
                               "type": "object"
@@ -207,17 +210,44 @@
                             }
                           ]
                         },
-                        "category_list": {
-                          "type": "string"
-                        },
                         "blood_group_list": {
-                          "type": "string"
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            }
+                          ]
                         },
                         "house_list": {
-                          "type": "string"
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            }
+                          ]
                         },
                         "custom_fields": {
-                          "type": "string"
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            }
+                          ]
                         }
                       },
                       "required": [
@@ -270,17 +300,7 @@
                       "const": "success"
                     },
                     "data": {
-                      "anyOf": [
-                        {
-                          "type": "object"
-                        },
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "object"
-                          }
-                        }
-                      ]
+                      "type": "string"
                     },
                     "message": {
                       "type": "null"
@@ -1432,7 +1452,6 @@
     "/auth/login": {
       "post": {
         "operationId": "auth.login",
-        "summary": "Login user and generate token",
         "tags": [
           "Auth"
         ],
@@ -1448,7 +1467,7 @@
         },
         "responses": {
           "200": {
-            "description": "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\nCODEIGNITER EQUIVALENT:\n$response_data = ['token' => $token, 'user' => $result];\nreturn $this->api_success($response_data, 'Login successful');\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -1559,15 +1578,12 @@
           "422": {
             "$ref": "#/components/responses/ValidationException"
           }
-        },
-        "security": []
+        }
       }
     },
     "/auth/logout": {
       "post": {
         "operationId": "auth.logout",
-        "description": "CodeIgniter Route: POST /api/auth/logout\nLaravel Route: POST /api/auth/logout",
-        "summary": "Logout user and clear token",
         "tags": [
           "Auth"
         ],
@@ -1642,8 +1658,6 @@
     "/auth/changepass": {
       "post": {
         "operationId": "auth.changePassword",
-        "description": "CodeIgniter Route: POST /api/auth/changepass\nLaravel Route: POST /api/auth/changepass",
-        "summary": "Change user password",
         "tags": [
           "Auth"
         ],
@@ -5947,8 +5961,6 @@
     "/user/dashboard": {
       "get": {
         "operationId": "user.dashboard",
-        "description": "GET /api/user/dashboard",
-        "summary": "Get user dashboard data",
         "tags": [
           "User"
         ],
@@ -6122,8 +6134,6 @@
     "/user/profile": {
       "get": {
         "operationId": "user.profile",
-        "description": "GET /api/user/profile",
-        "summary": "Get user profile",
         "tags": [
           "User"
         ],
@@ -6414,14 +6424,12 @@
     "/user/fees": {
       "get": {
         "operationId": "user.fees",
-        "description": "GET /api/user/fees",
-        "summary": "Get user fees",
         "tags": [
           "User"
         ],
         "responses": {
           "200": {
-            "description": "Configure based on your payment settings",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -6576,8 +6584,6 @@
     "/user/getfees": {
       "get": {
         "operationId": "user.getfees",
-        "description": "GET /api/user/getfees",
-        "summary": "Get detailed fees",
         "tags": [
           "User"
         ],
@@ -6914,7 +6920,20 @@
                       "type": "object",
                       "properties": {
                         "video": {
-                          "type": "string"
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
                         }
                       },
                       "required": [
@@ -7094,12 +7113,6 @@
           "event_type": {
             "type": "string"
           },
-          "status": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
           "event_color": {
             "type": "string"
           },
@@ -7123,7 +7136,6 @@
           "start_date",
           "end_date",
           "event_type",
-          "status",
           "event_color",
           "event_for",
           "role_id",

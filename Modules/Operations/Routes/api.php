@@ -21,7 +21,7 @@ Route::prefix('api')->group(function () {
     Route::get('/admission/status', [AdmissionController::class, 'status']);
 });
 
-Route::middleware('api.token')->prefix('api')->group(function () {
+Route::middleware('auth:sanctum')->prefix('api')->group(function () {
     Route::get('/book', [BookController::class, 'index']);
     Route::get('/book/issue', [BookController::class, 'issue']);
     

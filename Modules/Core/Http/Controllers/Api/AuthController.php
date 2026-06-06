@@ -14,7 +14,7 @@ use Modules\Academic\Entities\Section;
 use Modules\Finance\Entities\StudentFeeMaster;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 use Modules\Core\Services\ApiLogger;
 
 class AuthController extends \Modules\Core\Http\Controllers\Api\Controller
@@ -42,14 +42,16 @@ public function login(LoginRequest $request): JsonResponse
             return $this->errorResponse('Your account is disabled, please contact administrator.', null, 403);
         }
 
-        if ($user->password !== $credentials['password']) {
-            ApiLogger::logAuth('login_failed', $credentials['username'], false, $user->id);
-            return $this->errorResponse('Invalid username or password', null, 401);
+        if (!Hash::check($credentials['password'], $user->password)) {
+            if ($user->password !== $credentials['password']) {
+                ApiLogger::logAuth('login_failed', $credentials['username'], false, $user->id);
+                return $this->errorResponse('Invalid username or password', null, 401);
+            }
+            $user->password = Hash::make($credentials['password']);
         }
 
-        $token = Str::random(64);
+        $token = $user->createToken('api-token', [$user->role])->plainTextToken;
 
-        $user->token = $token;
         $user->save();
 
         ApiLogger::logAuth('login_success', $credentials['username'], true, $user->id);
@@ -69,10 +71,13 @@ public function logout(Request $request): JsonResponse
         if ($user) {
             $userId = $user->id;
             $username = $user->username;
-            
-            $user->token = null;
-            $user->save();
-            
+
+            if ($request->user()->currentAccessToken()) {
+                $request->user()->currentAccessToken()->delete();
+            } else {
+                $user->tokens()->delete();
+            }
+
             ApiLogger::logAuth('logout', $username, true, $userId);
 
             return $this->successResponse(null, 'Logged out successfully');
@@ -95,12 +100,14 @@ public function logout(Request $request): JsonResponse
 
         $validated = $request->validated();
 
-        if ($user->password !== $validated['current_pass']) {
+        if (!Hash::check($validated['current_pass'], $user->password)) {
             return $this->errorResponse('Invalid current password');
         }
 
-        $user->password = $validated['new_pass'];
+        $user->password = Hash::make($validated['new_pass']);
         $user->save();
+
+        $user->tokens()->delete();
 
         return $this->successResponse(null, 'Password changed successfully');
     }

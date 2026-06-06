@@ -43,16 +43,6 @@ class User extends Authenticatable
         'is_active' => 'boolean',
     ];
 
-    public function findForPassport(string $username): ?self
-    {
-        return $this->where('username', $username)->first();
-    }
-
-    public function validateForPassportPasswordGrant(string $password): bool
-    {
-        return $this->password === $password;
-    }
-
     public function student(): HasOne
     {
         return $this->hasOne(\Modules\Academic\Entities\Student::class, 'parent_id', 'id');
@@ -65,7 +55,7 @@ class User extends Authenticatable
 
     public function isActive(): bool
     {
-        return $this->is_active === 'yes' || $this->is_active === 1 || $this->is_active === true;
+        return $this->is_active === true || $this->is_active === 1 || $this->is_active === 'yes';
     }
 
     public function getRelatedUser()

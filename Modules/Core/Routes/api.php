@@ -6,11 +6,11 @@ use Modules\Core\Http\Controllers\Api\UserController;
 Route::prefix('api')->group(function () {
     // Public Routes
     Route::prefix('auth')->group(function () {
-        Route::post('/login', [AuthController::class, 'login'])->name('api.auth.login');
+        Route::post('/login', [AuthController::class, 'login'])->name('api.auth.login')->middleware('throttle:5,1');
     });
 
     // Protected Routes
-    Route::middleware('api.token')->group(function () {
+    Route::middleware('auth:sanctum')->group(function () {
         Route::prefix('auth')->group(function () {
             Route::post('/logout', [AuthController::class, 'logout']);
             Route::post('/changepass', [AuthController::class, 'changePassword']);
