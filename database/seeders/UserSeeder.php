@@ -6,6 +6,10 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Modules\Core\Entities\User;
 use Modules\Academic\Entities\Student;
+use Modules\Academic\Entities\StudentSession;
+use Modules\Academic\Entities\Classe;
+use Modules\Academic\Entities\Section;
+use Modules\Core\Entities\Session;
 use Modules\Staff\Entities\Staff;
 
 class UserSeeder extends Seeder
@@ -58,6 +62,31 @@ class UserSeeder extends Seeder
             'dis_reason' => 0,
             'note' => '',
             'dis_note' => '',
+        ]);
+
+        $session = Session::create([
+            'session' => '2024-2025',
+            'is_active' => 'yes',
+        ]);
+
+        $classe = Classe::create([
+            'class' => 'الصف السابع',
+            'is_active' => 'yes',
+        ]);
+
+        $section = Section::create([
+            'section' => 'A',
+            'is_active' => 'yes',
+        ]);
+
+        \Illuminate\Support\Facades\DB::table('student_session')->insert([
+            'session_id' => $session->id,
+            'student_id' => $student->id,
+            'class_id' => $classe->id,
+            'section_id' => $section->id,
+            'is_alumni' => 0,
+            'default_login' => 1,
+            'is_active' => 'yes',
         ]);
 
         // Staff: Teacher
