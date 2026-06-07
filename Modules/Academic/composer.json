@@ -1,0 +1,17 @@
+{
+    "name": "modules/academic",
+    "description": "Academic Module - Students, Classes, Exams, Attendance, Homework",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Modules\\Academic\\": ""
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\Academic\\Providers\\AcademicServiceProvider"
+            ]
+        }
+    }
+}

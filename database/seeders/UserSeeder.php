@@ -1,0 +1,365 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+use Modules\Core\Entities\User;
+use Modules\Academic\Entities\Student;
+use Modules\Academic\Entities\StudentSession;
+use Modules\Academic\Entities\Classe;
+use Modules\Academic\Entities\Section;
+use Modules\Core\Entities\Session;
+use Modules\Staff\Entities\Staff;
+
+class UserSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $student = Student::create([
+            'parent_id' => 0,
+            'admission_no' => 'ADM2024001',
+            'roll_no' => '101',
+            'admission_date' => '2024-09-01',
+            'firstname' => 'أحمد',
+            'middlename' => 'خالد',
+            'lastname' => 'الأنصاري',
+            'image' => '',
+            'mobileno' => '0555000001',
+            'email' => 'ahmed.ansari@student.school.com',
+            'state' => 'الرياض',
+            'city' => 'الرياض',
+            'pincode' => '12345',
+            'religion' => 'الإسلام',
+            'cast' => '',
+            'dob' => '2012-04-15',
+            'gender' => 'Male',
+            'current_address' => 'حي النزهة، الرياض',
+            'permanent_address' => 'حي النزهة، الرياض',
+            'category_id' => '1',
+            'blood_group' => 'O+',
+            'guardian_is' => 'father',
+            'father_name' => 'خالد الأنصاري',
+            'father_phone' => '0555000010',
+            'father_occupation' => 'مهندس مدني',
+            'mother_name' => 'نورة الأنصاري',
+            'mother_phone' => '0555000020',
+            'mother_occupation' => 'معلمة',
+            'guardian_name' => 'خالد الأنصاري',
+            'guardian_relation' => 'والد',
+            'guardian_phone' => '0555000010',
+            'guardian_occupation' => 'مهندس مدني',
+            'guardian_address' => 'حي النزهة، الرياض',
+            'guardian_email' => 'khalid.ansari@email.com',
+            'father_pic' => '',
+            'mother_pic' => '',
+            'guardian_pic' => '',
+            'is_active' => 'yes',
+            'previous_school' => '',
+            'height' => '145',
+            'weight' => '38',
+            'measurement_date' => '2024-09-01',
+            'dis_reason' => 0,
+            'note' => '',
+            'dis_note' => '',
+        ]);
+
+        $session = Session::create([
+            'session' => '2024-2025',
+            'is_active' => 'yes',
+        ]);
+
+        $classe = Classe::create([
+            'class' => 'الصف السابع',
+            'is_active' => 'yes',
+        ]);
+
+        $section = Section::create([
+            'section' => 'A',
+            'is_active' => 'yes',
+        ]);
+
+        \Illuminate\Support\Facades\DB::table('student_session')->insert([
+            'session_id' => $session->id,
+            'student_id' => $student->id,
+            'class_id' => $classe->id,
+            'section_id' => $section->id,
+            'is_alumni' => 0,
+            'default_login' => 1,
+            'is_active' => 'yes',
+        ]);
+
+        // Staff: Teacher
+        $teacherStaff = Staff::create([
+            'employee_id' => 'TCH2024001',
+            'lang_id' => 4,
+            'qualification' => 'ماجستير في الرياضيات',
+            'work_exp' => '8 سنوات',
+            'name' => 'سارة',
+            'surname' => 'العبد الله',
+            'father_name' => 'عبد الله',
+            'mother_name' => 'هند',
+            'contact_no' => '0555000030',
+            'emergency_contact_no' => '0555000031',
+            'email' => 'sara.abdullah@teacher.school.com',
+            'dob' => '1991-08-22',
+            'marital_status' => 'married',
+            'date_of_joining' => '2020-09-01',
+            'local_address' => 'حي الملقا، الرياض',
+            'permanent_address' => 'حي الملقا، الرياض',
+            'note' => '',
+            'image' => '',
+            'password' => Hash::make('22222222'),
+            'gender' => 'Female',
+            'account_title' => '',
+            'bank_account_no' => 'SA123456789',
+            'bank_name' => 'البنك الأهلي',
+            'ifsc_code' => 'SAAA1234',
+            'bank_branch' => 'الرياض الرئيسي',
+            'payscale' => 'P7',
+            'basic_salary' => 8500,
+            'epf_no' => 'EPF-001',
+            'contract_type' => 'permanent',
+            'shift' => 'morning',
+            'location' => 'الرياض',
+            'facebook' => '',
+            'twitter' => '',
+            'linkedin' => '',
+            'instagram' => '',
+            'resume' => '',
+            'joining_letter' => '',
+            'resignation_letter' => '',
+            'other_document_name' => '',
+            'other_document_file' => '',
+            'user_id' => 0,
+            'is_active' => 1,
+            'verification_code' => '',
+        ]);
+
+        // Staff: General Staff
+        $generalStaff = Staff::create([
+            'employee_id' => 'STF2024001',
+            'lang_id' => 4,
+            'qualification' => 'بكالوريوس إدارة أعمال',
+            'work_exp' => '3 سنوات',
+            'name' => 'محمد',
+            'surname' => 'العمر',
+            'father_name' => 'عمر',
+            'mother_name' => 'لطيفة',
+            'contact_no' => '0555000040',
+            'emergency_contact_no' => '0555000041',
+            'email' => 'mohammed.alomar@staff.school.com',
+            'dob' => '1995-11-10',
+            'marital_status' => 'single',
+            'date_of_joining' => '2023-01-15',
+            'local_address' => 'حي العليا، الرياض',
+            'permanent_address' => 'حي العليا، الرياض',
+            'note' => '',
+            'image' => '',
+            'password' => Hash::make('22222222'),
+            'gender' => 'Male',
+            'account_title' => '',
+            'bank_account_no' => 'SA987654321',
+            'bank_name' => 'بنك الراجحي',
+            'ifsc_code' => 'RJHI1234',
+            'bank_branch' => 'الرياض فرع العليا',
+            'payscale' => 'P4',
+            'basic_salary' => 5000,
+            'epf_no' => 'EPF-002',
+            'contract_type' => 'permanent',
+            'shift' => 'morning',
+            'location' => 'الرياض',
+            'facebook' => '',
+            'twitter' => '',
+            'linkedin' => '',
+            'instagram' => '',
+            'resume' => '',
+            'joining_letter' => '',
+            'resignation_letter' => '',
+            'other_document_name' => '',
+            'other_document_file' => '',
+            'user_id' => 0,
+            'is_active' => 1,
+            'verification_code' => '',
+        ]);
+
+        // Staff: Accountant
+        $accountantStaff = Staff::create([
+            'employee_id' => 'ACC2024001',
+            'lang_id' => 4,
+            'qualification' => 'بكالوريوس محاسبة',
+            'work_exp' => '6 سنوات',
+            'name' => 'فهد',
+            'surname' => 'المطيري',
+            'father_name' => 'مطير',
+            'mother_name' => 'منيرة',
+            'contact_no' => '0555000050',
+            'emergency_contact_no' => '0555000051',
+            'email' => 'fahad.almutairi@accountant.school.com',
+            'dob' => '1988-03-05',
+            'marital_status' => 'married',
+            'date_of_joining' => '2019-04-01',
+            'local_address' => 'حي السليمانية، الرياض',
+            'permanent_address' => 'حي السليمانية، الرياض',
+            'note' => '',
+            'image' => '',
+            'password' => Hash::make('22222222'),
+            'gender' => 'Male',
+            'account_title' => 'فهد المطيري',
+            'bank_account_no' => 'SA456789123',
+            'bank_name' => 'بنك الرياض',
+            'ifsc_code' => 'RIBL1234',
+            'bank_branch' => 'الرياض فرع السليمانية',
+            'payscale' => 'P6',
+            'basic_salary' => 7000,
+            'epf_no' => 'EPF-003',
+            'contract_type' => 'permanent',
+            'shift' => 'morning',
+            'location' => 'الرياض',
+            'facebook' => '',
+            'twitter' => '',
+            'linkedin' => '',
+            'instagram' => '',
+            'resume' => '',
+            'joining_letter' => '',
+            'resignation_letter' => '',
+            'other_document_name' => '',
+            'other_document_file' => '',
+            'user_id' => 0,
+            'is_active' => 1,
+            'verification_code' => '',
+        ]);
+
+        // Staff: Librarian
+        $librarianStaff = Staff::create([
+            'employee_id' => 'LIB2024001',
+            'lang_id' => 4,
+            'qualification' => 'بكالوريوس مكتبات',
+            'work_exp' => '4 سنوات',
+            'name' => 'نورة',
+            'surname' => 'الحربي',
+            'father_name' => 'سعد',
+            'mother_name' => 'مريم',
+            'contact_no' => '0555000060',
+            'emergency_contact_no' => '0555000061',
+            'email' => 'noura.alharbi@librarian.school.com',
+            'dob' => '1993-07-18',
+            'marital_status' => 'single',
+            'date_of_joining' => '2022-09-01',
+            'local_address' => 'حي الورود، الرياض',
+            'permanent_address' => 'حي الورود، الرياض',
+            'note' => '',
+            'image' => '',
+            'password' => Hash::make('22222222'),
+            'gender' => 'Female',
+            'account_title' => '',
+            'bank_account_no' => 'SA321654987',
+            'bank_name' => 'بنك الجزيرة',
+            'ifsc_code' => 'BJZI1234',
+            'bank_branch' => 'الرياض فرع الورود',
+            'payscale' => 'P5',
+            'basic_salary' => 5500,
+            'epf_no' => 'EPF-004',
+            'contract_type' => 'permanent',
+            'shift' => 'morning',
+            'location' => 'الرياض',
+            'facebook' => '',
+            'twitter' => '',
+            'linkedin' => '',
+            'instagram' => '',
+            'resume' => '',
+            'joining_letter' => '',
+            'resignation_letter' => '',
+            'other_document_name' => '',
+            'other_document_file' => '',
+            'user_id' => 0,
+            'is_active' => 1,
+            'verification_code' => '',
+        ]);
+
+        // Create Users
+        // 1. Student User
+        $studentUser = User::create([
+            'user_id' => $student->id,
+            'username' => 'ahmed.ansari',
+            'password' => Hash::make('22222222'),
+            'childs' => '',
+            'role' => 'student',
+            'lang_id' => 4,
+            'currency_id' => 150,
+            'verification_code' => '',
+            'is_active' => 'yes',
+        ]);
+
+        // 2. Parent User (father of the student)
+        $parentUser = User::create([
+            'user_id' => $student->id,
+            'username' => 'khalid.ansari',
+            'password' => Hash::make('22222222'),
+            'childs' => json_encode([$student->id]),
+            'role' => 'parent',
+            'lang_id' => 4,
+            'currency_id' => 150,
+            'verification_code' => '',
+            'is_active' => 'yes',
+        ]);
+
+        // 3. Teacher User
+        $teacherUser = User::create([
+            'user_id' => $teacherStaff->id,
+            'username' => 'sara.abdullah',
+            'password' => Hash::make('22222222'),
+            'childs' => '',
+            'role' => 'teacher',
+            'lang_id' => 4,
+            'currency_id' => 150,
+            'verification_code' => '',
+            'is_active' => 'yes',
+        ]);
+
+        // 4. General Staff User
+        $staffUser = User::create([
+            'user_id' => $generalStaff->id,
+            'username' => 'mohammed.alomar',
+            'password' => Hash::make('22222222'),
+            'childs' => '',
+            'role' => 'staff',
+            'lang_id' => 4,
+            'currency_id' => 150,
+            'verification_code' => '',
+            'is_active' => 'yes',
+        ]);
+
+        // 5. Accountant User
+        $accountantUser = User::create([
+            'user_id' => $accountantStaff->id,
+            'username' => 'fahad.almutairi',
+            'password' => Hash::make('22222222'),
+            'childs' => '',
+            'role' => 'accountant',
+            'lang_id' => 4,
+            'currency_id' => 150,
+            'verification_code' => '',
+            'is_active' => 'yes',
+        ]);
+
+        // 6. Librarian User
+        $librarianUser = User::create([
+            'user_id' => $librarianStaff->id,
+            'username' => 'noura.alharbi',
+            'password' => Hash::make('22222222'),
+            'childs' => '',
+            'role' => 'librarian',
+            'lang_id' => 4,
+            'currency_id' => 150,
+            'verification_code' => '',
+            'is_active' => 'yes',
+        ]);
+
+        // Update staff records with correct user_id
+        $teacherStaff->update(['user_id' => $teacherUser->id]);
+        $generalStaff->update(['user_id' => $staffUser->id]);
+        $accountantStaff->update(['user_id' => $accountantUser->id]);
+        $librarianStaff->update(['user_id' => $librarianUser->id]);
+    }
+}

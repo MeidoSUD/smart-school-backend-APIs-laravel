@@ -1,0 +1,9 @@
+{
+    "name": "Staff",
+    "alias": "staff",
+    "description": "Staff Module - Teachers, Staff, Ratings, Payroll",
+    "priority": 4,
+    "providers": [
+        "Modules\\Staff\\Providers\\StaffServiceProvider"
+    ]
+}

@@ -29,10 +29,8 @@ class RouteServiceProvider extends ServiceProvider
         });
 
         $this->routes(function () {
-            Route::middleware('api')
-                ->prefix('api')
-                ->group(base_path('routes/api.php'));
-
+            // Routes are now loaded from modules (Core, Academic, Finance, Staff, Operations)
+            // See Modules/*/Providers/*ServiceProvider.php and Modules/*/Routes/api.php
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
         });
