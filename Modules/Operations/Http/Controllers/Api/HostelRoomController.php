@@ -17,7 +17,7 @@ class HostelRoomController extends \Modules\Core\Http\Controllers\Api\Controller
 
     public function index(): JsonResponse
     {
-        $listroom = HostelRoom::where('is_active', 'yes')->get();
+        $listroom = HostelRoom::all();
         
         $data = [
             'listroom' => $listroom,

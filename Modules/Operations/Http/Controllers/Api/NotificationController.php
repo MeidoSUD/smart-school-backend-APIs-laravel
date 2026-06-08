@@ -3,7 +3,7 @@
 namespace Modules\Operations\Http\Controllers\Api;
 
 use Modules\Operations\Entities\Notification;
-use Modules\Operations\Entities\NotificationStatus;
+use Modules\Operations\Entities\ReadNotification;
 use Modules\Academic\Entities\StudentSession;
 use Modules\Academic\Entities\Student;
 use Modules\Academic\Entities\Staff;
@@ -25,32 +25,25 @@ class NotificationController extends \Modules\Core\Http\Controllers\Api\Controll
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        $role = $user->role;
-        
-        $studentId = $this->getStudentId($user);
-        
+
         $query = Notification::where('is_active', 'yes')
-            ->where('publish_date', '<=', now());
-        
-        $notifications = $query->get();
-        
-        $notificationList = [];
-        foreach ($notifications as $value) {
-            if (strtotime(date('Y-m-d')) >= strtotime($value->publish_date)) {
-                $notificationList[] = $value;
-                }
+            ->where('publish_date', '<=', now()->toDateString())
+            ->orderByDesc('publish_date');
 
-
-            }
-
-
-        
-        $data = [
-            'notificationlist' => $notificationList,
-        ];
-        
-        return $this->successResponse($data);
+        if ($user->role === 'student') {
+            $query->where('visible_student', 'yes');
+        } elseif ($user->role === 'parent') {
+            $query->where('visible_parent', 'yes');
+        } else {
+            return $this->errorResponse('Notifications not available for this role');
         }
+
+        $notificationList = $query->get()
+            ->filter(fn ($notification) => strtotime(date('Y-m-d')) >= strtotime($notification->publish_date))
+            ->values();
+
+        return $this->successResponse(['notificationlist' => $notificationList]);
+    }
 
 
 
@@ -59,13 +52,13 @@ class NotificationController extends \Modules\Core\Http\Controllers\Api\Controll
     {
         $user = $request->user();
         $notificationId = $request->notification_id;
-        $studentId = $this->getStudentId($user);
-        
-        NotificationStatus::updateOrCreate(
-            ['notification_id' => $notificationId, 'user_id' => $studentId],
-            ['visible_date_read' => now()]
-        );
-        
+
+        $result = ReadNotification::markAsRead((int) $notificationId, $user);
+
+        if (!$result) {
+            return $this->errorResponse('Unable to update notification status');
+        }
+
         return $this->successResponse(['notification' => true], 'Status updated successfully');
         }
 
@@ -75,16 +68,16 @@ class NotificationController extends \Modules\Core\Http\Controllers\Api\Controll
     {
         $notificationId = $request->notice;
         $user = $request->user();
-        $studentId = $this->getStudentId($user);
-        
+
         if ($notificationId) {
-            NotificationStatus::updateOrCreate(
-                ['notification_id' => $notificationId, 'user_id' => $studentId],
-                ['visible_date_read' => now()]
-            );
-            
-            return $this->successResponse(null, 'Notification marked as read');
+            $result = ReadNotification::markAsRead((int) $notificationId, $user);
+
+            if (!$result) {
+                return $this->errorResponse('Unable to mark notification as read');
             }
+
+            return $this->successResponse(null, 'Notification marked as read');
+        }
 
 
         
@@ -123,8 +116,8 @@ class NotificationController extends \Modules\Core\Http\Controllers\Api\Controll
         $setting = Setting::first();
         $superadminRestriction = $setting ? ($setting->superadmin_restriction ?? false) : false;
         
-        if ($notificationlist->created_by) {
-            $staff = Staff::find($notificationlist->created_by);
+        if ($notificationlist->created_id) {
+            $staff = Staff::find($notificationlist->created_id);
             if ($staff && (!$superadminRestriction || $staff->role_id != 7)) {
                 $notificationlist->created_by = ($staff->surname ? $staff->name . ' ' . $staff->surname : $staff->name) . ' (' . $staff->employee_id . ')';
             } else {

@@ -27,7 +27,11 @@ class ExamController extends \Modules\Core\Http\Controllers\Api\Controller
             return $this->errorResponse('Student session not found');
         }
 
-        $examResult = ExamSchedule::where('session_id', $studentSession->session_id)->get();
+        $examResult = ExamSchedule::getExamsByClassAndSection(
+            $studentSession->class_id,
+            $studentSession->section_id,
+            $studentSession->session_id
+        );
 
         $data = [
             'class_id' => $studentSession->class_id,

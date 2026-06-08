@@ -32,7 +32,8 @@ class OfflinePaymentController extends \Modules\Core\Http\Controllers\Api\Contro
         
         $student = Student::find($studentSession->student_id);
         $paymentList = OfflinePayment::where('student_session_id', $studentSession->id)
-            ->orderBy('payment_date', 'desc')
+            ->orderByDesc('submit_date')
+            ->orderByDesc('payment_date')
             ->get();
         
         $data = [
@@ -64,9 +65,10 @@ class OfflinePaymentController extends \Modules\Core\Http\Controllers\Api\Contro
         $offlinePayment = OfflinePayment::create([
             'student_session_id' => $studentSession->id,
             'amount' => $request->amount,
-            'payment_mode' => $request->payment_mode,
-            'payment_date' => now(),
-            'status' => 'pending',
+            'reference' => $request->payment_mode,
+            'payment_date' => now()->toDateString(),
+            'submit_date' => now(),
+            'is_active' => '0',
         ]);
         
         return $this->successResponse(['id' => $offlinePayment->id], 'Payment request submitted successfully');

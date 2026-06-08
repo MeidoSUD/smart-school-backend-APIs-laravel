@@ -27,26 +27,30 @@ class MarkController extends \Modules\Core\Http\Controllers\Api\Controller
             return $this->errorResponse('Student session not found');
         }
 
-        $reportcard = ExamSchedule::where('session_id', $studentSession->session_id)
-            ->where('class_id', $studentSession->class_id)
-            ->get();
+        $reportcard = ExamSchedule::getExamsByClassAndSection(
+            $studentSession->class_id,
+            $studentSession->section_id,
+            $studentSession->session_id
+        );
 
         $examSchedule = [];
-        if ($reportcard->isNotEmpty()) {
-            foreach ($reportcard as $data) {
-                $examResults = ExamResult::where('exam_schedule_id', $data->id)
-                    ->where('student_session_id', $studentSession->id)
-                    ->get();
+        foreach ($reportcard as $exam) {
+            $examResults = ExamSchedule::getResultsByStudentAndExam(
+                $exam->id,
+                $studentSession->student_id,
+                $studentSession->session_id
+            );
 
-                $examArray = [
-                    'exam_id' => $data->id,
-                    'full_marks' => $data->full_marks,
-                    'passing_marks' => $data->passing_marks,
-                    'exam_name' => $data->name ?? 'Exam',
-                    'get_marks' => $examResults->first()->mark_obtained ?? null,
+            foreach ($examResults as $result) {
+                $examSchedule[] = [
+                    'exam_id' => $result->exam_id,
+                    'exam_schedule_id' => $result->exam_schedule_id,
+                    'full_marks' => $result->full_marks,
+                    'passing_marks' => $result->passing_marks,
+                    'exam_name' => $exam->name ?? $result->name ?? 'Exam',
+                    'get_marks' => $result->get_marks,
+                    'attendence' => $result->attendence,
                 ];
-
-                $examSchedule[] = $examArray;
             }
         }
 
@@ -72,22 +76,24 @@ class MarkController extends \Modules\Core\Http\Controllers\Api\Controller
 
         $gradeList = Grade::where('is_active', 'yes')->get();
 
-        $examList = ExamSchedule::where('session_id', $studentSession->session_id)
-            ->where('class_id', $studentSession->class_id)
-            ->get();
+        $examList = ExamSchedule::getExamsByClassAndSection(
+            $studentSession->class_id,
+            $studentSession->section_id,
+            $studentSession->session_id
+        );
 
         $examSchedule = [];
-        foreach ($examList as $ex) {
-            $examSub = ExamResult::where('exam_schedule_id', $ex->id)
-                ->where('student_session_id', $studentSession->id)
-                ->get();
+        foreach ($examList as $exam) {
+            $examSub = ExamSchedule::getResultsByStudentAndExam(
+                $exam->id,
+                $studentSession->student_id,
+                $studentSession->session_id
+            );
 
-            $examArray = [
-                'exam_name' => $ex->name ?? 'Exam',
+            $examSchedule[] = [
+                'exam_name' => $exam->name ?? 'Exam',
                 'exam_result' => $examSub,
             ];
-
-            $examSchedule[] = $examArray;
         }
 
         $data = [

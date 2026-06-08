@@ -110,7 +110,7 @@ class AttendenceController extends \Modules\Core\Http\Controllers\Api\Controller
 
     public function getevents(): JsonResponse
     {
-        $result = CalendarEvent::where('status', 'yes')
+        $result = CalendarEvent::where('is_active', 'yes')
             ->where('event_type', '!=', 'private')
             ->get();
 

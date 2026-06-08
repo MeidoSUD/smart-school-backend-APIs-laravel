@@ -3,7 +3,6 @@
 namespace Modules\Academic\Http\Controllers\Api;
 
 use Modules\Academic\Entities\Syllabus;
-use Modules\Academic\Entities\SyllabusStatus;
 use Modules\Academic\Entities\SyllabusMessage;
 use Modules\Academic\Entities\StudentSession;
 use Modules\Academic\Entities\Student;
@@ -41,40 +40,68 @@ class SyllabusController extends \Modules\Core\Http\Controllers\Api\Controller
             return $this->errorResponse('Student session not found');
         }
 
-        $subjects = Syllabus::where('class_section_id', $studentSession->class_id)->get();
+        $subjects = Syllabus::getMySubjects(
+            $studentSession->class_id,
+            $studentSession->section_id,
+            $studentSession->session_id
+        );
 
         $subjectsData = [];
-        foreach ($subjects as $value) {
-            $complete = 0;
-            $incomplete = 0;
-            $total = 1;
+        foreach ($subjects as $subject) {
+            $subjectDetails = Syllabus::getSubjectStatus(
+                $subject->subject_group_subjects_id,
+                $subject->subject_group_class_sections_id
+            );
 
-            $statuses = SyllabusStatus::where('syllabus_id', $value->id)->get();
-            if ($statuses->isNotEmpty()) {
-                $total = $statuses->count();
-                $complete = $statuses->where('status', 1)->count();
-                $incomplete = $total - $complete;
+            $label = $subject->code ? ' (' . $subject->code . ')' : '';
+            $total = $subjectDetails->total ?? 0;
+            $completePercent = 0;
+            $incompletePercent = 0;
+
+            if ($total > 0) {
+                $completePercent = round(($subjectDetails->complete / $total) * 100);
+                $incompletePercent = round(($subjectDetails->incomplete / $total) * 100);
             }
 
-            $completePercent = $total > 0 ? round(($complete / $total) * 100) : 0;
-            $incompletePercent = $total > 0 ? round(($incomplete / $total) * 100) : 0;
+            $lessonSummary = [];
+            $syllabusReport = Syllabus::getSubjectSyllabusReport(
+                $subject->subject_group_subjects_id,
+                $subject->subject_group_class_sections_id
+            );
 
-            $subjectsData[$value->id] = [
-                'lebel' => $value->topic . ($value->code ? ' (' . $value->code . ')' : ''),
+            foreach ($syllabusReport as $lesson) {
+                $topics = Syllabus::getTopicsByLessonId($lesson->id);
+                $topicComplete = $topics->where('status', 1)->count();
+                $totalTopics = $topics->count();
+
+                $lessonSummary[] = [
+                    'name' => $lesson->name,
+                    'topics' => $topics->map(fn ($topic) => [
+                        'name' => $topic->name,
+                        'status' => $topic->status,
+                        'complete_date' => $topic->complete_date,
+                    ])->values(),
+                    'incomplete_percent' => $totalTopics > 0 ? round((($totalTopics - $topicComplete) / $totalTopics) * 100) : 0,
+                    'complete_percent' => $totalTopics > 0 ? round(($topicComplete / $totalTopics) * 100) : 0,
+                ];
+            }
+
+            $subjectsData[$subject->subject_group_subjects_id] = [
+                'lebel' => $subject->name . $label,
                 'complete' => $completePercent,
                 'incomplete' => $incompletePercent,
-                'id' => $value->id,
+                'id' => $subject->subject_group_subjects_id . '_' . $subject->code,
                 'total' => $total,
-                'name' => $value->topic,
+                'name' => $subject->name,
+                'graph_id' => $subject->subject_group_subjects_id . time(),
+                'lesson_summary' => $lessonSummary,
             ];
         }
 
-        $data = [
+        return $this->successResponse([
             'subjects_data' => $subjectsData,
             'status' => ['1' => 'Complete', '0' => 'Incomplete'],
-        ];
-
-        return $this->successResponse($data);
+        ]);
     }
 
     public function download($id): JsonResponse
@@ -90,7 +117,7 @@ class SyllabusController extends \Modules\Core\Http\Controllers\Api\Controller
 
     public function addmessage(Request $request): JsonResponse
     {
-        $validated = $request->validate([
+        $request->validate([
             'syllabus_id' => 'required',
             'message' => 'required|string',
         ]);
@@ -99,7 +126,7 @@ class SyllabusController extends \Modules\Core\Http\Controllers\Api\Controller
         $studentId = $this->getStudentId($user);
 
         SyllabusMessage::create([
-            'syllabus_id' => $request->syllabus_id,
+            'subject_syllabus_id' => $request->syllabus_id,
             'type' => 'student',
             'student_id' => $studentId,
             'message' => $request->message,
@@ -113,13 +140,9 @@ class SyllabusController extends \Modules\Core\Http\Controllers\Api\Controller
     {
         $subjectSyllabusId = $request->syllabus_id;
 
-        $messageList = SyllabusMessage::where('syllabus_id', $subjectSyllabusId)->get();
+        $messageList = SyllabusMessage::where('subject_syllabus_id', $subjectSyllabusId)->get();
 
-        $data = [
-            'messagelist' => $messageList,
-        ];
-
-        return $this->successResponse($data);
+        return $this->successResponse(['messagelist' => $messageList]);
     }
 
     private function getStudentSession($user)

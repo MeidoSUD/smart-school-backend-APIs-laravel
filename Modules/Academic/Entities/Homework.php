@@ -12,8 +12,9 @@ class Homework extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'class_id', 'section_id', 'subject_id', 'homework_date', 'submit_date', 'submission_date',
-        'description', 'created_by', 'evaluated_by', 'evaluation_date', 'created_at',
+        'class_id', 'section_id', 'session_id', 'staff_id', 'subject_group_subject_id',
+        'subject_id', 'homework_date', 'submit_date', 'marks', 'description', 'create_date',
+        'evaluation_date', 'document', 'created_by', 'evaluated_by', 'created_at',
     ];
 
     public function class(): BelongsTo

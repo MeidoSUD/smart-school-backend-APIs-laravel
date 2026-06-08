@@ -6,12 +6,21 @@ use Illuminate\Database\Eloquent\Model;
 
 class Notification extends Model
 {
-    protected $table = 'notifications';
+    protected $table = 'send_notification';
     protected $primaryKey = 'id';
     public $timestamps = false;
 
     protected $fillable = [
-        'title', 'notice_date', 'publish_date', 'message', 'visible_at',
-        'class_id', 'section_id', 'created_by', 'created_for', 'is_active', 'attachment',
+        'title',
+        'publish_date',
+        'date',
+        'attachment',
+        'message',
+        'visible_student',
+        'visible_staff',
+        'visible_parent',
+        'created_by',
+        'created_id',
+        'is_active',
     ];
 }

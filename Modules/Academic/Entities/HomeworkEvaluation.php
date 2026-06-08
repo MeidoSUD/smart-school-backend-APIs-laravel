@@ -10,5 +10,13 @@ class HomeworkEvaluation extends Model
     protected $primaryKey = 'id';
     public $timestamps = false;
 
-    protected $fillable = ['homework_id', 'student_id', 'docs', 'evaluation_date', 'remark', 'created_by'];
+    protected $fillable = [
+        'homework_id',
+        'student_id',
+        'student_session_id',
+        'marks',
+        'note',
+        'date',
+        'status',
+    ];
 }

@@ -3,7 +3,7 @@
 namespace Modules\Academic\Http\Controllers\Api;
 
 use Modules\Academic\Entities\Homework;
-use Modules\Academic\Entities\HomeworkEvaluation;
+use Modules\Academic\Entities\SubmitAssignment;
 use Modules\Academic\Entities\DailyAssignment;
 use Modules\Academic\Entities\StudentSession;
 use Modules\Academic\Entities\Student;
@@ -31,11 +31,11 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
 
         $homeworklist = Homework::where('class_id', $studentSession->class_id)
             ->where('section_id', $studentSession->section_id)
-            ->where('submission_date', '>=', now())
+            ->where('submit_date', '>=', now()->toDateString())
             ->get();
 
         foreach ($homeworklist as $key => $homework) {
-            $checkstatus = HomeworkEvaluation::where('homework_id', $homework->id)
+            $checkstatus = SubmitAssignment::where('homework_id', $homework->id)
                 ->where('student_id', $studentSession->student_id)
                 ->count();
 
@@ -44,11 +44,11 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
 
         $closedhomeworklist = Homework::where('class_id', $studentSession->class_id)
             ->where('section_id', $studentSession->section_id)
-            ->where('submission_date', '<', now())
+            ->where('submit_date', '<', now()->toDateString())
             ->get();
 
         foreach ($closedhomeworklist as $key => $homework) {
-            $checkstatus = HomeworkEvaluation::where('homework_id', $homework->id)
+            $checkstatus = SubmitAssignment::where('homework_id', $homework->id)
                 ->where('student_id', $studentSession->student_id)
                 ->count();
 
@@ -78,7 +78,7 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
 
         $homeworkId = $request->homework_id;
 
-        $isRequired = HomeworkEvaluation::where('homework_id', $homeworkId)
+        $isRequired = SubmitAssignment::where('homework_id', $homeworkId)
             ->where('student_id', $studentId)
             ->count();
 
@@ -89,9 +89,9 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
         $data = [
             'homework_id' => $homeworkId,
             'student_id' => $studentId,
+            'message' => $request->message,
             'docs' => '',
-            'remark' => $request->message,
-            'evaluation_date' => now(),
+            'file_name' => null,
         ];
 
         if ($request->hasFile('file')) {
@@ -99,9 +99,10 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
             $filename = time() . '_' . $file->getClientOriginalName();
             $file->move(public_path('uploads/homework/assignment'), $filename);
             $data['docs'] = $filename;
+            $data['file_name'] = $file->getClientOriginalName();
         }
 
-        HomeworkEvaluation::create($data);
+        SubmitAssignment::create($data);
 
         return $this->successResponse(null, 'Homework submitted successfully');
     }

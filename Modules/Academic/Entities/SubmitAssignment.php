@@ -4,18 +4,17 @@ namespace Modules\Academic\Entities;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ExamResult extends Model
+class SubmitAssignment extends Model
 {
-    protected $table = 'exam_results';
+    protected $table = 'submit_assignment';
     protected $primaryKey = 'id';
     public $timestamps = false;
 
     protected $fillable = [
-        'exam_schedule_id',
+        'homework_id',
         'student_id',
-        'attendence',
-        'get_marks',
-        'note',
-        'is_active',
+        'message',
+        'docs',
+        'file_name',
     ];
 }

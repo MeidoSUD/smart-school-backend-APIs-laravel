@@ -42,7 +42,7 @@ class CalendarController extends \Modules\Core\Http\Controllers\Api\Controller
     {
         $user = $request->user();
 
-        $result = CalendarEvent::where('status', 'yes')
+        $result = CalendarEvent::where('is_active', 'yes')
             ->where('event_type', '!=', 'private')
             ->get();
 
