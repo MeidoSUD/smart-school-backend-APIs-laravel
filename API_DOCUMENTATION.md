@@ -46,6 +46,12 @@ All protected endpoints require a Bearer token. Include it in the Authorization 
 Authorization: Bearer <your-token>
 ```
 
+### Parent multi-child context
+
+Parent accounts with multiple children may pass an optional `student_id` query or body parameter on student-scoped endpoints (dashboard, fees, attendance, homework, etc.) to select which child to act on. When omitted, the API uses the parent's first registered child.
+
+Login responses for parents include a `childs` array with each child's `student_id`, `student_session_id`, `class_id`, `section_id`, `class`, and `section`.
+
 ---
 
 ## Admission

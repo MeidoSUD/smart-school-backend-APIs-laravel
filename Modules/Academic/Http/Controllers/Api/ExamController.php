@@ -5,9 +5,6 @@ namespace Modules\Academic\Http\Controllers\Api;
 use Modules\Academic\Entities\Exam;
 use Modules\Academic\Entities\ExamSchedule;
 use Modules\Academic\Entities\ExamGroupStudent;
-use Modules\Academic\Entities\StudentSession;
-use Modules\Academic\Entities\Student;
-use Modules\Core\Entities\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -20,8 +17,7 @@ class ExamController extends \Modules\Core\Http\Controllers\Api\Controller
 
     public function index(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $studentSession = $this->getStudentSession($user);
+        $studentSession = $this->studentSession($request);
 
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
@@ -53,57 +49,9 @@ class ExamController extends \Modules\Core\Http\Controllers\Api\Controller
         return $this->successResponse(['exam' => $exam]);
     }
 
-    public function getByFeecategory(Request $request): JsonResponse
-    {
-        $feecategoryId = $request->get('feecategory_id');
-
-        $data = Exam::where('sesion_id', $feecategoryId)->get();
-
-        return $this->successResponse($data);
-    }
-
-    public function getStudentCategoryFee(Request $request): JsonResponse
-    {
-        $type = $request->post('type');
-        $classId = $request->post('class_id');
-
-        $data = Exam::where('sesion_id', $type)
-            ->where('class_id', $classId)
-            ->get();
-
-        $status = $data->isEmpty() ? 'fail' : 'success';
-
-        return $this->successResponse($data, null, $status);
-    }
-
-    public function examSearch(Request $request): JsonResponse
-    {
-        $data = ['title' => 'Search exam', 'exp_title' => 'Exam Result'];
-
-        if ($request->isMethod('post')) {
-            $search = $request->post('search');
-
-            if ($search === 'search_filter') {
-                $dateFrom = $request->post('date_from');
-                $dateTo = $request->post('date_to');
-
-                $resultList = Exam::whereBetween('created_at', [$dateFrom, $dateTo])->get();
-                $data['exp_title'] = 'Exam Result From ' . $dateFrom . ' To ' . $dateTo;
-                $data['resultList'] = $resultList;
-            } else {
-                $searchText = $request->post('search_text');
-                $resultList = Exam::where('name', 'like', '%' . $searchText . '%')->get();
-                $data['resultList'] = $resultList;
-            }
-        }
-
-        return $this->successResponse($data);
-    }
-
     public function examresult(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $studentSession = $this->getStudentSession($user);
+        $studentSession = $this->studentSession($request);
 
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
@@ -120,25 +68,4 @@ class ExamController extends \Modules\Core\Http\Controllers\Api\Controller
         return $this->successResponse($data);
     }
 
-    private function getStudentSession($user)
-    {
-        $studentId = null;
-
-        if ($user->role === 'student') {
-            $studentId = $user->user_id;
-        } elseif ($user->role === 'parent') {
-            $student = Student::where('parent_id', $user->id)->first();
-            $studentId = $student ? $student->id : null;
-        }
-
-        if (!$studentId) {
-            return null;
-        }
-
-        $setting = Setting::where('is_active', 1)->first();
-
-        return StudentSession::where('student_id', $studentId)
-            ->when($setting, fn($q) => $q->where('session_id', $setting->id))
-            ->first();
-    }
 }

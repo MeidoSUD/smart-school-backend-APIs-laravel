@@ -38,8 +38,7 @@ class BookController extends \Modules\Core\Http\Controllers\Api\Controller
 
     public function issue(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $studentSession = $this->getStudentSession($user);
+        $studentSession = $this->studentSession($request);
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
@@ -71,31 +70,4 @@ class BookController extends \Modules\Core\Http\Controllers\Api\Controller
 
 
 
-    private function getStudentSession($user)
-    {
-        $studentId = null;
-        
-        if ($user->role === 'student') {
-            $studentId = $user->user_id;
-        } elseif ($user->role === 'parent') {
-            $student = Student::where('parent_id', $user->id)->first();
-            $studentId = $student ? $student->id : null;
-            }
-
-
-        
-        if (!$studentId) {
-            return null;
-            }
-
-
-        
-        $setting = Setting::where('is_active', 1)->first();
-        
-        return StudentSession::where('student_id', $studentId)
-            ->when($setting, fn($q) => $q->where('session_id', $setting->id))
-            ->first();
-        }
-
-
-    }
+}

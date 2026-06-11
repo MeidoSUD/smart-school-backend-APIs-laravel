@@ -2,8 +2,7 @@ class ApiEndpoints {
   // 💡 TIP: 'localhost' refers to the phone itself.
   // Use '10.0.2.2' for Android Emulator OR your machine's IP (e.g. 10.80.64.185) for physical devices.
 //   static const String baseUrl = "http://10.80.64.185/smart-school/api";
-  static const String baseUrl =
-      "https://ppc-election-adopt-ceremony.trycloudflare.com/api";
+  static const String baseUrl = "http://localhost/api";
 
   // LMS Auth
   static const String lmsLogin = "$baseUrl/auth/login";
@@ -11,8 +10,15 @@ class ApiEndpoints {
   static const String lmsChangePassword = "$baseUrl/auth/changepass";
 
   // LMS Dashboard & Profile
-  static const String lmsDashboard = "$baseUrl/user/dashboard";
-  static const String lmsProfile = "$baseUrl/user/profile";
+  // Parents with multiple children may append ?student_id=<id>
+  static String lmsDashboard({int? studentId}) =>
+      studentId != null
+          ? "$baseUrl/user/dashboard?student_id=$studentId"
+          : "$baseUrl/user/dashboard";
+  static String lmsProfile({int? studentId}) =>
+      studentId != null
+          ? "$baseUrl/user/profile?student_id=$studentId"
+          : "$baseUrl/user/profile";
 
   // LMS Fees
   static const String lmsFees = "$baseUrl/user/fees";

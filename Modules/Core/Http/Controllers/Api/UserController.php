@@ -2,21 +2,22 @@
 
 namespace Modules\Core\Http\Controllers\Api;
 
- 
 use Modules\Academic\Entities\Student;
-use Modules\Academic\Entities\StudentSession;
+use Modules\Academic\Services\DashboardService;
+use Modules\Core\Entities\Classe;
+use Modules\Core\Entities\Section;
 use Modules\Core\Entities\Setting;
-use Modules\Academic\Entities\AttendenceType;
-use Modules\Academic\Entities\Classe;
-use Modules\Academic\Entities\Section;
+use Modules\Finance\Services\StudentFeeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
 class UserController extends \Modules\Core\Http\Controllers\Api\Controller
 {
-    public function __construct()
-    {
+    public function __construct(
+        private DashboardService $dashboardService,
+        private StudentFeeService $feeService,
+    ) {
         $this->setControllerName('UserController');
     }
 
@@ -25,43 +26,15 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
         $user = $request->user();
 
         if (!$user) {
-            return $this->errorResponse('Unauthorized', 401);
+            return $this->errorResponse('Unauthorized', null, 401);
         }
 
-        $data = [];
-
-        $studentSession = $this->getStudentSession($user);
+        $studentSession = $this->studentSession($request);
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
         }
 
-        $setting = $this->getSchoolSettings();
-
-        $sessionDetails = $this->getSessionDates($setting);
-
-        $data['attendence_percentage'] = $this->calculateAttendancePercentage(
-            $studentSession->id,
-            $sessionDetails['start'],
-            $sessionDetails['end']
-        );
-
-        $class = Classe::find($studentSession->class_id);
-        $section = Section::find($studentSession->section_id);
-
-        $student = Student::find($studentSession->student_id);
-
-        $data['studentsession_username'] = $user->username;
-        $data['student_data'] = [
-            'id' => $user->id,
-            'username' => $user->username,
-            'role' => $user->role,
-            'student_id' => $studentSession->student_id,
-            'class' => $class ? $class->class : null,
-            'section' => $section ? $section->section : null,
-        ];
-
-        $settings = Setting::first();
-        $data['low_attendance_limit'] = $settings ? ($settings->low_attendance_limit ?? 75) : 75;
+        $data = $this->dashboardService->build($user, $studentSession);
 
         return $this->successResponse($data);
     }
@@ -71,15 +44,15 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
         $user = $request->user();
 
         if (!$user) {
-            return $this->errorResponse('Unauthorized', 401);
+            return $this->errorResponse('Unauthorized', null, 401);
         }
 
         $data = [];
 
-        $setting = $this->getSchoolSettings();
+        $setting = Setting::first();
         $data['sch_setting'] = $setting;
 
-        $studentSession = $this->getStudentSession($user);
+        $studentSession = $this->studentSession($request);
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
         }
@@ -136,33 +109,41 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
         $user = $request->user();
 
         if (!$user) {
-            return $this->errorResponse('Unauthorized', 401);
+            return $this->errorResponse('Unauthorized', null, 401);
         }
 
-        $data = [];
-
-        $studentSession = $this->getStudentSession($user);
+        $studentSession = $this->studentSession($request);
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
         }
 
-        $setting = $this->getSchoolSettings();
-        $data['sch_setting'] = $setting;
-
+        $setting = Setting::first();
         $student = Student::find($studentSession->student_id);
         $class = Classe::find($studentSession->class_id);
         $section = Section::find($studentSession->section_id);
 
-        $data['student'] = [
-            'id' => $student->id,
-            'firstname' => $student->firstname,
-            'lastname' => $student->lastname,
-            'class' => $class ? $class->class : null,
-            'section' => $section ? $section->section : null,
-            'student_session_id' => $studentSession->id,
-        ];
+        $studentDueFee = $this->feeService->getStudentFees($studentSession->id);
 
-        $data['payment_method'] = false;
+        if ($setting && (int) ($setting->is_student_feature_lock ?? 0) === 1) {
+            $lockGracePeriod = (int) ($setting->lock_grace_period ?? 0);
+            $asOfDate = Carbon::today()->subDays($lockGracePeriod)->toDateString();
+            $studentDueFee = $this->feeService->getDueFeesByStudent($studentSession->id, $asOfDate);
+        }
+
+        $data = [
+            'sch_setting' => $setting,
+            'adm_auto_insert' => $setting ? $setting->adm_auto_insert : false,
+            'payment_method' => $this->feeService->isPaymentMethodAvailable(),
+            'student' => [
+                'id' => $student->id,
+                'firstname' => $student->firstname,
+                'lastname' => $student->lastname,
+                'class' => $class ? $class->class : null,
+                'section' => $section ? $section->section : null,
+                'student_session_id' => $studentSession->id,
+            ],
+            'student_due_fee' => $studentDueFee,
+        ];
 
         return $this->successResponse($data);
     }
@@ -172,115 +153,47 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
         $user = $request->user();
 
         if (!$user) {
-            return $this->errorResponse('Unauthorized', 401);
+            return $this->errorResponse('Unauthorized', null, 401);
         }
 
-        $data = [];
-
-        $studentSession = $this->getStudentSession($user);
+        $studentSession = $this->studentSession($request);
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
         }
 
-        $setting = $this->getSchoolSettings();
-        $data['sch_setting'] = $setting;
-        $data['adm_auto_insert'] = $setting ? $setting->adm_auto_insert : false;
-
+        $setting = Setting::first();
         $student = Student::find($studentSession->student_id);
         $class = Classe::find($studentSession->class_id);
         $section = Section::find($studentSession->section_id);
 
-        $data['student'] = [
-            'id' => $student->id,
-            'firstname' => $student->firstname,
-            'lastname' => $student->lastname,
-            'class' => $class ? $class->class : null,
-            'section' => $section ? $section->section : null,
-            'student_session_id' => $studentSession->id,
-            'class_id' => $studentSession->class_id,
-            'section_id' => $studentSession->section_id,
-        ];
+        $transportFees = [];
+        if ($studentSession->route_pickup_point_id) {
+            $transportFees = $this->feeService->getStudentTransportFees(
+                $studentSession->id,
+                (int) $studentSession->route_pickup_point_id
+            );
+        }
 
-        $data['payment_method'] = false;
-        $data['student_due_fee'] = [];
-        $data['transport_fees'] = [];
-        $data['student_discount_fee'] = [];
+        $data = [
+            'sch_setting' => $setting,
+            'adm_auto_insert' => $setting ? $setting->adm_auto_insert : false,
+            'payment_method' => $this->feeService->isPaymentMethodAvailable(),
+            'student' => [
+                'id' => $student->id,
+                'firstname' => $student->firstname,
+                'lastname' => $student->lastname,
+                'class' => $class ? $class->class : null,
+                'section' => $section ? $section->section : null,
+                'student_session_id' => $studentSession->id,
+                'class_id' => $studentSession->class_id,
+                'section_id' => $studentSession->section_id,
+            ],
+            'student_due_fee' => $this->feeService->getStudentFees($studentSession->id),
+            'transport_fees' => $transportFees,
+            'student_discount_fee' => $this->feeService->getStudentFeesDiscount($studentSession->id),
+            'student_processing_fee' => false,
+        ];
 
         return $this->successResponse($data);
-    }
-
-    private function getStudentSession($user): ?StudentSession
-    {
-        $studentId = null;
-
-        switch ($user->role) {
-            case 'student':
-                $studentId = $user->user_id;
-                break;
-            case 'parent':
-                $firstChild = Student::where('parent_id', $user->id)->first();
-                $studentId = $firstChild ? $firstChild->id : null;
-                break;
-            default:
-                return null;
-        }
-
-        if (!$studentId) {
-            return null;
-        }
-
-        $currentSession = $this->getCurrentSession();
-
-        $studentSession = StudentSession::where('student_id', $studentId)
-            ->where('session_id', $currentSession ? $currentSession->id : null)
-            ->first();
-
-        if (!$studentSession) {
-            $studentSession = StudentSession::where('student_id', $studentId)
-                ->where('default_login', 1)
-                ->first();
-        }
-
-        if (!$studentSession) {
-            $studentSession = StudentSession::where('student_id', $studentId)
-                ->orderBy('id', 'desc')
-                ->first();
-        }
-
-        return $studentSession;
-    }
-
-    private function getCurrentSession()
-    {
-        return \Modules\Core\Entities\Session::where('is_active', 1)->first();
-    }
-
-    private function getSchoolSettings(): ?Setting
-    {
-        return Setting::first();
-    }
-
-    private function getSessionDates(?Setting $setting): array
-    {
-        $startMonth = $setting ? ($setting->start_month ?? 4) : 4;
-
-        $currentYear = date('Y');
-        $start = Carbon::createFromDate($currentYear, $startMonth, 1)->startOfMonth();
-        $end = Carbon::createFromDate($currentYear, $startMonth, 1)->addYear()->endOfMonth();
-
-        if (date('n') < $startMonth) {
-            $start = $start->subYear();
-            $end = $end->subYear();
-        }
-
-        return [
-            'start' => $start->toDateString(),
-            'end' => min($end->toDateString(), date('Y-m-d')),
-        ];
-    }
-
-    private function calculateAttendancePercentage(int $studentSessionId, string $start, string $end): float
-    {
-        return -1.0;
     }
 }

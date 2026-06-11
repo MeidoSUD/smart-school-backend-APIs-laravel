@@ -5,10 +5,6 @@ namespace Modules\Operations\Http\Controllers\Api;
 use Modules\Operations\Entities\ChatUser;
 use Modules\Operations\Entities\ChatConnection;
 use Modules\Operations\Entities\ChatMessage;
-use Modules\Academic\Entities\StudentSession;
-use Modules\Academic\Entities\Student;
-use Modules\Academic\Entities\Staff;
-use Modules\Core\Entities\Setting;
 use Dedoc\Scramble\Attributes\BodyParameter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -33,8 +29,7 @@ class ChatController extends \Modules\Core\Http\Controllers\Api\Controller
 
     public function myuser(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $studentId = $this->getStudentId($user);
+        $studentId = $this->resolvedStudentId($request);
         $chatUser = ChatUser::where('student_id', $studentId)->where('user_type', 'student')->first();
         
         $data = [
@@ -56,8 +51,7 @@ class ChatController extends \Modules\Core\Http\Controllers\Api\Controller
     #[BodyParameter('chat_connection_id', description: 'Chat connection ID', type: 'integer', required: true, example: 1)]
     public function getChatRecord(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $studentId = $this->getStudentId($user);
+        $studentId = $this->resolvedStudentId($request);
         $chatUser = ChatUser::where('student_id', $studentId)->where('user_type', 'student')->first();
         
         $chatConnectionId = $request->chat_connection_id;
@@ -118,42 +112,4 @@ class ChatController extends \Modules\Core\Http\Controllers\Api\Controller
 
 
 
-    private function getStudentId($user)
-    {
-        if ($user->role === 'student') {
-            return $user->user_id;
-        } elseif ($user->role === 'parent') {
-            $student = Student::where('parent_id', $user->id)->first();
-            return $student ? $student->id : null;
-            }
-
-
-        return null;
-        }
-
-
-
-    private function getMyUserList($studentId, $chatUserId)
-    {
-        $connections = ChatConnection::where('chat_user_one', $chatUserId)
-            ->orWhere('chat_user_two', $chatUserId)
-            ->get();
-        
-        $userList = [];
-        foreach ($connections as $conn) {
-            $otherUserId = $conn->chat_user_one == $chatUserId ? $conn->chat_user_two : $conn->chat_user_one;
-            $otherUser = ChatUser::find($otherUserId);
-            if ($otherUser) {
-                $userList[] = $otherUser;
-                }
-
-
-            }
-
-
-        
-        return $userList;
-        }
-
-
-    }
+}

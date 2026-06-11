@@ -5,6 +5,10 @@ namespace Modules\Operations\Entities;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Core\Entities\User;
 
+/**
+ * Legacy read-state table from the CodeIgniter app.
+ * New reads are stored on Laravel's `notifications.read_at` column.
+ */
 class ReadNotification extends Model
 {
     protected $table = 'read_notification';

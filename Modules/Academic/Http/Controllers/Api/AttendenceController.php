@@ -6,8 +6,6 @@ use Modules\Academic\Entities\AttendenceType;
 use Modules\Academic\Entities\StudentAttendence;
 use Modules\Academic\Entities\CalendarEvent;
 use Modules\Core\Entities\Setting;
-use Modules\Academic\Entities\StudentSession;
-use Modules\Academic\Entities\Student;
 use Dedoc\Scramble\Attributes\BodyParameter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -41,8 +39,7 @@ class AttendenceController extends \Modules\Core\Http\Controllers\Api\Controller
 
         $attendencetypes = AttendenceType::where('is_active', 'yes')->get();
 
-        $user = $request->user();
-        $studentSession = $this->getStudentSession($user);
+        $studentSession = $this->studentSession($request);
 
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
@@ -68,8 +65,7 @@ class AttendenceController extends \Modules\Core\Http\Controllers\Api\Controller
         $start = $request->get('start') ?? date('Y-m-01');
         $end = $request->get('end') ?? date('Y-m-t');
 
-        $user = $request->user();
-        $studentSession = $this->getStudentSession($user);
+        $studentSession = $this->studentSession($request);
 
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
@@ -131,25 +127,4 @@ class AttendenceController extends \Modules\Core\Http\Controllers\Api\Controller
         return $this->successResponse($eventdata);
     }
 
-    private function getStudentSession($user)
-    {
-        $studentId = null;
-
-        if ($user->role === 'student') {
-            $studentId = $user->user_id;
-        } elseif ($user->role === 'parent') {
-            $student = Student::where('parent_id', $user->id)->first();
-            $studentId = $student ? $student->id : null;
-        }
-
-        if (!$studentId) {
-            return null;
-        }
-
-        $setting = Setting::where('is_active', 1)->first();
-
-        return StudentSession::where('student_id', $studentId)
-            ->when($setting, fn($q) => $q->where('session_id', $setting->id))
-            ->first();
-    }
 }

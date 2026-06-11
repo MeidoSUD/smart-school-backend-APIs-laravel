@@ -21,8 +21,7 @@ class OnlineExamController extends \Modules\Core\Http\Controllers\Api\Controller
 
     public function index(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $studentSession = $this->getStudentSession($user);
+        $studentSession = $this->studentSession($request);
 
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
@@ -45,8 +44,7 @@ class OnlineExamController extends \Modules\Core\Http\Controllers\Api\Controller
 
     public function exam_detail($id): JsonResponse
     {
-        $user = request()->user();
-        $studentId = $this->getStudentId($user);
+        $studentId = $this->resolvedStudentId(request());
 
         $result = OnlineExam::find($id);
 
@@ -71,8 +69,7 @@ class OnlineExamController extends \Modules\Core\Http\Controllers\Api\Controller
             'answers' => 'required',
         ]);
 
-        $user = $request->user();
-        $studentId = $this->getStudentId($user);
+        $studentId = $this->resolvedStudentId($request);
 
         $answers = is_string($request->answers) ? json_decode($request->answers, true) : $request->answers;
 
@@ -87,30 +84,5 @@ class OnlineExamController extends \Modules\Core\Http\Controllers\Api\Controller
         return $this->successResponse(['result' => $result], 'Exam submitted successfully');
     }
 
-    private function getStudentSession($user)
-    {
-        $studentId = $this->getStudentId($user);
 
-        if (!$studentId) {
-            return null;
-        }
-
-        $setting = Setting::where('is_active', 1)->first();
-
-        return StudentSession::where('student_id', $studentId)
-            ->when($setting, fn($q) => $q->where('session_id', $setting->id))
-            ->first();
-    }
-
-    private function getStudentId($user)
-    {
-        if ($user->role === 'student') {
-            return $user->user_id;
-        } elseif ($user->role === 'parent') {
-            $student = Student::where('parent_id', $user->id)->first();
-            return $student ? $student->id : null;
-        }
-
-        return null;
-    }
 }

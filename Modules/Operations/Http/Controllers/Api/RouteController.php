@@ -23,8 +23,7 @@ class RouteController extends \Modules\Core\Http\Controllers\Api\Controller
 
     public function index(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $studentId = $this->getStudentId($user);
+        $studentId = $this->resolvedStudentId($request);
         
         $studentList = Student::find($studentId);
         
@@ -62,18 +61,4 @@ class RouteController extends \Modules\Core\Http\Controllers\Api\Controller
 
 
 
-    private function getStudentId($user)
-    {
-        if ($user->role === 'student') {
-            return $user->user_id;
-        } elseif ($user->role === 'parent') {
-            $student = Student::where('parent_id', $user->id)->first();
-            return $student ? $student->id : null;
-            }
-
-
-        return null;
-        }
-
-
-    }
+}

@@ -20,14 +20,13 @@ class ApplyLeaveController extends \Modules\Core\Http\Controllers\Api\Controller
 
     public function index(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $studentSession = $this->getStudentSession($user);
+        $studentSession = $this->studentSession($request);
 
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
         }
 
-        $studentId = $this->getStudentId($user);
+        $studentId = $this->resolvedStudentId($request);
         $student = Student::find($studentId);
 
         $results = ApplyLeave::where('student_session_id', $studentSession->id)
@@ -68,8 +67,7 @@ class ApplyLeaveController extends \Modules\Core\Http\Controllers\Api\Controller
             'message' => 'required|string',
         ]);
 
-        $user = $request->user();
-        $studentSession = $this->getStudentSession($user);
+        $studentSession = $this->studentSession($request);
 
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
@@ -120,30 +118,5 @@ class ApplyLeaveController extends \Modules\Core\Http\Controllers\Api\Controller
         return $this->successResponse(null, 'Leave removed successfully');
     }
 
-    private function getStudentSession($user)
-    {
-        $studentId = $this->getStudentId($user);
 
-        if (!$studentId) {
-            return null;
-        }
-
-        $setting = Setting::where('is_active', 1)->first();
-
-        return StudentSession::where('student_id', $studentId)
-            ->when($setting, fn($q) => $q->where('session_id', $setting->id))
-            ->first();
-    }
-
-    private function getStudentId($user)
-    {
-        if ($user->role === 'student') {
-            return $user->user_id;
-        } elseif ($user->role === 'parent') {
-            $student = Student::where('parent_id', $user->id)->first();
-            return $student ? $student->id : null;
-        }
-
-        return null;
-    }
 }

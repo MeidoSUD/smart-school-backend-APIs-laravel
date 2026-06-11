@@ -6,11 +6,12 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller as BaseController;
+use Modules\Core\Http\Controllers\Api\Concerns\ResolvesStudentContext;
 use Modules\Core\Services\ApiLogger;
 
 class Controller extends BaseController
 {
-    use AuthorizesRequests, ValidatesRequests;
+    use AuthorizesRequests, ResolvesStudentContext, ValidatesRequests;
 
     protected $controllerName = '';
 
@@ -83,8 +84,9 @@ class Controller extends BaseController
 
     private function getCurrentMethod(): string
     {
-        $trace = [];
-        return $trace[1]['function'] ?? 'unknown';
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
+
+        return $trace[2]['function'] ?? 'unknown';
     }
 
     protected function logRequest($data = null)
