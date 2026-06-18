@@ -11,4 +11,6 @@ class SubjectGroup extends Model
     public $timestamps = false;
 
     protected $fillable = ['group_name', 'is_active'];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

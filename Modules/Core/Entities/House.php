@@ -11,4 +11,6 @@ class House extends Model
     public $timestamps = false;
 
     protected $fillable = ['house_name', 'is_active'];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

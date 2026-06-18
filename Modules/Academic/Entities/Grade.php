@@ -11,4 +11,6 @@ class Grade extends Model
     public $timestamps = false;
 
     protected $fillable = ['name', 'from_mark', 'to_mark', 'grade_point', 'description', 'is_active'];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

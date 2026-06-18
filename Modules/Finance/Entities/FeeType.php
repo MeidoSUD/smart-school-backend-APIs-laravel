@@ -11,4 +11,6 @@ class FeeType extends Model
     public $timestamps = false;
 
     protected $fillable = ['is_system', 'feecategory_id', 'type', 'code', 'is_active', 'description'];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

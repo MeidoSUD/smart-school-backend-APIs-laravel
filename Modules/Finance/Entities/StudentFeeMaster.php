@@ -11,4 +11,6 @@ class StudentFeeMaster extends Model
     public $timestamps = false;
 
     protected $fillable = ['student_session_id', 'fee_master_id', 'amount', 'amount_detail', 'discount', 'fine', 'is_active'];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

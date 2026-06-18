@@ -11,4 +11,6 @@ class FeeDiscount extends Model
     public $timestamps = false;
 
     protected $fillable = ['session_id', 'name', 'code', 'type', 'percentage', 'amount', 'description', 'is_active'];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('staff_leave_request', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->integer('staff_id');
-            $table->integer('leave_type_id');
+            $table->unsignedBigInteger('staff_id');
+            $table->unsignedBigInteger('leave_type_id');
             $table->date('leave_from');
             $table->date('leave_to');
             $table->integer('leave_days');
@@ -22,6 +22,11 @@ return new class extends Migration
             $table->string('document_file', 200);
             $table->date('date');
             $table->timestamp('created_at')->useCurrent();
+        });
+
+        Schema::table('staff_leave_request', function (Blueprint $table) {
+            $table->index('staff_id');
+            $table->index('leave_type_id');
         });
     }
 

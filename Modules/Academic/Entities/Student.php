@@ -2,6 +2,7 @@
 
 namespace Modules\Academic\Entities;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -74,11 +75,8 @@ class Student extends Model
         'additional_notes',
         'document_title',
         'document',
-        'document1',
-        'document2',
-        'document3',
-        'document4',
-        'document5',
+        'documents',
+        'is_active',
     ];
 
     protected $hidden = [
@@ -89,6 +87,7 @@ class Student extends Model
         'dob' => 'date',
         'admission_date' => 'date',
         'measurement_date' => 'date',
+        'is_active' => 'boolean',
     ];
 
     public function parent(): BelongsTo
@@ -111,8 +110,10 @@ class Student extends Model
         return $this->belongsTo(Category::class, 'category_id', 'id');
     }
 
-    public function getFullNameAttribute(): string
+    protected function fullName(): Attribute
     {
-        return trim("{$this->firstname} {$this->middlename} {$this->lastname}");
+        return Attribute::make(
+            get: fn() => trim("{$this->firstname} {$this->middlename} {$this->lastname}"),
+        );
     }
 }

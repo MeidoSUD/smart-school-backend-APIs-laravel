@@ -7,6 +7,7 @@ use Modules\Academic\Entities\SubmitAssignment;
 use Modules\Academic\Entities\DailyAssignment;
 use Modules\Academic\Entities\StudentSession;
 use Modules\Academic\Entities\Student;
+use Modules\Academic\Http\Requests\HomeworkRequest;
 use Modules\Staff\Entities\Staff;
 use Modules\Core\Entities\Setting;
 use Illuminate\Http\JsonResponse;
@@ -29,31 +30,31 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
             return $this->errorResponse('Student session not found');
         }
 
+        $studentId = $studentSession->student_id;
+
         $homeworklist = Homework::where('class_id', $studentSession->class_id)
             ->where('section_id', $studentSession->section_id)
             ->where('submit_date', '>=', now()->toDateString())
-            ->get();
-
-        foreach ($homeworklist as $key => $homework) {
-            $checkstatus = SubmitAssignment::where('homework_id', $homework->id)
-                ->where('student_id', $studentSession->student_id)
-                ->count();
-
-            $homeworklist[$key]['status'] = $checkstatus > 0 ? 'submitted' : '';
-        }
+            ->withCount(['submitAssignments as submission_status' => function ($query) use ($studentId) {
+                $query->where('student_id', $studentId);
+            }])
+            ->get()
+            ->map(function ($homework) {
+                $homework->status = $homework->submission_status > 0 ? 'submitted' : '';
+                return $homework;
+            });
 
         $closedhomeworklist = Homework::where('class_id', $studentSession->class_id)
             ->where('section_id', $studentSession->section_id)
             ->where('submit_date', '<', now()->toDateString())
-            ->get();
-
-        foreach ($closedhomeworklist as $key => $homework) {
-            $checkstatus = SubmitAssignment::where('homework_id', $homework->id)
-                ->where('student_id', $studentSession->student_id)
-                ->count();
-
-            $closedhomeworklist[$key]['status'] = $checkstatus > 0 ? 'submitted' : '';
-        }
+            ->withCount(['submitAssignments as submission_status' => function ($query) use ($studentId) {
+                $query->where('student_id', $studentId);
+            }])
+            ->get()
+            ->map(function ($homework) {
+                $homework->status = $homework->submission_status > 0 ? 'submitted' : '';
+                return $homework;
+            });
 
         $data = [
             'created_by' => '',
@@ -65,24 +66,17 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
         return $this->successResponse($data);
     }
 
-    public function upload_docs(Request $request): JsonResponse
+    public function upload_docs(HomeworkRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'homework_id' => 'required',
-            'message' => 'required|string',
-            'file' => 'nullable|file|max:10240',
-        ]);
-
         $user = $request->user();
         $studentId = $this->getStudentId($user);
-
         $homeworkId = $request->homework_id;
 
-        $isRequired = SubmitAssignment::where('homework_id', $homeworkId)
+        $submissionExists = SubmitAssignment::where('homework_id', $homeworkId)
             ->where('student_id', $studentId)
-            ->count();
+            ->exists();
 
-        if ($isRequired == 0 && !$request->hasFile('file')) {
+        if (!$submissionExists && !$request->hasFile('file')) {
             return $this->errorResponse('File is required');
         }
 
@@ -94,15 +88,17 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
             'file_name' => null,
         ];
 
-        if ($request->hasFile('file')) {
-            $file = $request->file('file');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('uploads/homework/assignment'), $filename);
-            $data['docs'] = $filename;
-            $data['file_name'] = $file->getClientOriginalName();
-        }
+        DB::transaction(function () use ($request, &$data) {
+            if ($request->hasFile('file')) {
+                $file = $request->file('file');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $file->move(public_path('uploads/homework/assignment'), $filename);
+                $data['docs'] = $filename;
+                $data['file_name'] = $file->getClientOriginalName();
+            }
 
-        SubmitAssignment::create($data);
+            SubmitAssignment::create($data);
+        });
 
         return $this->successResponse(null, 'Homework submitted successfully');
     }

@@ -14,4 +14,6 @@ class CalendarEvent extends Model
         'event_title', 'event_description', 'start_date', 'end_date',
         'event_type', 'event_color', 'event_for', 'is_active',
     ];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

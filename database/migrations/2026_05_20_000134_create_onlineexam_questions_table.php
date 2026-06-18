@@ -10,14 +10,13 @@ return new class extends Migration
     {
         Schema::create('onlineexam_questions', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->integer('question_id')->nullable();
-            $table->integer('onlineexam_id')->nullable();
-            $table->integer('session_id')->nullable();
+            $table->unsignedBigInteger('question_id')->nullable();
+            $table->unsignedBigInteger('onlineexam_id')->nullable();
+            $table->unsignedBigInteger('session_id')->nullable();
             $table->float('marks', 10, 2)->default(0.00);
             $table->float('neg_marks', 10, 2)->nullable()->default(0.00);
             $table->string('is_active', 1)->nullable()->default(0);
-            $table->timestamp('created_at')->useCurrent();
-            $table->date('updated_at')->nullable();
+            $table->timestamps();
         });
     }
 

@@ -10,13 +10,15 @@ return new class extends Migration
     {
         Schema::create('roles_permissions', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->integer('role_id')->nullable();
-            $table->integer('perm_cat_id')->nullable();
+            $table->unsignedBigInteger('role_id')->nullable();
+            $table->unsignedBigInteger('perm_cat_id')->nullable();
             $table->integer('can_view')->nullable();
             $table->integer('can_add')->nullable();
             $table->integer('can_edit')->nullable();
             $table->integer('can_delete')->nullable();
             $table->timestamp('created_at')->useCurrent();
+            $table->index('role_id');
+            $table->index('perm_cat_id');
         });
     }
 

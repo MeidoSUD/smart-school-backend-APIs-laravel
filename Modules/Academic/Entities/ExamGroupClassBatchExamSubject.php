@@ -14,4 +14,6 @@ class ExamGroupClassBatchExamSubject extends Model
         'exam_group_class_batch_exams_id', 'subject_id', 'date_from', 'time_from',
         'duration', 'room_no', 'max_marks', 'min_marks', 'credit_hours', 'date_to', 'is_active',
     ];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

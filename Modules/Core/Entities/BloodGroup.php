@@ -11,4 +11,6 @@ class BloodGroup extends Model
     public $timestamps = false;
 
     protected $fillable = ['name', 'is_active'];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

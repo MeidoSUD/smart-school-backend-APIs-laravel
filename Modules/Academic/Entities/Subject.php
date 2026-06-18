@@ -14,6 +14,8 @@ class Subject extends Model
 
     protected $fillable = ['name', 'type', 'code', 'teacher_id', 'is_active'];
 
+    protected $casts = ['is_active' => 'boolean'];
+
     public function teacher(): BelongsTo
     {
         return $this->belongsTo(Staff::class, 'teacher_id');

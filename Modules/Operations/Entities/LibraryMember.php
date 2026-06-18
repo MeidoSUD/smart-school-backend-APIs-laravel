@@ -11,4 +11,6 @@ class LibraryMember extends Model
     public $timestamps = false;
 
     protected $fillable = [ 'library_card_no', 'member_type', 'member_id','is_active'];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

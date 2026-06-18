@@ -46,7 +46,6 @@ class ChatController extends \Modules\Core\Http\Controllers\Api\Controller
             $data['userList'] = $this->getMyUserList($studentId, $chatUser->id);
             }
 
-
         
         return $this->successResponse($data);
         }
@@ -63,10 +62,6 @@ class ChatController extends \Modules\Core\Http\Controllers\Api\Controller
         $chatConnectionId = $request->chat_connection_id;
         $chatToUser = 0;
         
-        $userLastChat = ChatMessage::where('chat_connection_id', $chatConnectionId)
-            ->orderBy('id', 'desc')
-            ->first();
-        
         $chatConnection = ChatConnection::find($chatConnectionId);
         
         if ($chatConnection) {
@@ -75,12 +70,10 @@ class ChatController extends \Modules\Core\Http\Controllers\Api\Controller
                 $chatToUser = $chatConnection->chat_user_two;
                 }
 
-
             }
 
-
         
-        $chatList = ChatMessage::where('chat_connection_id', $chatConnectionId)
+        ChatMessage::where('chat_connection_id', $chatConnectionId)
             ->where('chat_user_id', '!=', $chatUser ? $chatUser->id : 0)
             ->update(['is_read' => 1]);
         
@@ -88,6 +81,8 @@ class ChatController extends \Modules\Core\Http\Controllers\Api\Controller
             ->orderBy('id', 'asc')
             ->get();
         
+        $userLastChat = $chatList->last();
+
         return $this->successResponse([
             'chatList' => $chatList,
             'chat_to_user' => $chatToUser,
@@ -106,12 +101,14 @@ class ChatController extends \Modules\Core\Http\Controllers\Api\Controller
             'message' => 'required|string',
         ]);
         
-        $insertRecord = ChatMessage::create([
-            'chat_user_id' => $request->chat_to_user,
-            'message' => trim($request->message),
-            'chat_connection_id' => $request->chat_connection_id,
-            'created_at' => now(),
-        ]);
+        $insertRecord = DB::transaction(function () use ($request) {
+            return ChatMessage::create([
+                'chat_user_id' => $request->chat_to_user,
+                'message' => trim($request->message),
+                'chat_connection_id' => $request->chat_connection_id,
+                'created_at' => now(),
+            ]);
+        });
         
         return $this->successResponse(['last_insert_id' => $insertRecord->id], 'Message sent');
         }
@@ -139,17 +136,20 @@ class ChatController extends \Modules\Core\Http\Controllers\Api\Controller
             ->orWhere('chat_user_two', $chatUserId)
             ->get();
         
+        $otherUserIds = $connections->map(function ($conn) use ($chatUserId) {
+            return $conn->chat_user_one == $chatUserId ? $conn->chat_user_two : $conn->chat_user_one;
+        });
+        
+        $chatUsers = ChatUser::whereIn('id', $otherUserIds)->get()->keyBy('id');
+        
         $userList = [];
         foreach ($connections as $conn) {
             $otherUserId = $conn->chat_user_one == $chatUserId ? $conn->chat_user_two : $conn->chat_user_one;
-            $otherUser = ChatUser::find($otherUserId);
-            if ($otherUser) {
-                $userList[] = $otherUser;
+            if (isset($chatUsers[$otherUserId])) {
+                $userList[] = $chatUsers[$otherUserId];
                 }
 
-
             }
-
 
         
         return $userList;

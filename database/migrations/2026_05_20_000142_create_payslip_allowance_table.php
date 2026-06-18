@@ -10,11 +10,12 @@ return new class extends Migration
     {
         Schema::create('payslip_allowance', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->integer('payslip_id');
+            $table->unsignedBigInteger('payslip_id');
             $table->string('allowance_type', 200);
             $table->float('amount');
-            $table->integer('staff_id');
+            $table->unsignedBigInteger('staff_id');
             $table->string('cal_type', 100);
+            $table->timestamps();
         });
     }
 

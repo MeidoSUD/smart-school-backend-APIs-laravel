@@ -11,4 +11,6 @@ class FeeMaster extends Model
     public $timestamps = false;
 
     protected $fillable = ['session_id', 'feetype_id', 'class_id', 'amount', 'description', 'is_active'];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

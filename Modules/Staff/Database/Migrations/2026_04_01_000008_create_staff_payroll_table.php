@@ -13,7 +13,11 @@ return new class extends Migration
             $table->integer('basic_salary');
             $table->string('pay_scale', 200);
             $table->string('grade', 50);
-            $table->string('is_active', 50);
+            $table->boolean('is_active')->default(true);
+        });
+
+        Schema::table('staff_payroll', function (Blueprint $table) {
+            $table->index('is_active');
         });
     }
 

@@ -11,4 +11,6 @@ class StudentTransportFee extends Model
     public $timestamps = false;
 
     protected $fillable = ['student_session_id', 'route_id', 'pickup_point_id', 'month', 'amount', 'is_active'];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

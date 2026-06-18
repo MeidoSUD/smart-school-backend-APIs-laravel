@@ -11,4 +11,6 @@ class AttendenceType extends Model
     public $timestamps = false;
 
     protected $fillable = ['type', 'key_value', 'is_active', 'for_qr_attendance', 'long_lang_name', 'long_name_style'];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

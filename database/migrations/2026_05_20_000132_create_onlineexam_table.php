@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('onlineexam', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->integer('session_id')->nullable();
+            $table->unsignedBigInteger('session_id')->nullable();
             $table->text('exam')->nullable();
             $table->integer('attempt');
             $table->dateTime('exam_from')->nullable();
@@ -31,8 +31,7 @@ return new class extends Migration
             $table->integer('is_rank_generated')->default(0);
             $table->integer('publish_exam_notification');
             $table->integer('publish_result_notification');
-            $table->timestamp('created_at')->useCurrent();
-            $table->date('updated_at')->nullable();
+            $table->timestamps();
         });
     }
 

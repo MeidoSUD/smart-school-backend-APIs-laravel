@@ -11,8 +11,8 @@ return new class extends Migration
         Schema::create('staff', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('employee_id', 200);
-            $table->integer('lang_id');
-            $table->integer('currency_id')->nullable()->default(0);
+            $table->unsignedBigInteger('lang_id');
+            $table->unsignedBigInteger('currency_id')->nullable()->default(0);
             $table->integer('department')->nullable();
             $table->integer('designation')->nullable();
             $table->string('qualification', 200);
@@ -54,10 +54,17 @@ return new class extends Migration
             $table->string('resignation_letter', 200);
             $table->string('other_document_name', 200);
             $table->string('other_document_file', 200);
-            $table->integer('user_id');
-            $table->integer('is_active');
+            $table->unsignedBigInteger('user_id');
+            $table->boolean('is_active')->default(true);
             $table->string('verification_code', 100);
             $table->date('disable_at')->nullable();
+        });
+
+        Schema::table('staff', function (Blueprint $table) {
+            $table->index('user_id');
+            $table->index('is_active');
+            $table->index('email');
+            $table->index('employee_id');
         });
     }
 

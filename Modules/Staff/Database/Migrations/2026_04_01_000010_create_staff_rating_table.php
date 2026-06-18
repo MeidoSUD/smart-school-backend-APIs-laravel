@@ -10,13 +10,18 @@ return new class extends Migration
     {
         Schema::create('staff_rating', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->integer('staff_id');
+            $table->unsignedBigInteger('staff_id');
             $table->text('comment');
             $table->integer('rate');
-            $table->integer('user_id');
+            $table->unsignedBigInteger('user_id');
             $table->string('role', 255);
             $table->integer('status')->comment('0 decline, 1 Approve');
             $table->timestamp('entrydt')->useCurrent();
+        });
+
+        Schema::table('staff_rating', function (Blueprint $table) {
+            $table->index('staff_id');
+            $table->index('user_id');
         });
     }
 

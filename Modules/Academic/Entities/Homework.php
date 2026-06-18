@@ -4,6 +4,7 @@ namespace Modules\Academic\Entities;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Homework extends Model
 {
@@ -30,5 +31,10 @@ class Homework extends Model
     public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class, 'subject_id');
+    }
+
+    public function submitAssignments(): HasMany
+    {
+        return $this->hasMany(SubmitAssignment::class, 'homework_id');
     }
 }

@@ -11,4 +11,6 @@ class Classe extends Model
     public $timestamps = false;
 
     protected $fillable = ['class', 'is_active'];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

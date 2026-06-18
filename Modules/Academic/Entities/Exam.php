@@ -11,4 +11,6 @@ class Exam extends Model
     public $timestamps = false;
 
     protected $fillable = ['name', 'sesion_id', 'note', 'is_active'];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

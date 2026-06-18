@@ -14,4 +14,6 @@ class StudentFee extends Model
         'student_session_id', 'fee_groups_feetype_id', 'amount',
         'amount_discount', 'amount_fine', 'date', 'description', 'is_active',
     ];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

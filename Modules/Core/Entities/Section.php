@@ -12,6 +12,8 @@ class Section extends Model
 
     protected $fillable = ['section', 'is_active'];
 
+    protected $casts = ['is_active' => 'boolean'];
+
     public function classSections()
     {
         return $this->belongsToMany(Classe::class,

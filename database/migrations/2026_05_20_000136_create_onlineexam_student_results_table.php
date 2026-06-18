@@ -10,15 +10,14 @@ return new class extends Migration
     {
         Schema::create('onlineexam_student_results', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->integer('onlineexam_student_id');
-            $table->integer('onlineexam_question_id');
+            $table->unsignedBigInteger('onlineexam_student_id');
+            $table->unsignedBigInteger('onlineexam_question_id');
             $table->longText('select_option')->nullable();
             $table->float('marks', 10, 2)->default(0.00);
             $table->text('remark')->nullable();
             $table->text('attachment_name')->nullable();
             $table->string('attachment_upload_name', 250)->nullable();
-            $table->timestamp('created_at')->useCurrent();
-            $table->date('updated_at')->nullable();
+            $table->timestamps();
         });
     }
 

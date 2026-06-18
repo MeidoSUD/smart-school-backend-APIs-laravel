@@ -11,4 +11,6 @@ class Hostel extends Model
     public $timestamps = false;
 
     protected $fillable = ['hostel_name', 'type', 'address', 'note', 'is_active'];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

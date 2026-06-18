@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('staff_leave_details', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->integer('staff_id');
-            $table->integer('leave_type_id');
+            $table->unsignedBigInteger('staff_id');
+            $table->unsignedBigInteger('leave_type_id');
             $table->string('alloted_leave', 100);
         });
     }

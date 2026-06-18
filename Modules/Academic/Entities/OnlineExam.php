@@ -14,4 +14,6 @@ class OnlineExam extends Model
         'exam_title', 'exam_type', 'class_id', 'section_id', 'subject_id',
         'duration', 'minimum_percentage', 'max_attempts', 'is_active',
     ];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

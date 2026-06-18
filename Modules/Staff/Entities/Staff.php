@@ -77,6 +77,7 @@ class Staff extends Model
         'date_of_joining' => 'date',
         'date_of_leaving' => 'date',
         'disable_at' => 'date',
+        'is_active' => 'boolean',
     ];
 
     public function user(): BelongsTo

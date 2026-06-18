@@ -11,4 +11,6 @@ class ExamGroupExamConnection extends Model
     public $timestamps = false;
 
     protected $fillable = ['exam_group_id', 'exam_group_class_batch_exams_id', 'exam_weightage', 'is_active'];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

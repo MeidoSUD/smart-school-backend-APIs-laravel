@@ -14,4 +14,6 @@ class ExamGroupExamResult extends Model
         'exam_group_class_batch_exam_student_id', 'exam_group_class_batch_exam_subject_id',
         'exam_group_student_id', 'attendence', 'get_marks', 'note', 'is_active',
     ];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

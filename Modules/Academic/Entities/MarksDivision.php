@@ -11,4 +11,6 @@ class MarksDivision extends Model
     public $timestamps = false;
 
     protected $fillable = ['exam_type', 'division', 'percentage_from', 'percentage_to', 'remark', 'is_active'];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

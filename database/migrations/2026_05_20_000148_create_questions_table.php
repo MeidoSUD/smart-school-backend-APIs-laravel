@@ -10,13 +10,13 @@ return new class extends Migration
     {
         Schema::create('questions', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->integer('staff_id')->nullable();
-            $table->integer('subject_id')->nullable();
+            $table->unsignedBigInteger('staff_id')->nullable();
+            $table->unsignedBigInteger('subject_id')->nullable();
             $table->string('question_type', 100);
             $table->string('level', 10);
-            $table->integer('class_id');
-            $table->integer('section_id')->nullable();
-            $table->integer('class_section_id')->nullable();
+            $table->unsignedBigInteger('class_id');
+            $table->unsignedBigInteger('section_id')->nullable();
+            $table->unsignedBigInteger('class_section_id')->nullable();
             $table->text('question')->nullable();
             $table->text('opt_a')->nullable();
             $table->text('opt_b')->nullable();
@@ -25,8 +25,7 @@ return new class extends Migration
             $table->text('opt_e')->nullable();
             $table->text('correct')->nullable();
             $table->integer('descriptive_word_limit');
-            $table->timestamp('created_at')->useCurrent();
-            $table->date('updated_at')->nullable();
+            $table->timestamps();
         });
     }
 

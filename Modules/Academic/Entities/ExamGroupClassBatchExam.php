@@ -15,4 +15,6 @@ class ExamGroupClassBatchExam extends Model
         'exam_group_id', 'use_exam_roll_no', 'is_publish', 'is_rank_generated',
         'description', 'is_active',
     ];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

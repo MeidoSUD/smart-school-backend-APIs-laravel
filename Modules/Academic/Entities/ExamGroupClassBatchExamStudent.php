@@ -14,4 +14,6 @@ class ExamGroupClassBatchExamStudent extends Model
         'exam_group_class_batch_exam_id', 'student_id', 'student_session_id',
         'roll_no', 'teacher_remark', 'rank', 'is_active',
     ];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

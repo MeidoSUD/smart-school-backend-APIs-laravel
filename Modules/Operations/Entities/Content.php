@@ -14,6 +14,8 @@ class Content extends Model
         'title', 'type', 'is_public', 'class_id', 'cls_sec_id',
         'file', 'date', 'note', 'is_active', 'created_by',
     ];
+
+    protected $casts = ['is_active' => 'boolean'];
 }
 
 class ShareContent extends Model
@@ -35,4 +37,6 @@ class ClassSection extends Model
     public $timestamps = false;
 
     protected $fillable = ['class_id', 'section_id', 'is_active'];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

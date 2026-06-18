@@ -12,6 +12,7 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->string('type', 200);
             $table->string('is_active', 50);
+            $table->timestamps();
         });
     }
 

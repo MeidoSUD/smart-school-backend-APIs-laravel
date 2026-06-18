@@ -12,7 +12,7 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->string('type', 200);
             $table->string('key_value', 200);
-            $table->string('is_active', 50);
+            $table->boolean('is_active')->default(true);
             $table->integer('for_qr_attendance')->default(1);
             $table->string('long_lang_name', 250)->nullable();
             $table->string('long_name_style', 250)->nullable();

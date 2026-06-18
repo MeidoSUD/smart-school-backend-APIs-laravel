@@ -11,4 +11,6 @@ class ExamGroup extends Model
     public $timestamps = false;
 
     protected $fillable = ['name', 'exam_type', 'description', 'is_active'];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

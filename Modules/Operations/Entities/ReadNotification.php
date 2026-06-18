@@ -19,6 +19,8 @@ class ReadNotification extends Model
         'is_active',
     ];
 
+    protected $casts = ['is_active' => 'boolean'];
+
     public static function markAsRead(int $notificationId, User $user): bool
     {
         $lookup = ['notification_id' => $notificationId];

@@ -13,7 +13,10 @@ class StudentAttendence extends Model
 
     protected $fillable = ['student_session_id', 'attendence_type_id', 'date', 'remark', 'is_active'];
 
-    protected $casts = ['date' => 'date'];
+    protected $casts = [
+        'date' => 'date',
+        'is_active' => 'boolean',
+    ];
 
     public function studentSession(): BelongsTo
     {

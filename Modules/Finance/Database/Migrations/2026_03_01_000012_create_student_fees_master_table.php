@@ -11,11 +11,16 @@ return new class extends Migration
         Schema::create('student_fees_master', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->integer('is_system')->default(0);
-            $table->integer('student_session_id')->nullable();
-            $table->integer('fee_session_group_id')->nullable();
+            $table->unsignedBigInteger('student_session_id')->nullable();
+            $table->unsignedBigInteger('fee_session_group_id')->nullable();
             $table->float('amount', 10, 2)->nullable()->default(0.00);
-            $table->string('is_active', 10)->default('no');
+            $table->boolean('is_active')->default(true);
             $table->timestamp('created_at')->useCurrent();
+        });
+
+        Schema::table('student_fees_master', function (Blueprint $table) {
+            $table->index('student_session_id');
+            $table->index('fee_session_group_id');
         });
     }
 

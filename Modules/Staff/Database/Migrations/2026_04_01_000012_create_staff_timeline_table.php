@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('staff_timeline', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->integer('staff_id');
+            $table->unsignedBigInteger('staff_id');
             $table->string('title', 200);
             $table->date('timeline_date');
             $table->string('description', 300);

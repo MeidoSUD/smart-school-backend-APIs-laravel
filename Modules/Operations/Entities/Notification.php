@@ -23,4 +23,6 @@ class Notification extends Model
         'created_id',
         'is_active',
     ];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

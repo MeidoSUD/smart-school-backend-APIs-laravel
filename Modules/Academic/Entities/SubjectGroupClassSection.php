@@ -11,4 +11,6 @@ class SubjectGroupClassSection extends Model
     public $timestamps = false;
 
     protected $fillable = ['class_section_id', 'subject_group_id', 'session_id', 'is_active'];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

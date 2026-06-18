@@ -11,8 +11,8 @@ return new class extends Migration
         Schema::create('staff_attendance', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->date('date');
-            $table->integer('staff_id');
-            $table->integer('staff_attendance_type_id');
+            $table->unsignedBigInteger('staff_id');
+            $table->unsignedBigInteger('staff_attendance_type_id');
             $table->integer('biometric_attendence')->nullable()->default(0);
             $table->integer('qrcode_attendance')->default(0);
             $table->text('biometric_device_data')->nullable();
@@ -21,6 +21,12 @@ return new class extends Migration
             $table->integer('is_active');
             $table->dateTime('created_at');
             $table->date('updated_at')->nullable();
+        });
+
+        Schema::table('staff_attendance', function (Blueprint $table) {
+            $table->index('staff_id');
+            $table->index('staff_attendance_type_id');
+            $table->index('date');
         });
     }
 

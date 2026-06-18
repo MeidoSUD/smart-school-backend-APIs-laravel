@@ -14,4 +14,6 @@ class CustomField extends Model
         'name', 'belong_to', 'type', 'bs_column', 'validation',
         'field_values', 'show_table', 'visible_on_table', 'weight', 'is_active',
     ];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

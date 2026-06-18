@@ -18,4 +18,6 @@ class ExamResult extends Model
         'note',
         'is_active',
     ];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

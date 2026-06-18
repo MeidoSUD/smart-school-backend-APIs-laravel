@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('staff_designation', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('designation', 200);
-            $table->string('is_active', 100);
+            $table->boolean('is_active')->default(true);
         });
     }
 

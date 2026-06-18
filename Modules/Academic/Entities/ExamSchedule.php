@@ -18,6 +18,8 @@ class ExamSchedule extends Model
         'start_to', 'end_from', 'room_no', 'full_marks', 'passing_marks', 'note', 'is_active',
     ];
 
+    protected $casts = ['is_active' => 'boolean'];
+
     public function exam(): BelongsTo
     {
         return $this->belongsTo(Exam::class, 'exam_id');

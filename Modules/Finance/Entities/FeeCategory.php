@@ -11,4 +11,6 @@ class FeeCategory extends Model
     public $timestamps = false;
 
     protected $fillable = ['category', 'is_active'];
+
+    protected $casts = ['is_active' => 'boolean'];
 }

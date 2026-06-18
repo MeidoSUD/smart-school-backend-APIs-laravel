@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('staff_payslip', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->integer('staff_id');
+            $table->unsignedBigInteger('staff_id');
             $table->float('basic', 10, 2);
             $table->float('total_allowance', 10, 2);
             $table->float('total_deduction', 10, 2);
@@ -25,6 +25,10 @@ return new class extends Migration
             $table->string('remark', 200);
             $table->integer('generated_by')->nullable();
             $table->timestamp('created_at')->useCurrent();
+        });
+
+        Schema::table('staff_payslip', function (Blueprint $table) {
+            $table->index('staff_id');
         });
     }
 
