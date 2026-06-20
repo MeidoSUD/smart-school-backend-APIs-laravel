@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -31,6 +32,8 @@ class Handler extends ExceptionHandler
 
             if ($e instanceof ValidationException) {
                 $status = 422;
+            } elseif ($e instanceof AuthenticationException) {
+                $status = 401;
             } elseif ($e instanceof ModelNotFoundException) {
                 $status = 404;
             } elseif ($e instanceof HttpExceptionInterface) {
