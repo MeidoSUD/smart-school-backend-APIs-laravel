@@ -6,24 +6,23 @@ use Modules\Staff\Entities\Staff;
 use Modules\Staff\Entities\StaffRating;
 use Modules\Academic\Entities\ClassSection;
 use Modules\Academic\Entities\TeacherSubject;
-use Modules\Academic\Entities\StudentSession;
-use Modules\Academic\Entities\Student;
-use Modules\Core\Entities\Setting;
+use Modules\Core\Services\StudentSessionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use DB;
 
 class TeacherController extends \Modules\Core\Http\Controllers\Api\Controller
 {
-    public function __construct()
-    {
+    public function __construct(
+        private readonly StudentSessionService $studentSessionService
+    ) {
         $this->setControllerName('TeacherController');
-        }
+    }
 
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        $studentSession = $this->getStudentSession($user);
+        $studentSession = $this->studentSessionService->getStudentSession($user);
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
@@ -136,18 +135,31 @@ class TeacherController extends \Modules\Core\Http\Controllers\Api\Controller
 
 
 
-    public function view($id): JsonResponse
+    public function view($id, Request $request): JsonResponse
     {
+        $user = $request->user();
+        $studentSession = $this->studentSessionService->getStudentSession($user);
+        
+        if (!$studentSession) {
+            return $this->errorResponse('Student session not found');
+        }
+
+        $isAssignedTeacher = TeacherSubject::where('teacher_id', $id)
+            ->where('class_section_id', $studentSession->id)
+            ->exists();
+
+        if (!$isAssignedTeacher) {
+            return $this->errorResponse('Teacher not found for your class', null, 404);
+        }
+
         $teacher = Staff::find($id);
         
         if (!$teacher) {
             return $this->errorResponse('Teacher not found', null, 404);
-            }
-
-
-        
-        return $this->successResponse(['teacher' => $teacher]);
         }
+
+        return $this->successResponse(['teacher' => $teacher]);
+    }
 
 
 
@@ -171,35 +183,5 @@ class TeacherController extends \Modules\Core\Http\Controllers\Api\Controller
         );
         
         return $this->successResponse(null, 'Rating saved successfully');
-        }
-
-
-
-    private function getStudentSession($user)
-    {
-        $studentId = null;
-        
-        if ($user->role === 'student') {
-            $studentId = $user->user_id;
-        } elseif ($user->role === 'parent') {
-            $student = Student::where('parent_id', $user->id)->first();
-            $studentId = $student ? $student->id : null;
-            }
-
-
-        
-        if (!$studentId) {
-            return null;
-            }
-
-
-        
-        $setting = Setting::where('is_active', 1)->first();
-        
-        return StudentSession::where('student_id', $studentId)
-            ->when($setting, fn($q) => $q->where('session_id', $setting->id))
-            ->first();
-        }
-
-
     }
+}

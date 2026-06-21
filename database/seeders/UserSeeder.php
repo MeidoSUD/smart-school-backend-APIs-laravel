@@ -16,6 +16,10 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
+        if (User::where('username', 'ahmed.ansari')->exists()) {
+            return;
+        }
+
         $student = Student::create([
             'parent_id' => 0,
             'admission_no' => 'ADM2024001',
@@ -54,7 +58,7 @@ class UserSeeder extends Seeder
             'father_pic' => '',
             'mother_pic' => '',
             'guardian_pic' => '',
-            'is_active' => 'yes',
+            'is_active' => 1,
             'previous_school' => '',
             'height' => '145',
             'weight' => '38',
@@ -66,17 +70,17 @@ class UserSeeder extends Seeder
 
         $session = Session::create([
             'session' => '2024-2025',
-            'is_active' => 'yes',
+            'is_active' => 1,
         ]);
 
         $classe = Classe::create([
             'class' => 'الصف السابع',
-            'is_active' => 'yes',
+            'is_active' => 1,
         ]);
 
         $section = Section::create([
             'section' => 'A',
-            'is_active' => 'yes',
+            'is_active' => 1,
         ]);
 
         \Illuminate\Support\Facades\DB::table('student_session')->insert([
@@ -86,7 +90,7 @@ class UserSeeder extends Seeder
             'section_id' => $section->id,
             'is_alumni' => 0,
             'default_login' => 1,
-            'is_active' => 'yes',
+            'is_active' => 1,
         ]);
 
         // Staff: Teacher
@@ -288,7 +292,7 @@ class UserSeeder extends Seeder
             'lang_id' => 4,
             'currency_id' => 150,
             'verification_code' => '',
-            'is_active' => 'yes',
+            'is_active' => 1,
         ]);
 
         // 2. Parent User (father of the student)
@@ -301,7 +305,7 @@ class UserSeeder extends Seeder
             'lang_id' => 4,
             'currency_id' => 150,
             'verification_code' => '',
-            'is_active' => 'yes',
+            'is_active' => 1,
         ]);
 
         // 3. Teacher User
@@ -314,7 +318,7 @@ class UserSeeder extends Seeder
             'lang_id' => 4,
             'currency_id' => 150,
             'verification_code' => '',
-            'is_active' => 'yes',
+            'is_active' => 1,
         ]);
 
         // 4. General Staff User
@@ -327,7 +331,7 @@ class UserSeeder extends Seeder
             'lang_id' => 4,
             'currency_id' => 150,
             'verification_code' => '',
-            'is_active' => 'yes',
+            'is_active' => 1,
         ]);
 
         // 5. Accountant User
@@ -340,7 +344,7 @@ class UserSeeder extends Seeder
             'lang_id' => 4,
             'currency_id' => 150,
             'verification_code' => '',
-            'is_active' => 'yes',
+            'is_active' => 1,
         ]);
 
         // 6. Librarian User
@@ -353,7 +357,7 @@ class UserSeeder extends Seeder
             'lang_id' => 4,
             'currency_id' => 150,
             'verification_code' => '',
-            'is_active' => 'yes',
+            'is_active' => 1,
         ]);
 
         // Update staff records with correct user_id

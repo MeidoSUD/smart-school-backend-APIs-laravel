@@ -4,25 +4,25 @@ namespace Modules\Academic\Http\Controllers\Api;
 
 use Modules\Academic\Entities\ExamSchedule;
 use Modules\Academic\Entities\ExamResult;
-use Modules\Academic\Entities\StudentSession;
 use Modules\Academic\Entities\Student;
-use Modules\Core\Entities\Setting;
 use Modules\Academic\Entities\Grade;
+use Modules\Core\Services\StudentSessionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class MarkController extends \Modules\Core\Http\Controllers\Api\Controller
 {
-    public function __construct()
-    {
+    public function __construct(
+        private readonly StudentSessionService $studentSessionService
+    ) {
         $this->setControllerName('MarkController');
     }
 
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        $studentSession = $this->getStudentSession($user);
+        $studentSession = $this->studentSessionService->getStudentSession($user);
 
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
@@ -87,7 +87,7 @@ class MarkController extends \Modules\Core\Http\Controllers\Api\Controller
     public function marklist(Request $request): JsonResponse
     {
         $user = $request->user();
-        $studentSession = $this->getStudentSession($user);
+        $studentSession = $this->studentSessionService->getStudentSession($user);
 
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
@@ -147,36 +147,23 @@ class MarkController extends \Modules\Core\Http\Controllers\Api\Controller
         return $this->successResponse($data);
     }
 
-    public function view($id): JsonResponse
+    public function view($id, Request $request): JsonResponse
     {
-        $mark = ExamResult::find($id);
+        $user = $request->user();
+        $studentSession = $this->studentSessionService->getStudentSession($user);
+
+        if (!$studentSession) {
+            return $this->errorResponse('Student session not found');
+        }
+
+        $mark = ExamResult::where('id', $id)
+            ->where('student_id', $studentSession->student_id)
+            ->first();
 
         if (!$mark) {
             return $this->errorResponse('Mark not found', null, 404);
         }
 
         return $this->successResponse(['mark' => $mark]);
-    }
-
-    private function getStudentSession($user)
-    {
-        $studentId = null;
-
-        if ($user->role === 'student') {
-            $studentId = $user->user_id;
-        } elseif ($user->role === 'parent') {
-            $student = Student::where('parent_id', $user->id)->first();
-            $studentId = $student ? $student->id : null;
-        }
-
-        if (!$studentId) {
-            return null;
-        }
-
-        $setting = Setting::where('is_active', 1)->first();
-
-        return StudentSession::where('student_id', $studentId)
-            ->when($setting, fn($q) => $q->where('session_id', $setting->id))
-            ->first();
     }
 }

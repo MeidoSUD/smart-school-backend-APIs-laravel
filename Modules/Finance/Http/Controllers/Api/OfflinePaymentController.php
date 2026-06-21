@@ -3,26 +3,23 @@
 namespace Modules\Finance\Http\Controllers\Api;
 
 use Modules\Finance\Entities\OfflinePayment;
-use Modules\Academic\Entities\StudentSession;
 use Modules\Academic\Entities\Student;
-use Modules\Core\Entities\Setting;
+use Modules\Core\Services\StudentSessionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/**
- * Converted from CodeIgniter: codelgiterControllers/user/Offlinepayment.php
- */
 class OfflinePaymentController extends \Modules\Core\Http\Controllers\Api\Controller
 {
-    public function __construct()
-    {
+    public function __construct(
+        private readonly StudentSessionService $studentSessionService
+    ) {
         $this->setControllerName('OfflinePaymentController');
-        }
+    }
 
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        $studentSession = $this->getStudentSession($user);
+        $studentSession = $this->studentSessionService->getStudentSession($user);
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
@@ -54,7 +51,7 @@ class OfflinePaymentController extends \Modules\Core\Http\Controllers\Api\Contro
         ]);
         
         $user = $request->user();
-        $studentSession = $this->getStudentSession($user);
+        $studentSession = $this->studentSessionService->getStudentSession($user);
         
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
@@ -72,35 +69,5 @@ class OfflinePaymentController extends \Modules\Core\Http\Controllers\Api\Contro
         ]);
         
         return $this->successResponse(['id' => $offlinePayment->id], 'Payment request submitted successfully');
-        }
-
-
-
-    private function getStudentSession($user)
-    {
-        $studentId = null;
-        
-        if ($user->role === 'student') {
-            $studentId = $user->user_id;
-        } elseif ($user->role === 'parent') {
-            $student = Student::where('parent_id', $user->id)->first();
-            $studentId = $student ? $student->id : null;
-            }
-
-
-        
-        if (!$studentId) {
-            return null;
-            }
-
-
-        
-        $setting = Setting::where('is_active', 1)->first();
-        
-        return StudentSession::where('student_id', $studentId)
-            ->when($setting, fn($q) => $q->where('session_id', $setting->id))
-            ->first();
-        }
-
-
     }
+}

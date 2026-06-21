@@ -13,7 +13,7 @@ Route::prefix('api')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::prefix('auth')->group(function () {
             Route::post('/logout', [AuthController::class, 'logout']);
-            Route::post('/changepass', [AuthController::class, 'changePassword']);
+            Route::post('/changepass', [AuthController::class, 'changePassword'])->middleware('throttle:5,1');
         });
         Route::prefix('user')->group(function () {
             Route::get('/dashboard', [UserController::class, 'dashboard']);
@@ -31,7 +31,6 @@ Route::prefix('api')->group(function () {
             'status' => 'success',
             'message' => 'API is working',
             'timestamp' => now()->toDateTimeString(),
-            'php_version' => PHP_VERSION,
         ]);
     })->name('api.ping');
 });

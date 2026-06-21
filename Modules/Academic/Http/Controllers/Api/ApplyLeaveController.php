@@ -5,29 +5,29 @@ namespace Modules\Academic\Http\Controllers\Api;
 use Modules\Academic\Entities\ApplyLeave;
 use Modules\Academic\Entities\StudentSession;
 use Modules\Academic\Entities\Student;
-use Modules\Core\Entities\Setting;
+use Modules\Core\Services\StudentSessionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use DB;
 
 class ApplyLeaveController extends \Modules\Core\Http\Controllers\Api\Controller
 {
-    public function __construct()
-    {
+    public function __construct(
+        private readonly StudentSessionService $studentSessionService
+    ) {
         $this->setControllerName('ApplyLeaveController');
     }
 
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        $studentSession = $this->getStudentSession($user);
+        $studentSession = $this->studentSessionService->getStudentSession($user);
 
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
         }
 
-        $studentId = $this->getStudentId($user);
+        $studentId = $this->studentSessionService->getStudentId($user);
         $student = Student::find($studentId);
 
         $results = ApplyLeave::where('student_session_id', $studentSession->id)
@@ -44,9 +44,18 @@ class ApplyLeaveController extends \Modules\Core\Http\Controllers\Api\Controller
         return $this->successResponse($data);
     }
 
-    public function get_details($id): JsonResponse
+    public function get_details($id, Request $request): JsonResponse
     {
-        $data = ApplyLeave::find($id);
+        $user = $request->user();
+        $studentSession = $this->studentSessionService->getStudentSession($user);
+
+        if (!$studentSession) {
+            return $this->errorResponse('Student session not found');
+        }
+
+        $data = ApplyLeave::where('id', $id)
+            ->where('student_session_id', $studentSession->id)
+            ->first();
 
         if (!$data) {
             return $this->errorResponse('Leave not found', null, 404);
@@ -69,7 +78,7 @@ class ApplyLeaveController extends \Modules\Core\Http\Controllers\Api\Controller
         ]);
 
         $user = $request->user();
-        $studentSession = $this->getStudentSession($user);
+        $studentSession = $this->studentSessionService->getStudentSession($user);
 
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
@@ -96,8 +105,8 @@ class ApplyLeaveController extends \Modules\Core\Http\Controllers\Api\Controller
         $document = null;
         if ($request->hasFile('files')) {
             $file = $request->file('files')[0];
-            $document = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('uploads/student_leavedocuments'), $document);
+            $document = time() . '_' . bin2hex(random_bytes(16)) . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('uploads/student_leavedocuments', $document, 'local');
             ApplyLeave::where('id', $leaveId)->update(['docs' => $document]);
         }
 
@@ -118,32 +127,5 @@ class ApplyLeaveController extends \Modules\Core\Http\Controllers\Api\Controller
         ApplyLeave::destroy($id);
 
         return $this->successResponse(null, 'Leave removed successfully');
-    }
-
-    private function getStudentSession($user)
-    {
-        $studentId = $this->getStudentId($user);
-
-        if (!$studentId) {
-            return null;
-        }
-
-        $setting = Setting::where('is_active', 1)->first();
-
-        return StudentSession::where('student_id', $studentId)
-            ->when($setting, fn($q) => $q->where('session_id', $setting->id))
-            ->first();
-    }
-
-    private function getStudentId($user)
-    {
-        if ($user->role === 'student') {
-            return $user->user_id;
-        } elseif ($user->role === 'parent') {
-            $student = Student::where('parent_id', $user->id)->first();
-            return $student ? $student->id : null;
-        }
-
-        return null;
     }
 }

@@ -17,7 +17,7 @@ class HomeworkRequest extends FormRequest
             return [
                 'homework_id' => 'required|integer|exists:homework,id',
                 'message' => 'required|string',
-                'file' => 'nullable|file|max:10240',
+                'file' => 'nullable|file|max:10240|mimes:pdf,doc,docx,jpg,jpeg,png,zip',
             ];
         }
 

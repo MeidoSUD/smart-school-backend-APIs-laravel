@@ -17,7 +17,7 @@ Route::prefix('api')->group(function () {
     Route::get('/admission/form_config', [AdmissionController::class, 'form_config']);
     Route::get('/admission/classes', [AdmissionController::class, 'classes']);
     Route::get('/admission/sections', [AdmissionController::class, 'sections']);
-    Route::post('/admission/submit', [AdmissionController::class, 'submit']);
+    Route::post('/admission/submit', [AdmissionController::class, 'submit'])->middleware('throttle:10,1');
     Route::get('/admission/status', [AdmissionController::class, 'status']);
 });
 
@@ -27,7 +27,7 @@ Route::middleware('auth:sanctum')->prefix('api')->group(function () {
     
     Route::get('/chat/myuser', [ChatController::class, 'myuser']);
     Route::post('/chat/getChatRecord', [ChatController::class, 'getChatRecord']);
-    Route::post('/chat/newMessage', [ChatController::class, 'newMessage']);
+    Route::post('/chat/newMessage', [ChatController::class, 'newMessage'])->middleware('throttle:30,1');
     
     Route::get('/content/list', [ContentController::class, 'list']);
     Route::get('/content/getsharelist', [ContentController::class, 'getsharelist']);

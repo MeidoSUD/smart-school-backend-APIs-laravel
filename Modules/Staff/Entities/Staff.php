@@ -40,16 +40,7 @@ class Staff extends Model
         'permanent_address',
         'note',
         'image',
-        'password',
         'gender',
-        'account_title',
-        'bank_account_no',
-        'bank_name',
-        'ifsc_code',
-        'bank_branch',
-        'payscale',
-        'basic_salary',
-        'epf_no',
         'contract_type',
         'shift',
         'location',
@@ -64,12 +55,13 @@ class Staff extends Model
         'other_document_file',
         'user_id',
         'is_active',
-        'verification_code',
-        'disable_at',
     ];
 
     protected $hidden = [
         'password',
+        'bank_account_no',
+        'epf_no',
+        'verification_code',
     ];
 
     protected $casts = [

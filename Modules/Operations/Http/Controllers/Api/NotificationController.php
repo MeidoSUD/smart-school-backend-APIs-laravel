@@ -86,18 +86,28 @@ class NotificationController extends \Modules\Core\Http\Controllers\Api\Controll
 
 
 
-    public function download($id): JsonResponse
+    public function download($id, Request $request): JsonResponse
     {
-        $notification = Notification::find($id);
-        
+        $user = $request->user();
+
+        $notification = Notification::where('id', $id)
+            ->where('is_active', 'yes')
+            ->where('publish_date', '<=', now()->toDateString())
+            ->where(function ($query) use ($user) {
+                if ($user->role === 'student') {
+                    $query->where('visible_student', 'yes');
+                } elseif ($user->role === 'parent') {
+                    $query->where('visible_parent', 'yes');
+                }
+            })
+            ->first();
+
         if (!$notification) {
             return $this->errorResponse('Notification not found', null, 404);
-            }
-
-
-        
-        return $this->successResponse(['attachment' => $notification->attachment]);
         }
+
+        return $this->successResponse(['attachment' => $notification->attachment]);
+    }
 
 
 

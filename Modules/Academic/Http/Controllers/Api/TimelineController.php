@@ -3,6 +3,7 @@
 namespace Modules\Academic\Http\Controllers\Api;
 
 use Modules\Academic\Entities\StudentTimeline;
+use Modules\Academic\Entities\Student;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -22,11 +23,22 @@ class TimelineController extends \Modules\Core\Http\Controllers\Api\Controller
             'student_id' => 'required',
         ]);
 
+        $user = $request->user();
+        $studentId = $this->getStudentId($user);
+
+        if (!$studentId) {
+            return $this->errorResponse('Unauthorized');
+        }
+
+        if ((int) $request->student_id !== (int) $studentId) {
+            return $this->errorResponse('You can only add timeline for yourself', null, 403);
+        }
+
         $document = null;
         if ($request->hasFile('timeline_doc')) {
             $file = $request->file('timeline_doc');
-            $document = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('uploads/student_timeline'), $document);
+            $document = time() . '_' . bin2hex(random_bytes(16)) . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('uploads/student_timeline', $document, 'local');
         }
 
         $timeline = StudentTimeline::create([
@@ -44,9 +56,20 @@ class TimelineController extends \Modules\Core\Http\Controllers\Api\Controller
 
     public function getstudentsingletimeline(Request $request): JsonResponse
     {
-        $id = $request->post('id');
+        $validated = $request->validate([
+            'id' => 'required|integer|exists:student_timelines,id',
+        ]);
 
-        $singletimelinelist = StudentTimeline::find($id);
+        $user = $request->user();
+        $studentId = $this->getStudentId($user);
+
+        $singletimelinelist = StudentTimeline::where('id', $request->id)
+            ->where('student_id', $studentId)
+            ->first();
+
+        if (!$singletimelinelist) {
+            return $this->errorResponse('Timeline not found', null, 404);
+        }
 
         return $this->successResponse(['singletimelinelist' => $singletimelinelist]);
     }
@@ -68,8 +91,8 @@ class TimelineController extends \Modules\Core\Http\Controllers\Api\Controller
         $document = $timeline->document;
         if ($request->hasFile('timeline_doc')) {
             $file = $request->file('timeline_doc');
-            $document = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('uploads/student_timeline'), $document);
+            $document = time() . '_' . bin2hex(random_bytes(16)) . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('uploads/student_timeline', $document, 'local');
         }
 
         $timeline->update([
@@ -109,5 +132,17 @@ class TimelineController extends \Modules\Core\Http\Controllers\Api\Controller
         StudentTimeline::destroy($id);
 
         return $this->successResponse(null, 'Timeline deleted successfully');
+    }
+
+    private function getStudentId($user)
+    {
+        if ($user->role === 'student') {
+            return $user->user_id;
+        } elseif ($user->role === 'parent') {
+            $student = Student::where('parent_id', $user->id)->first();
+            return $student ? $student->id : null;
+        }
+
+        return null;
     }
 }

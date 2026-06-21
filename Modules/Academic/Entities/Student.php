@@ -80,7 +80,8 @@ class Student extends Model
     ];
 
     protected $hidden = [
-        'id',
+        'national_identification_number',
+        'local_identification_number',
     ];
 
     protected $casts = [

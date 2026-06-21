@@ -5,25 +5,25 @@ namespace Modules\Academic\Http\Controllers\Api;
 use Modules\Academic\Entities\AttendenceType;
 use Modules\Academic\Entities\StudentAttendence;
 use Modules\Academic\Entities\CalendarEvent;
-use Modules\Core\Entities\Setting;
-use Modules\Academic\Entities\StudentSession;
-use Modules\Academic\Entities\Student;
+use Modules\Core\Services\SchoolSettingsService;
+use Modules\Core\Services\StudentSessionService;
 use Dedoc\Scramble\Attributes\BodyParameter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use DB;
 
 class AttendenceController extends \Modules\Core\Http\Controllers\Api\Controller
 {
-    public function __construct()
-    {
+    public function __construct(
+        private readonly StudentSessionService $studentSessionService,
+        private readonly SchoolSettingsService $schoolSettingsService
+    ) {
         $this->setControllerName('AttendenceController');
     }
 
     public function index(): JsonResponse
     {
-        $setting = Setting::first();
+        $setting = $this->schoolSettingsService->getSettings();
 
         $data = [
             'attendence_type' => $setting->attendence_type ?? 'day',
@@ -42,7 +42,7 @@ class AttendenceController extends \Modules\Core\Http\Controllers\Api\Controller
         $attendencetypes = AttendenceType::where('is_active', 'yes')->get();
 
         $user = $request->user();
-        $studentSession = $this->getStudentSession($user);
+        $studentSession = $this->studentSessionService->getStudentSession($user);
 
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
@@ -69,7 +69,7 @@ class AttendenceController extends \Modules\Core\Http\Controllers\Api\Controller
         $end = $request->get('end') ?? date('Y-m-t');
 
         $user = $request->user();
-        $studentSession = $this->getStudentSession($user);
+        $studentSession = $this->studentSessionService->getStudentSession($user);
 
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
@@ -129,27 +129,5 @@ class AttendenceController extends \Modules\Core\Http\Controllers\Api\Controller
         }
 
         return $this->successResponse($eventdata);
-    }
-
-    private function getStudentSession($user)
-    {
-        $studentId = null;
-
-        if ($user->role === 'student') {
-            $studentId = $user->user_id;
-        } elseif ($user->role === 'parent') {
-            $student = Student::where('parent_id', $user->id)->first();
-            $studentId = $student ? $student->id : null;
-        }
-
-        if (!$studentId) {
-            return null;
-        }
-
-        $setting = Setting::where('is_active', 1)->first();
-
-        return StudentSession::where('student_id', $studentId)
-            ->when($setting, fn($q) => $q->where('session_id', $setting->id))
-            ->first();
     }
 }

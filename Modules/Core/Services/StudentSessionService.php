@@ -9,6 +9,10 @@ use Modules\Core\Entities\User;
 
 class StudentSessionService
 {
+    public function __construct(
+        private readonly SchoolSettingsService $schoolSettingsService
+    ) {}
+
     public function getStudentSession(User $user): ?StudentSession
     {
         $studentId = $this->resolveStudentId($user);
@@ -32,7 +36,7 @@ class StudentSessionService
 
     public function getStudentDefaultSession(int $studentId): ?StudentSession
     {
-        $setting = \Modules\Core\Entities\Setting::where('is_active', 1)->first();
+        $setting = $this->schoolSettingsService->getSettings();
 
         return StudentSession::where('student_id', $studentId)
             ->when($setting, fn($q) => $q->where('session_id', $setting->id))
@@ -48,6 +52,11 @@ class StudentSessionService
     public function getCurrentSession(): ?Session
     {
         return Session::where('is_active', 1)->first();
+    }
+
+    public function getStudentId(User $user): ?int
+    {
+        return $this->resolveStudentId($user);
     }
 
     private function resolveStudentId(User $user): ?int

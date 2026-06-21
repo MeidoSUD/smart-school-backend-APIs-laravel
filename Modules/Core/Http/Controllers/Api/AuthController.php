@@ -39,16 +39,11 @@ class AuthController extends \Modules\Core\Http\Controllers\Api\Controller
         }
 
         if (!Hash::check($credentials['password'], $user->password)) {
-            if ($user->password !== $credentials['password']) {
-                ApiLogger::logAuth('login_failed', $credentials['username'], false, $user->id);
-                return $this->errorResponse('Invalid username or password', null, 401);
-            }
-            $user->password = Hash::make($credentials['password']);
+            ApiLogger::logAuth('login_failed', $credentials['username'], false, $user->id);
+            return $this->errorResponse('Invalid username or password', null, 401);
         }
 
         $token = $user->createToken('api-token', [$user->role])->plainTextToken;
-
-        DB::transaction(fn() => $user->save());
 
         ApiLogger::logAuth('login_success', $credentials['username'], true, $user->id);
 

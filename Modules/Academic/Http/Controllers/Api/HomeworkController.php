@@ -5,26 +5,24 @@ namespace Modules\Academic\Http\Controllers\Api;
 use Modules\Academic\Entities\Homework;
 use Modules\Academic\Entities\SubmitAssignment;
 use Modules\Academic\Entities\DailyAssignment;
-use Modules\Academic\Entities\StudentSession;
-use Modules\Academic\Entities\Student;
 use Modules\Academic\Http\Requests\HomeworkRequest;
-use Modules\Staff\Entities\Staff;
-use Modules\Core\Entities\Setting;
+use Modules\Core\Services\StudentSessionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use DB;
 
 class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
 {
-    public function __construct()
-    {
+    public function __construct(
+        private readonly StudentSessionService $studentSessionService
+    ) {
         $this->setControllerName('HomeworkController');
     }
 
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        $studentSession = $this->getStudentSession($user);
+        $studentSession = $this->studentSessionService->getStudentSession($user);
 
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
@@ -69,7 +67,7 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
     public function upload_docs(HomeworkRequest $request): JsonResponse
     {
         $user = $request->user();
-        $studentId = $this->getStudentId($user);
+        $studentId = $this->studentSessionService->getStudentId($user);
         $homeworkId = $request->homework_id;
 
         $submissionExists = SubmitAssignment::where('homework_id', $homeworkId)
@@ -91,8 +89,8 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
         DB::transaction(function () use ($request, &$data) {
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
-                $filename = time() . '_' . $file->getClientOriginalName();
-                $file->move(public_path('uploads/homework/assignment'), $filename);
+                $filename = time() . '_' . bin2hex(random_bytes(16)) . '.' . $file->getClientOriginalExtension();
+                $file->storeAs('uploads/homework/assignment', $filename, 'local');
                 $data['docs'] = $filename;
                 $data['file_name'] = $file->getClientOriginalName();
             }
@@ -141,7 +139,7 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
     public function dailyassignment(Request $request): JsonResponse
     {
         $user = $request->user();
-        $studentSession = $this->getStudentSession($user);
+        $studentSession = $this->studentSessionService->getStudentSession($user);
 
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
@@ -156,32 +154,5 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
         ];
 
         return $this->successResponse($data);
-    }
-
-    private function getStudentSession($user)
-    {
-        $studentId = $this->getStudentId($user);
-
-        if (!$studentId) {
-            return null;
-        }
-
-        $setting = Setting::where('is_active', 1)->first();
-
-        return StudentSession::where('student_id', $studentId)
-            ->when($setting, fn($q) => $q->where('session_id', $setting->id))
-            ->first();
-    }
-
-    private function getStudentId($user)
-    {
-        if ($user->role === 'student') {
-            return $user->user_id;
-        } elseif ($user->role === 'parent') {
-            $student = Student::where('parent_id', $user->id)->first();
-            return $student ? $student->id : null;
-        }
-
-        return null;
     }
 }
