@@ -17,7 +17,7 @@ class Section extends Model
     public function classSections()
     {
         return $this->belongsToMany(Classe::class,
-        'class_sections', 'class_id',
-        'section_id')->withPivot('id','class_id','section_id','is_active');
+        'class_sections', 'section_id',
+        'class_id')->withPivot('id','class_id','section_id','is_active');
     }
 }
