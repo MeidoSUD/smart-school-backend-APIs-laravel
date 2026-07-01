@@ -107,16 +107,37 @@ class ChatController extends \Modules\Core\Http\Controllers\Api\Controller
             'message' => 'required|string',
         ]);
         
-        $insertRecord = DB::transaction(function () use ($request) {
+        $user = $request->user();
+        $studentId = $this->studentSessionService->getStudentId($user);
+        $chatUser = ChatUser::firstOrCreate(
+            ['student_id' => $studentId, 'user_type' => 'student'],
+            ['student_id' => $studentId, 'user_type' => 'student']
+        );
+        
+        $insertRecord = DB::transaction(function () use ($request, $chatUser) {
+            $chatConnectionId = $request->chat_connection_id;
+            
+            if ($chatConnectionId == 0 || !ChatConnection::find($chatConnectionId)) {
+                $chatConnection = ChatConnection::create([
+                    'chat_user_one' => $chatUser->id,
+                    'chat_user_two' => $request->chat_to_user,
+                    'ip' => $request->ip(),
+                    'time' => time(),
+                ]);
+                $chatConnectionId = $chatConnection->id;
+            }
+            
             return ChatMessage::create([
                 'chat_user_id' => $request->chat_to_user,
                 'message' => trim($request->message),
-                'chat_connection_id' => $request->chat_connection_id,
+                'chat_connection_id' => $chatConnectionId,
+                'ip' => $request->ip(),
+                'time' => time(),
                 'created_at' => now(),
             ]);
         });
         
-        return $this->successResponse(['last_insert_id' => $insertRecord->id], 'Message sent');
+        return $this->successResponse(['last_insert_id' => $insertRecord->id, 'chat_connection_id' => $insertRecord->chat_connection_id], 'Message sent');
     }
 
     private function getMyUserList($studentId, $chatUserId)
