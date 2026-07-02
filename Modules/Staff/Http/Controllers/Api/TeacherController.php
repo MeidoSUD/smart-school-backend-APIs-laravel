@@ -37,13 +37,8 @@ class TeacherController extends \Modules\Core\Http\Controllers\Api\Controller
             ->distinct()
             ->get();
         
-        $teacherList = [];
-        foreach ($teachers as $value) {
-            $teacherList[$value->id][] = $value;
-            }
+        $teacherList = $teachers->values();
 
-
-        
         $genderList = ['Male', 'Female', 'Other'];
         
         $userRatedStaffList = StaffRating::where('user_id', $user->id)

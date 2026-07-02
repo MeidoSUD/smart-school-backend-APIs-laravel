@@ -45,13 +45,14 @@ class TimelineController extends \Modules\Core\Http\Controllers\Api\Controller
             'title' => $request->timeline_title,
             'description' => $request->timeline_desc ?? '',
             'timeline_date' => Carbon::parse($request->timeline_date)->format('Y-m-d'),
-            'status' => 'yes',
+            'status' => true,
             'date' => now()->format('Y-m-d'),
             'student_id' => $request->student_id,
             'document' => $document,
+            'created_student_id' => $studentId,
         ]);
 
-        return $this->successResponse(['id' => $timeline->id], 'Timeline added successfully');
+        return $this->successResponse($timeline, 'Timeline added successfully');
     }
 
     public function getstudentsingletimeline(Request $request): JsonResponse

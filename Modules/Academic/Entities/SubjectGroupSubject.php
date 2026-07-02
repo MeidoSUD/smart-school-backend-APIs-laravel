@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class SubjectGroupSubject extends Model
 {
-    protected $table = 'subject_groupSubjects';
+    protected $table = 'subject_group_subjects';
     protected $primaryKey = 'id';
     public $timestamps = false;
 

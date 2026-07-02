@@ -12,6 +12,10 @@ class StudentTimeline extends Model
 
     protected $fillable = [
         'student_id', 'title', 'timeline_date', 'description', 'document',
-        'status', 'date', 'created_by', 'visible', 'slug',
+        'status', 'date', 'created_student_id',
+    ];
+
+    protected $casts = [
+        'status' => 'boolean',
     ];
 }

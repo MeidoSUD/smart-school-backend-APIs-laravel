@@ -16,7 +16,7 @@ return new class extends Migration
             $table->date('timeline_date');
             $table->text('description');
             $table->string('document', 200)->nullable();
-            $table->string('status', 200);
+            $table->boolean('status');
             $table->unsignedBigInteger('created_student_id');
             $table->date('date');
         });
