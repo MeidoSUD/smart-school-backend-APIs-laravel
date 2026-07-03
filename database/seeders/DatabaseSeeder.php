@@ -15,6 +15,8 @@ class DatabaseSeeder extends Seeder
             ClassSectionSeeder::class,
             TimetableSeeder::class,
             BookSeeder::class,
+            HostelRoomTypeSeeder::class,
+            HostelSeeder::class,
         ]);
     }
 }

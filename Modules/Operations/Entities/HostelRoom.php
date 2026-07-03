@@ -3,6 +3,7 @@
 namespace Modules\Operations\Entities;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class HostelRoom extends Model
 {
@@ -19,4 +20,14 @@ class HostelRoom extends Model
         'title',
         'description',
     ];
+
+    public function hostel(): BelongsTo
+    {
+        return $this->belongsTo(Hostel::class, 'hostel_id', 'id');
+    }
+
+    public function roomType(): BelongsTo
+    {
+        return $this->belongsTo(RoomType::class, 'room_type_id', 'id');
+    }
 }

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\Core\Entities\Category;
 use Modules\Core\Entities\User;
+use Modules\Operations\Entities\HostelRoom;
 
 class Student extends Model
 {
@@ -40,7 +41,7 @@ class Student extends Model
         'gender',
         'religion_id',
         'route_id',
-        'hostel_id',
+        'hostel_room_id',
         'house',
         'blood_group',
         'height',
@@ -109,6 +110,11 @@ class Student extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'category_id', 'id');
+    }
+
+    public function hostelRoom(): BelongsTo
+    {
+        return $this->belongsTo(HostelRoom::class, 'hostel_room_id', 'id');
     }
 
     protected function fullName(): Attribute

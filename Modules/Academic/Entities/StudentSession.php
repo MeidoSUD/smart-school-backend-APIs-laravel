@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\Core\Entities\Session;
+use Modules\Operations\Entities\HostelRoom;
 
 class StudentSession extends Model
 {
@@ -56,5 +57,10 @@ class StudentSession extends Model
     public function session(): BelongsTo
     {
         return $this->belongsTo(Session::class, 'session_id', 'id');
+    }
+
+    public function hostelRoom(): BelongsTo
+    {
+        return $this->belongsTo(HostelRoom::class, 'hostel_room_id', 'id');
     }
 }
