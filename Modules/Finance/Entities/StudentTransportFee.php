@@ -3,6 +3,7 @@
 namespace Modules\Finance\Entities;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class StudentTransportFee extends Model
 {
@@ -10,7 +11,12 @@ class StudentTransportFee extends Model
     protected $primaryKey = 'id';
     public $timestamps = false;
 
-    protected $fillable = ['student_session_id', 'route_id', 'pickup_point_id', 'month', 'amount', 'is_active'];
+    protected $fillable = ['transport_feemaster_id', 'student_session_id', 'route_pickup_point_id', 'generated_by', 'is_active'];
 
     protected $casts = ['is_active' => 'boolean'];
+
+    public function transportFeemaster(): BelongsTo
+    {
+        return $this->belongsTo(TransportFeemaster::class, 'transport_feemaster_id', 'id');
+    }
 }

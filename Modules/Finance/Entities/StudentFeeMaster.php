@@ -3,6 +3,7 @@
 namespace Modules\Finance\Entities;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class StudentFeeMaster extends Model
 {
@@ -10,7 +11,12 @@ class StudentFeeMaster extends Model
     protected $primaryKey = 'id';
     public $timestamps = false;
 
-    protected $fillable = ['student_session_id', 'fee_master_id', 'amount', 'amount_detail', 'discount', 'fine', 'is_active'];
+    protected $fillable = ['is_system', 'student_session_id', 'fee_session_group_id', 'amount', 'is_active'];
 
     protected $casts = ['is_active' => 'boolean'];
+
+    public function feeSessionGroup(): BelongsTo
+    {
+        return $this->belongsTo(FeeSessionGroup::class, 'fee_session_group_id', 'id');
+    }
 }

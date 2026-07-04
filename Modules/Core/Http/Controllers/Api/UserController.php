@@ -6,8 +6,13 @@ use Modules\Academic\Entities\Student;
 use Modules\Academic\Entities\StudentSession;
 use Modules\Core\Services\SchoolSettingsService;
 use Modules\Core\Services\StudentSessionService;
+use Modules\Finance\Entities\FeeSessionGroup;
+use Modules\Finance\Entities\FeeGroupsFeetype;
+use Modules\Finance\Entities\StudentFeesDeposite;
+use Modules\Finance\Entities\TransportFeemaster;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends \Modules\Core\Http\Controllers\Api\Controller
 {
@@ -154,6 +159,74 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
         $setting = $this->schoolSettingsService->getSettings();
         $student = Student::find($studentSession->student_id);
 
+        $studentSession->load([
+            'studentFeeMasters.feeSessionGroup.feeGroup',
+            'studentTransportFees.transportFeemaster',
+            'studentFeesDiscounts.feeDiscount',
+        ]);
+
+        $student_due_fee = $studentSession->studentFeeMasters->map(function ($feeMaster) {
+            $amountDetail = StudentFeesDeposite::where('student_fees_master_id', $feeMaster->id)->get();
+            $feeGroupsFeetype = collect();
+            if ($feeMaster->feeSessionGroup) {
+                $feeGroupsFeetype = FeeGroupsFeetype::where('fee_session_group_id', $feeMaster->fee_session_group_id)
+                    ->with('feeType')
+                    ->get();
+            }
+            return [
+                'id' => $feeMaster->id,
+                'is_system' => $feeMaster->is_system,
+                'student_session_id' => $feeMaster->student_session_id,
+                'fee_session_group_id' => $feeMaster->fee_session_group_id,
+                'amount' => $feeMaster->amount,
+                'fee_group' => $feeMaster->feeSessionGroup->feeGroup->name ?? null,
+                'fee_group_id' => $feeMaster->feeSessionGroup->feeGroup->id ?? null,
+                'fee_types' => $feeGroupsFeetype->map(fn($ft) => [
+                    'id' => $ft->id,
+                    'fee_type' => $ft->feeType->type ?? null,
+                    'fee_type_code' => $ft->feeType->code ?? null,
+                    'amount' => $ft->amount,
+                    'due_date' => $ft->due_date,
+                    'fine_type' => $ft->fine_type,
+                    'fine_percentage' => $ft->fine_percentage,
+                    'fine_amount' => $ft->fine_amount,
+                ]),
+                'amount_detail' => $amountDetail->map(fn($dep) => $dep->amount_detail),
+                'amount_deposited' => $amountDetail->sum(function($dep) { $d = json_decode($dep->amount_detail, true); return (float)($d['amount'] ?? 0); }),
+            ];
+        })->values();
+
+        $transport_fees = $studentSession->studentTransportFees->map(function ($transportFee) {
+            $amountDetail = StudentFeesDeposite::where('student_transport_fee_id', $transportFee->id)->get();
+            return [
+                'id' => $transportFee->id,
+                'transport_feemaster_id' => $transportFee->transport_feemaster_id,
+                'route_pickup_point_id' => $transportFee->route_pickup_point_id,
+                'month' => $transportFee->transportFeemaster->month ?? null,
+                'due_date' => $transportFee->transportFeemaster->due_date ?? null,
+                'fine_amount' => $transportFee->transportFeemaster->fine_amount ?? 0,
+                'fine_type' => $transportFee->transportFeemaster->fine_type ?? null,
+                'fine_percentage' => $transportFee->transportFeemaster->fine_percentage ?? 0,
+                'amount_detail' => $amountDetail->map(fn($dep) => $dep->amount_detail),
+            ];
+        })->values();
+
+        $student_discount_fee = $studentSession->studentFeesDiscounts->map(function ($discount) {
+            return [
+                'id' => $discount->id,
+                'student_session_id' => $discount->student_session_id,
+                'fees_discount_id' => $discount->fees_discount_id,
+                'status' => $discount->status,
+                'payment_id' => $discount->payment_id,
+                'description' => $discount->description,
+                'name' => $discount->feeDiscount->name ?? null,
+                'code' => $discount->feeDiscount->code ?? null,
+                'type' => $discount->feeDiscount->type ?? null,
+                'percentage' => $discount->feeDiscount->percentage ?? null,
+                'amount' => $discount->feeDiscount->amount ?? null,
+            ];
+        })->values();
+
         return $this->successResponse([
             'sch_setting' => $setting,
             'adm_auto_insert' => $setting ? $setting->adm_auto_insert : false,
@@ -168,9 +241,9 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
                 'section_id' => $studentSession->section_id,
             ],
             'payment_method' => false,
-            'student_due_fee' => [],
-            'transport_fees' => [],
-            'student_discount_fee' => [],
+            'student_due_fee' => $student_due_fee,
+            'transport_fees' => $transport_fees,
+            'student_discount_fee' => $student_discount_fee,
         ]);
     }
 }

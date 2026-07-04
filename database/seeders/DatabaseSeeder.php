@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             SettingSeeder::class,
             UserSeeder::class,
             ClassSectionSeeder::class,
+            FeeSeeder::class,
             TimetableSeeder::class,
             BookSeeder::class,
             HostelRoomTypeSeeder::class,

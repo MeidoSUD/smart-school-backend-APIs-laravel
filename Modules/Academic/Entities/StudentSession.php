@@ -5,7 +5,11 @@ namespace Modules\Academic\Entities;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\Core\Entities\Session;
+use Modules\Finance\Entities\StudentFeeMaster;
+use Modules\Finance\Entities\StudentFeesDiscount;
+use Modules\Finance\Entities\StudentTransportFee;
 use Modules\Operations\Entities\HostelRoom;
 
 class StudentSession extends Model
@@ -62,5 +66,20 @@ class StudentSession extends Model
     public function hostelRoom(): BelongsTo
     {
         return $this->belongsTo(HostelRoom::class, 'hostel_room_id', 'id');
+    }
+
+    public function studentFeeMasters(): HasMany
+    {
+        return $this->hasMany(StudentFeeMaster::class, 'student_session_id', 'id');
+    }
+
+    public function studentTransportFees(): HasMany
+    {
+        return $this->hasMany(StudentTransportFee::class, 'student_session_id', 'id');
+    }
+
+    public function studentFeesDiscounts(): HasMany
+    {
+        return $this->hasMany(StudentFeesDiscount::class, 'student_session_id', 'id');
     }
 }
