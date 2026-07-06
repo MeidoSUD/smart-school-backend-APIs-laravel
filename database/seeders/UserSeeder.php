@@ -16,7 +16,7 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        if (User::where('username', 'ahmed.ansari')->exists()) {
+        if (User::exists()) {
             return;
         }
 
@@ -113,7 +113,7 @@ class UserSeeder extends Seeder
             'permanent_address' => 'حي الملقا، الرياض',
             'note' => '',
             'image' => '',
-            'password' => Hash::make('22222222'),
+            'password' => md5('22222222'),
             'gender' => 'Female',
             'account_title' => '',
             'bank_account_no' => 'SA123456789',
@@ -160,7 +160,7 @@ class UserSeeder extends Seeder
             'permanent_address' => 'حي العليا، الرياض',
             'note' => '',
             'image' => '',
-            'password' => Hash::make('22222222'),
+            'password' => md5('22222222'),
             'gender' => 'Male',
             'account_title' => '',
             'bank_account_no' => 'SA987654321',
@@ -207,7 +207,7 @@ class UserSeeder extends Seeder
             'permanent_address' => 'حي السليمانية، الرياض',
             'note' => '',
             'image' => '',
-            'password' => Hash::make('22222222'),
+            'password' => md5('22222222'),
             'gender' => 'Male',
             'account_title' => 'فهد المطيري',
             'bank_account_no' => 'SA456789123',
@@ -254,7 +254,7 @@ class UserSeeder extends Seeder
             'permanent_address' => 'حي الورود، الرياض',
             'note' => '',
             'image' => '',
-            'password' => Hash::make('22222222'),
+            'password' => md5('22222222'),
             'gender' => 'Female',
             'account_title' => '',
             'bank_account_no' => 'SA321654987',
@@ -286,7 +286,7 @@ class UserSeeder extends Seeder
         $studentUser = User::create([
             'user_id' => $student->id,
             'username' => 'ahmed.ansari',
-            'password' => Hash::make('22222222'),
+            'password' => md5('22222222'),
             'childs' => '',
             'role' => 'student',
             'lang_id' => 4,
@@ -299,7 +299,7 @@ class UserSeeder extends Seeder
         $parentUser = User::create([
             'user_id' => $student->id,
             'username' => 'khalid.ansari',
-            'password' => Hash::make('22222222'),
+            'password' => md5('22222222'),
             'childs' => json_encode([$student->id]),
             'role' => 'parent',
             'lang_id' => 4,
@@ -312,7 +312,7 @@ class UserSeeder extends Seeder
         $teacherUser = User::create([
             'user_id' => $teacherStaff->id,
             'username' => 'sara.abdullah',
-            'password' => Hash::make('22222222'),
+            'password' => md5('22222222'),
             'childs' => '',
             'role' => 'teacher',
             'lang_id' => 4,
@@ -325,7 +325,7 @@ class UserSeeder extends Seeder
         $staffUser = User::create([
             'user_id' => $generalStaff->id,
             'username' => 'mohammed.alomar',
-            'password' => Hash::make('22222222'),
+            'password' => md5('22222222'),
             'childs' => '',
             'role' => 'staff',
             'lang_id' => 4,
@@ -338,7 +338,7 @@ class UserSeeder extends Seeder
         $accountantUser = User::create([
             'user_id' => $accountantStaff->id,
             'username' => 'fahad.almutairi',
-            'password' => Hash::make('22222222'),
+            'password' => md5('22222222'),
             'childs' => '',
             'role' => 'accountant',
             'lang_id' => 4,
@@ -351,7 +351,7 @@ class UserSeeder extends Seeder
         $librarianUser = User::create([
             'user_id' => $librarianStaff->id,
             'username' => 'noura.alharbi',
-            'password' => Hash::make('22222222'),
+            'password' => md5('22222222'),
             'childs' => '',
             'role' => 'librarian',
             'lang_id' => 4,

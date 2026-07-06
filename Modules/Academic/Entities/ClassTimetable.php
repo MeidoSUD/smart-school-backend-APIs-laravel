@@ -12,7 +12,7 @@ class ClassTimetable extends Model
     protected $primaryKey = 'id';
     public $timestamps = false;
 
-    protected $fillable = ['session_id', 'class_id', 'section_id', 'subject_group_id', 'subject_group_subject_id', 'staff_id', 'day', 'time_from', 'time_to', 'start_time', 'end_time', 'room_no'];
+    protected $fillable = ['session_id', 'class_id', 'section_id', 'subject_group_id', 'subject_group_subject_id', 'staff_id', 'day', 'time_from', 'time_to', 'start_time', 'end_time', 'room_no', 'is_active'];
 
     public function subjectGroupSubject(): BelongsTo
     {

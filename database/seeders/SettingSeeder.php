@@ -14,6 +14,7 @@ class SettingSeeder extends Seeder
         }
 
         DB::table('sch_settings')->insert([
+            'id' => 1,
             'name' => 'Smart School',
             'email' => 'admin@smartschool.com',
             'phone' => '0555000000',

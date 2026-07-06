@@ -43,6 +43,9 @@ Route::middleware('auth:sanctum')->prefix('api')->group(function () {
 
     Route::post('/timeline/add', [TimelineController::class, 'add']);
     Route::get('/timetable', [TimetableController::class, 'index']);
+    Route::post('/timetable', [TimetableController::class, 'store']);
+    Route::put('/timetable/{id}', [TimetableController::class, 'update']);
+    Route::delete('/timetable/{id}', [TimetableController::class, 'destroy']);
 
     Route::get('/apply_leave', [ApplyLeaveController::class, 'index']);
     Route::get('/apply_leave/{id}', [ApplyLeaveController::class, 'get_details']);
