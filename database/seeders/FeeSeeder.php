@@ -47,9 +47,9 @@ class FeeSeeder extends Seeder
         ]);
 
         $feeTypes = [
-            ['feecategory_id' => $feeCategory, 'type' => 'الرسوم الدراسية', 'code' => 'tuition_fee', 'is_active' => 1],
-            ['feecategory_id' => $feeCategory, 'type' => 'رسوم الأنشطة', 'code' => 'activity_fee', 'is_active' => 1],
-            ['feecategory_id' => $feeCategory, 'type' => 'رسوم الكتب', 'code' => 'book_fee', 'is_active' => 1],
+            ['feecategory_id' => $feeCategory, 'type' => 'الرسوم الدراسية', 'code' => 'tuition_fee', 'is_active' => 'yes'],
+            ['feecategory_id' => $feeCategory, 'type' => 'رسوم الأنشطة', 'code' => 'activity_fee', 'is_active' => 'yes'],
+            ['feecategory_id' => $feeCategory, 'type' => 'رسوم الكتب', 'code' => 'book_fee', 'is_active' => 'yes'],
         ];
 
         $createdFeeTypes = [];
@@ -61,13 +61,13 @@ class FeeSeeder extends Seeder
             'name' => 'الرسوم الأساسية',
             'is_system' => 0,
             'description' => 'مجموعة الرسوم الأساسية للفصل الدراسي',
-            'is_active' => 1,
+            'is_active' => 'yes',
         ]);
 
         $feeSessionGroup = FeeSessionGroup::create([
             'fee_groups_id' => $feeGroup->id,
             'session_id' => $session->id,
-            'is_active' => 1,
+            'is_active' => 'yes',
         ]);
 
         $feeGroupsFeetypes = [];
@@ -88,7 +88,7 @@ class FeeSeeder extends Seeder
                 'due_date' => now()->addMonth()->format('Y-m-d'),
                 'fine_percentage' => 2.00,
                 'fine_amount' => 0.00,
-                'is_active' => 1,
+                'is_active' => 'yes',
             ]);
         }
 
@@ -99,7 +99,7 @@ class FeeSeeder extends Seeder
                 'student_session_id' => $studentSession->id,
                 'fee_session_group_id' => $feeSessionGroup->id,
                 'amount' => 5800.00,
-                'is_active' => 1,
+                'is_active' => 'yes',
             ]);
 
             $amountDetail = json_encode([
@@ -114,7 +114,7 @@ class FeeSeeder extends Seeder
                 'student_fees_master_id' => $feeMaster->id,
                 'fee_groups_feetype_id' => $feeGroupsFeetypes[0]->id,
                 'amount_detail' => $amountDetail,
-                'is_active' => 1,
+                'is_active' => 'yes',
             ]);
         }
 
@@ -127,11 +127,32 @@ class FeeSeeder extends Seeder
             'fine_percentage' => 0.00,
         ]);
 
+        $routeId = DB::table('transport_route')->insertGetId([
+            'route_title' => 'الطريق الرئيسي',
+            'no_of_vehicle' => 1,
+            'note' => '',
+            'is_active' => 'yes',
+            'created_at' => now(),
+        ]);
+
+        $pickupPointId = DB::table('pickup_point')->insertGetId([
+            'name' => 'المدرسة',
+            'created_at' => now(),
+        ]);
+
+        $routePickupPointId = DB::table('route_pickup_point')->insertGetId([
+            'transport_route_id' => $routeId,
+            'pickup_point_id' => $pickupPointId,
+            'fees' => 0.00,
+            'order_number' => 1,
+            'created_at' => now(),
+        ]);
+
         foreach ($studentSessions as $studentSession) {
             StudentTransportFee::create([
                 'transport_feemaster_id' => $transportFeemaster->id,
                 'student_session_id' => $studentSession->id,
-                'route_pickup_point_id' => $studentSession->route_pickup_point_id ?? 1,
+                'route_pickup_point_id' => $routePickupPointId,
                 'generated_by' => 1,
             ]);
         }
@@ -144,7 +165,7 @@ class FeeSeeder extends Seeder
             'percentage' => 10.00,
             'amount' => null,
             'description' => 'خصم 10% للطلاب المتفوقين',
-            'is_active' => 1,
+            'is_active' => 'yes',
         ]);
 
         foreach ($studentSessions as $studentSession) {
@@ -154,7 +175,7 @@ class FeeSeeder extends Seeder
                 'status' => 'assigned',
                 'payment_id' => null,
                 'description' => 'خصم تفوق',
-                'is_active' => 1,
+                'is_active' => 'yes',
             ]);
         }
     }

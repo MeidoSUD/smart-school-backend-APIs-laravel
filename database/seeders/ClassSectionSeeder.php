@@ -25,18 +25,18 @@ class ClassSectionSeeder extends Seeder
         ClassSection::create([
             'class_id' => $class->id,
             'section_id' => $section->id,
-            'is_active' => 1,
+            'is_active' => 'yes',
         ]);
 
         $sectionB = Section::create([
             'section' => 'B',
-            'is_active' => 1,
+            'is_active' => 'yes',
         ]);
 
         ClassSection::create([
             'class_id' => $class->id,
             'section_id' => $sectionB->id,
-            'is_active' => 1,
+            'is_active' => 'yes',
         ]);
     }
 }

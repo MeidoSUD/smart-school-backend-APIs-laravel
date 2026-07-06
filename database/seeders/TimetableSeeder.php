@@ -8,6 +8,9 @@ use Modules\Academic\Entities\Classe;
 use Modules\Academic\Entities\Section;
 use Modules\Academic\Entities\ClassSection;
 use Modules\Academic\Entities\Subject;
+use Modules\Academic\Entities\SubjectGroup;
+use Modules\Academic\Entities\SubjectGroupClassSection;
+use Modules\Academic\Entities\SubjectGroupSubject;
 use Modules\Core\Entities\Session;
 use Modules\Staff\Entities\Staff;
 
@@ -37,7 +40,6 @@ class TimetableSeeder extends Seeder
 
         $teacher = Staff::first();
 
-        // Create subjects
         $subjects = [
             ['name' => 'الرياضيات', 'code' => 'MATH', 'type' => 'theory'],
             ['name' => 'العلوم', 'code' => 'SCI', 'type' => 'theory'],
@@ -55,8 +57,29 @@ class TimetableSeeder extends Seeder
                 'name' => $subjectData['name'],
                 'code' => $subjectData['code'],
                 'type' => $subjectData['type'],
-                'teacher_id' => $teacher?->id,
-                'is_active' => 1,
+                'is_active' => 'yes',
+            ]);
+        }
+
+        $subjectGroup = SubjectGroup::create([
+            'name' => 'المواد الأساسية',
+            'description' => 'مجموعة المواد للصف السابع',
+            'session_id' => $session->id,
+        ]);
+
+        SubjectGroupClassSection::create([
+            'class_section_id' => $classSectionA->id,
+            'subject_group_id' => $subjectGroup->id,
+            'session_id' => $session->id,
+            'is_active' => 1,
+        ]);
+
+        $subjectGroupSubjects = [];
+        foreach ($subjectModels as $code => $subject) {
+            $subjectGroupSubjects[$code] = SubjectGroupSubject::create([
+                'subject_group_id' => $subjectGroup->id,
+                'subject_id' => $subject->id,
+                'session_id' => $session->id,
             ]);
         }
 
@@ -105,8 +128,10 @@ class TimetableSeeder extends Seeder
         foreach ($timetable as $day => $periods) {
             foreach ($periods as $period) {
                 ClassTimetable::create([
-                    'class_section_id' => $classSectionA->id,
-                    'subject_id' => $subjectModels[$period['subject']]->id,
+                    'class_id' => $class->id,
+                    'section_id' => $sectionA->id,
+                    'subject_group_id' => $subjectGroup->id,
+                    'subject_group_subject_id' => $subjectGroupSubjects[$period['subject']]->id,
                     'staff_id' => $teacher?->id,
                     'day' => $day,
                     'time_from' => $period['from'],
