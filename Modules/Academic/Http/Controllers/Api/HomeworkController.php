@@ -3,10 +3,14 @@
 namespace Modules\Academic\Http\Controllers\Api;
 
 use Modules\Academic\Entities\Homework;
+use Modules\Academic\Entities\HomeworkEvaluation;
 use Modules\Academic\Entities\SubmitAssignment;
 use Modules\Academic\Entities\DailyAssignment;
+use Modules\Academic\Entities\Student;
 use Modules\Academic\Http\Requests\HomeworkRequest;
 use Modules\Core\Services\StudentSessionService;
+use Modules\Core\Entities\Setting;
+use Modules\Staff\Entities\Staff;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use DB;
@@ -101,7 +105,7 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
         return $this->successResponse(null, 'Homework submitted successfully');
     }
 
-    public function homework_detail($id, $status): JsonResponse
+    public function homework_detail($id, $status, Request $request): JsonResponse
     {
         $result = Homework::find($id);
 
@@ -109,17 +113,58 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
             return $this->errorResponse('Homework not found', null, 404);
         }
 
+        $user = $request->user();
+        $studentId = $this->studentSessionService->getStudentId($user);
+
         $setting = Setting::first();
         $superadminRestriction = $setting ? ($setting->superadmin_restriction ?? false) : false;
 
         $classId = $result->class_id;
         $sectionId = $result->section_id;
 
+        $studentlist = Student::whereHas('studentSessions', function ($q) use ($classId, $sectionId) {
+            $q->where('class_id', $classId)->where('section_id', $sectionId);
+        })->get();
+
+        $report = HomeworkEvaluation::where('homework_id', $id)
+            ->where('student_id', $studentId)
+            ->first();
+
+        $homeworkdocs = SubmitAssignment::where('homework_id', $id)
+            ->where('student_id', $studentId)
+            ->get();
+
+        $created_by = '';
+        $evaluated_by = '';
+
+        $createData = Staff::find($result->created_by);
+        if ($createData && ($superadminRestriction != 'disabled' || $createData->role_id != 7)) {
+            $created_by = ($createData->surname ? $createData->name . ' ' . $createData->surname : $createData->name) . ' (' . $createData->employee_id . ')';
+        }
+
+        if ($result->evaluated_by) {
+            $evalData = Staff::find($result->evaluated_by);
+            if ($evalData && ($superadminRestriction != 'disabled' || $evalData->role_id != 7)) {
+                $evaluated_by = ($evalData->surname ? $evalData->name . ' ' . $evalData->surname : $evalData->name) . ' (' . $evalData->employee_id . ')';
+            }
+        }
+
+        $checkstatus = SubmitAssignment::where('homework_id', $id)
+            ->where('student_id', $studentId)
+            ->count();
+        $homeworkStatus = $checkstatus > 0 ? 'submitted' : '';
+
         $data = [
             'homework_status' => $status,
             'homework_id' => $id,
             'title' => 'Homework Evaluation',
             'result' => $result,
+            'studentlist' => $studentlist,
+            'report' => $report,
+            'homeworkdocs' => $homeworkdocs,
+            'created_by' => $created_by,
+            'evaluated_by' => $evaluated_by,
+            'status' => $homeworkStatus,
         ];
 
         return $this->successResponse($data);

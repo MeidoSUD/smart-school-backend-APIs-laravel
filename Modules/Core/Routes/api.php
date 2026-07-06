@@ -16,6 +16,7 @@ Route::prefix('api')->group(function () {
             Route::post('/changepass', [AuthController::class, 'changePassword'])->middleware('throttle:5,1');
         });
         Route::prefix('user')->group(function () {
+            Route::match(['get', 'post'], '/choose', [UserController::class, 'choose']);
             Route::get('/dashboard', [UserController::class, 'dashboard']);
             Route::get('/profile', [UserController::class, 'profile']);
             Route::get('/fees', [UserController::class, 'fees']);

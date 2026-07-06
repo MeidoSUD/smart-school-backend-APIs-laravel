@@ -31,9 +31,12 @@ Route::middleware('auth:sanctum')->prefix('api')->group(function () {
     
     Route::get('/content/list', [ContentController::class, 'list']);
     Route::get('/content/getsharelist', [ContentController::class, 'getsharelist']);
-    Route::get('/content/{id}', [ContentController::class, 'view']);
     Route::get('/content/assignment', [ContentController::class, 'assignment']);
     Route::get('/content/studymaterial', [ContentController::class, 'studymaterial']);
+    Route::get('/content/syllabus', [ContentController::class, 'syllabus']);
+    Route::get('/content/other', [ContentController::class, 'other']);
+    Route::get('/content/download/{file}', [ContentController::class, 'download']);
+    Route::get('/content/{id}', [ContentController::class, 'view']);
     
     Route::get('/hostel', [HostelController::class, 'index']);
     Route::get('/hostel/room', [HostelRoomController::class, 'index']);

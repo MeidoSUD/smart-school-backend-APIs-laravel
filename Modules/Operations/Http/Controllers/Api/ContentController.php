@@ -145,6 +145,57 @@ class ContentController extends \Modules\Core\Http\Controllers\Api\Controller
 
 
 
+    public function download($file): JsonResponse
+    {
+        return $this->successResponse(['file' => $file]);
+    }
+
+    public function syllabus(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $studentSession = $this->getStudentSession($user);
+
+        if (!$studentSession) {
+            return $this->errorResponse('Student session not found');
+        }
+
+        $list = Content::where('is_active', 'yes')
+            ->where('type', 'syllabus')
+            ->where('class_id', $studentSession->class_id)
+            ->where('cls_sec_id', $studentSession->section_id)
+            ->get();
+
+        $data = [
+            'title_list' => 'List of Syllabus',
+            'list' => $list,
+        ];
+
+        return $this->successResponse($data);
+    }
+
+    public function other(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $studentSession = $this->getStudentSession($user);
+
+        if (!$studentSession) {
+            return $this->errorResponse('Student session not found');
+        }
+
+        $list = Content::where('is_active', 'yes')
+            ->where('type', 'other_download')
+            ->where('class_id', $studentSession->class_id)
+            ->where('cls_sec_id', $studentSession->section_id)
+            ->get();
+
+        $data = [
+            'title_list' => 'List of Other Download',
+            'list' => $list,
+        ];
+
+        return $this->successResponse($data);
+    }
+
     private function getStudentSession($user)
     {
         $studentId = null;

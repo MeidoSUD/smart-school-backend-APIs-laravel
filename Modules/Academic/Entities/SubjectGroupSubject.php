@@ -3,6 +3,7 @@
 namespace Modules\Academic\Entities;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SubjectGroupSubject extends Model
 {
@@ -11,4 +12,9 @@ class SubjectGroupSubject extends Model
     public $timestamps = false;
 
     protected $fillable = ['subject_group_id', 'subject_id', 'session_id'];
+
+    public function subjectGroup(): BelongsTo
+    {
+        return $this->belongsTo(SubjectGroup::class, 'subject_group_id');
+    }
 }

@@ -52,7 +52,7 @@ class User extends Authenticatable
 
     public function isActive(): bool
     {
-        return (bool) $this->is_active;
+        return $this->is_active === 'yes';
     }
 
     public function getRelatedUser()

@@ -32,7 +32,7 @@ class OnlineExamController extends \Modules\Core\Http\Controllers\Api\Controller
 
         $examList = OnlineExam::where('class_id', $studentSession->class_id)
             ->where('section_id', $studentSession->section_id)
-            ->where('is_active', 'yes')
+            ->where('is_active', 1)
             ->get();
 
         $data = [

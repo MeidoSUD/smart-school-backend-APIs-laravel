@@ -3,10 +3,8 @@
 namespace Modules\Academic\Http\Controllers\Api;
 
 use Modules\Academic\Entities\Subject;
-use Modules\Academic\Entities\SubjectGroup;
-use Modules\Academic\Entities\SubjectGroupSubject;
-use Modules\Academic\Entities\SubjectGroupClassSection;
 use Modules\Academic\Entities\TeacherSubject;
+use Modules\Academic\Entities\ClassSection;
 use Modules\Academic\Entities\StudentSession;
 use Modules\Academic\Entities\Student;
 use Modules\Core\Entities\Setting;
@@ -30,26 +28,25 @@ class SubjectController extends \Modules\Core\Http\Controllers\Api\Controller
             return $this->errorResponse('Student session not found');
         }
 
-        $subjects = SubjectGroupClassSection::where('class_section_id', $studentSession->class_id)
-            ->where('session_id', $studentSession->session_id)
-            ->with('subjectGroup.subjects')
-            ->get();
+        $classSection = ClassSection::where('class_id', $studentSession->class_id)
+            ->where('section_id', $studentSession->section_id)
+            ->first();
 
-        $subjectList = [];
-        foreach ($subjects as $sgcs) {
-            if ($sgcs->subjectGroup && $sgcs->subjectGroup->subjects) {
-                foreach ($sgcs->subjectGroup->subjects as $subject) {
-                    $subjectList[] = [
-                        'id' => $subject->id,
-                        'name' => $subject->name,
-                        'type' => $subject->type,
-                        'code' => $subject->code,
-                    ];
-                }
-            }
+        if (!$classSection) {
+            return $this->errorResponse('Class section not found');
         }
 
-        return $this->successResponse(['subjects' => $subjectList]);
+        $currentSession = Setting::where('is_active', 'yes')->first();
+
+        $subjects = DB::table('teacher_subjects')
+            ->join('subjects', 'subjects.id', '=', 'teacher_subjects.subject_id')
+            ->join('staff', 'staff.id', '=', 'teacher_subjects.teacher_id')
+            ->where('teacher_subjects.class_section_id', $classSection->id)
+            ->when($currentSession, fn($q) => $q->where('teacher_subjects.session_id', $currentSession->id))
+            ->select('teacher_subjects.*', 'subjects.name', 'subjects.type', 'subjects.code', 'staff.name as teacher_name', 'staff.surname')
+            ->get();
+
+        return $this->successResponse(['subjects' => $subjects]);
     }
 
     public function view($id): JsonResponse

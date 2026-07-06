@@ -4,12 +4,22 @@ namespace Modules\Core\Http\Controllers\Api;
 
 use Modules\Academic\Entities\Student;
 use Modules\Academic\Entities\StudentSession;
+use Modules\Academic\Entities\StudentAttendence;
+use Modules\Academic\Entities\AttendenceType;
+use Modules\Academic\Entities\Homework;
+use Modules\Academic\Entities\SubmitAssignment;
+use Modules\Academic\Entities\Syllabus;
+use Modules\Academic\Entities\ClassTimetable;
 use Modules\Core\Services\SchoolSettingsService;
 use Modules\Core\Services\StudentSessionService;
 use Modules\Finance\Entities\FeeSessionGroup;
 use Modules\Finance\Entities\FeeGroupsFeetype;
 use Modules\Finance\Entities\StudentFeesDeposite;
 use Modules\Finance\Entities\TransportFeemaster;
+use Modules\Operations\Entities\LibraryMember;
+use Modules\Operations\Entities\Notification;
+use Modules\Operations\Entities\Visitor;
+use Modules\Staff\Entities\Staff;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -36,23 +46,215 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
             return $this->errorResponse('Student session not found');
         }
 
-        $sessionDetails = $this->schoolSettingsService->sessionDates();
+        $studentId = $studentSession->student_id;
+        $classId = $studentSession->class_id;
+        $sectionId = $studentSession->section_id;
+        $studentSessionId = $studentSession->id;
+
+        $sessionDates = $this->schoolSettingsService->sessionDates();
+
+        $attendencePercentage = -1;
+        $attendances = StudentAttendence::where('student_session_id', $studentSessionId)
+            ->whereBetween('date', [$sessionDates['start'], $sessionDates['end']])
+            ->get();
+
+        if ($attendances->isNotEmpty()) {
+            $total = $attendances->count();
+            $absents = $attendances->filter(fn($a) => $a->attendence_type_id == 4)->count();
+            $presents = $total - $absents;
+            $attendencePercentage = round(($presents * 100) / $total, 2);
+        }
+
+        $memberType = 'student';
+        $checkIsMember = LibraryMember::where('member_type', $memberType)
+            ->where('member_id', $studentId)
+            ->first();
+        $bookList = $checkIsMember ? true : false;
+
+        $homeworklist = Homework::where('class_id', $classId)
+            ->where('section_id', $sectionId)
+            ->get()
+            ->map(function ($hw) use ($studentId) {
+                $checkstatus = SubmitAssignment::where('homework_id', $hw->id)
+                    ->where('student_id', $studentId)
+                    ->count();
+                $hw->status = $checkstatus > 0 ? 'submitted' : '';
+                return $hw;
+            });
+
+        $notifications = Notification::where('is_active', 'yes')
+            ->where('publish_date', '<=', now()->toDateString())
+            ->when($user->role === 'student', fn($q) => $q->where('visible_student', 'yes'))
+            ->when($user->role === 'parent', fn($q) => $q->where('visible_parent', 'yes'))
+            ->orderByDesc('publish_date')
+            ->get()
+            ->filter(fn($n) => strtotime(date('Y-m-d')) >= strtotime($n->publish_date))
+            ->values();
+
+        $setting = $this->schoolSettingsService->getSettings();
+        $sessionId = $setting->session_id;
+
+        $subjects = Syllabus::getMySubjects($classId, $sectionId, $sessionId);
+        $subjectsData = [];
+        foreach ($subjects as $value) {
+            $subjectDetails = Syllabus::getSubjectStatus($value->subject_group_subjects_id, $value->subject_group_class_sections_id);
+            $complete = 0;
+            $incomplete = 0;
+            if ($subjectDetails && $subjectDetails->total > 0) {
+                $complete = round(($subjectDetails->complete / $subjectDetails->total) * 100);
+                $incomplete = round(($subjectDetails->incomplete / $subjectDetails->total) * 100);
+            }
+            $lebel = $value->name . ($value->code ? ' (' . $value->code . ')' : '');
+            $subjectsData[$value->subject_group_subjects_id] = [
+                'lebel' => $lebel,
+                'complete' => $complete,
+                'incomplete' => $incomplete,
+                'id' => $value->subject_group_subjects_id . '_' . $value->code,
+                'total' => $subjectDetails->total ?? 0,
+                'name' => $value->name,
+                'graph_id' => $value->subject_group_subjects_id . time(),
+            ];
+        }
+
+        $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        $daysRecord = [];
+        foreach ($days as $day) {
+            $daysRecord[$day] = ClassTimetable::where('class_id', $classId)
+                ->where('section_id', $sectionId)
+                ->where('day', $day)
+                ->with('subjectGroupSubject.subjectGroup.subjects')
+                ->with('staff')
+                ->orderBy('time_from')
+                ->get()
+                ->map(function ($row) {
+                    $subjectName = 'N/A';
+                    $subjectCode = '';
+                    if ($row->subjectGroupSubject && $row->subjectGroupSubject->subjectGroup && $row->subjectGroupSubject->subjectGroup->subjects) {
+                        $subject = $row->subjectGroupSubject->subjectGroup->subjects->first();
+                        if ($subject) {
+                            $subjectName = $subject->name;
+                            $subjectCode = $subject->code;
+                        }
+                    }
+                    return [
+                        'id' => $row->id,
+                        'subject' => $subjectName,
+                        'subject_code' => $subjectCode,
+                        'teacher' => $row->staff ? $row->staff->name : 'N/A',
+                        'time_from' => $row->time_from,
+                        'time_to' => $row->time_to,
+                        'room' => $row->room_no ?? '',
+                        'day' => $row->day,
+                    ];
+                });
+        }
+
+        $visitors = Visitor::where('student_session_id', $studentSessionId)->get();
+
+        $teachers = [];
+        $studentTeacher = ClassTimetable::where('class_id', $classId)
+            ->where('section_id', $sectionId)
+            ->with('staff')
+            ->get()
+            ->pluck('staff')
+            ->filter()
+            ->unique('id')
+            ->values();
 
         $data = [
-            'attendence_percentage' => -1.0,
+            'attendence_percentage' => $attendencePercentage,
+            'bookList' => $bookList,
+            'homeworklist' => $homeworklist,
+            'notificationlist' => $notifications,
+            'subjects_data' => $subjectsData,
+            'timetable' => $daysRecord,
+            'visitor_list' => $visitors,
             'studentsession_username' => $user->username,
             'student_data' => [
                 'id' => $user->id,
                 'username' => $user->username,
                 'role' => $user->role,
-                'student_id' => $studentSession->student_id,
+                'student_id' => $studentId,
                 'class' => $studentSession->class->class ?? null,
                 'section' => $studentSession->section->section ?? null,
             ],
             'low_attendance_limit' => $this->schoolSettingsService->lowAttendanceLimit(),
+            'teacherlist' => $studentTeacher,
         ];
 
         return $this->successResponse($data);
+    }
+
+    public function choose(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return $this->errorResponse('Unauthorized', 401);
+        }
+
+        if ($request->isMethod('post')) {
+            $studentSessionId = $request->input('clschg');
+            if (!$studentSessionId) {
+                return $this->errorResponse('Student session ID is required');
+            }
+
+            $session = StudentSession::find($studentSessionId);
+            if (!$session) {
+                return $this->errorResponse('Student session not found');
+            }
+
+            StudentSession::where('student_id', $session->student_id)
+                ->where('default_login', 1)
+                ->update(['default_login' => 0]);
+
+            $session->update(['default_login' => 1]);
+
+            return $this->successResponse(['redirect' => 'user/user/dashboard'], 'Class selected successfully');
+        }
+
+        $studentLists = [];
+        if ($user->role === 'student') {
+            $studentId = $user->user_id;
+            $studentLists = StudentSession::where('student_id', $studentId)
+                ->with('class', 'section', 'session')
+                ->get()
+                ->map(fn($ss) => [
+                    'id' => $ss->id,
+                    'student_session_id' => $ss->id,
+                    'student_id' => $ss->student_id,
+                    'class_id' => $ss->class_id,
+                    'section_id' => $ss->section_id,
+                    'session_id' => $ss->session_id,
+                    'class' => $ss->class->class ?? null,
+                    'section' => $ss->section->section ?? null,
+                    'session' => $ss->session->session ?? null,
+                    'default_login' => $ss->default_login,
+                ]);
+        } elseif ($user->role === 'parent') {
+            $studentLists = Student::where('parent_id', $user->id)
+                ->with(['studentSessions.class', 'studentSessions.section', 'studentSessions.session'])
+                ->get()
+                ->flatMap(fn($s) => $s->studentSessions->map(fn($ss) => [
+                    'id' => $ss->id,
+                    'student_session_id' => $ss->id,
+                    'student_id' => $ss->student_id,
+                    'class_id' => $ss->class_id,
+                    'section_id' => $ss->section_id,
+                    'session_id' => $ss->session_id,
+                    'class' => $ss->class->class ?? null,
+                    'section' => $ss->section->section ?? null,
+                    'session' => $ss->session->session ?? null,
+                    'default_login' => $ss->default_login,
+                    'student_name' => $s->fullname,
+                ]));
+        }
+
+        return $this->successResponse([
+            'student_lists' => $studentLists,
+            'sch_setting' => $this->schoolSettingsService->getSettings(),
+            'role' => $user->role,
+        ]);
     }
 
     public function profile(Request $request): JsonResponse

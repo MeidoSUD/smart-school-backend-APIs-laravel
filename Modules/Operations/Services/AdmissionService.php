@@ -29,7 +29,7 @@ class AdmissionService
         $bloodgroup = BloodGroup::where('is_active', 'yes')->get();
         $houses = House::where('is_active', 'yes')->get();
         $custom_fields = CustomField::where('belong_to', 'students')
-            ->where('is_active', 'yes')
+            ->where('is_active', 1)
             ->get();
 
         return [
