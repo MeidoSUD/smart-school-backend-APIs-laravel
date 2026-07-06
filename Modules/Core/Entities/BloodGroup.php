@@ -4,6 +4,7 @@ namespace Modules\Core\Entities;
 
 use Illuminate\Database\Eloquent\Model;
 
+// FIXME: Table 'blood_group' does not exist in SQL schema
 class BloodGroup extends Model
 {
     protected $table = 'blood_group';
@@ -12,5 +13,5 @@ class BloodGroup extends Model
 
     protected $fillable = ['name', 'is_active'];
 
-    protected $casts = ['is_active' => 'boolean'];
+
 }

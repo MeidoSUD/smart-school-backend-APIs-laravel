@@ -6,12 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class ApplyLeave extends Model
 {
-    protected $table = 'apply_leave';
+    protected $table = 'student_applyleave';
     protected $primaryKey = 'id';
-    public $timestamps = false;
+    public $timestamps = true;
 
     protected $fillable = [
-        'student_session_id', 'apply_date', 'from_date', 'to_date',
-        'reason', 'status', 'approve_by', 'docs',
+        'student_session_id', 'from_date', 'to_date', 'apply_date',
+        'status', 'docs', 'reason', 'approve_by', 'approve_date', 'request_type',
     ];
 }

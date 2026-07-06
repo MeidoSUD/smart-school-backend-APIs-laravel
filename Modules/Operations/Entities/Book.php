@@ -14,9 +14,8 @@ class Book extends Model
     protected $fillable = [
         'book_title', 'book_no', 'isbn_no', 'subject', 'rack_no', 'publish',
         'author', 'qty', 'perunitcost', 'postdate', 'description', 'available', 'is_active',
+        'created_at', 'updated_at',
     ];
-
-    protected $casts = ['is_active' => 'boolean'];
 }
 
 class BookIssue extends Model
@@ -25,9 +24,7 @@ class BookIssue extends Model
     protected $primaryKey = 'id';
     public $timestamps = false;
 
-    protected $fillable = ['book_id', 'member_id', 'duereturn_date', 'return_date', 'issue_date', 'is_returned', 'is_active'];
-
-    protected $casts = ['is_active' => 'boolean'];
+    protected $fillable = ['book_id', 'member_id', 'duereturn_date', 'return_date', 'issue_date', 'is_returned', 'is_active', 'created_at'];
 
     public function book(): BelongsTo
     {
@@ -37,11 +34,9 @@ class BookIssue extends Model
 
 class LibraryMember extends Model
 {
-    protected $table = 'library_members';
+    protected $table = 'libarary_members';
     protected $primaryKey = 'id';
     public $timestamps = false;
 
-    protected $fillable = ['member_id', 'member_type', 'library_card_id', 'issue_limit', 'join_date', 'end_date', 'is_active'];
-
-    protected $casts = ['is_active' => 'boolean'];
+    protected $fillable = ['library_card_no', 'member_type', 'member_id', 'is_active'];
 }

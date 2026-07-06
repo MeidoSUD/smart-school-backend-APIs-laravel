@@ -12,5 +12,5 @@ class ExamGroupStudent extends Model
 
     protected $fillable = ['exam_group_id', 'student_id', 'student_session_id', 'is_active'];
 
-    protected $casts = ['is_active' => 'boolean'];
+
 }

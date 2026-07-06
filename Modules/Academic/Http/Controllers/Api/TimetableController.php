@@ -26,18 +26,10 @@ class TimetableController extends \Modules\Core\Http\Controllers\Api\Controller
             return $this->errorResponse('Student session not found');
         }
 
-        $classSection = DB::table('class_sections')
-            ->where('class_id', $studentSession->class_id)
+        $timetable = ClassTimetable::where('class_id', $studentSession->class_id)
             ->where('section_id', $studentSession->section_id)
-            ->first();
-
-        if (!$classSection) {
-            return $this->successResponse(['timetable' => []], 'No timetable found');
-        }
-
-        $timetable = ClassTimetable::where('class_section_id', $classSection->id)
             ->where('session_id', $studentSession->session_id)
-            ->with('subject')
+            ->with('subjectGroupSubject.subjectGroup.subjects')
             ->with('staff')
             ->orderBy('day')
             ->orderBy('time_from')
@@ -50,10 +42,20 @@ class TimetableController extends \Modules\Core\Http\Controllers\Api\Controller
                 $result[$day] = [];
             }
 
+            $subjectName = 'N/A';
+            $subjectCode = '';
+            if ($row->subjectGroupSubject && $row->subjectGroupSubject->subjectGroup && $row->subjectGroupSubject->subjectGroup->subjects) {
+                $subject = $row->subjectGroupSubject->subjectGroup->subjects->first();
+                if ($subject) {
+                    $subjectName = $subject->name;
+                    $subjectCode = $subject->code;
+                }
+            }
+
             $result[$day][] = [
                 'id' => $row->id,
-                'subject' => $row->subject ? $row->subject->name : 'N/A',
-                'subject_code' => $row->subject ? $row->subject->code : '',
+                'subject' => $subjectName,
+                'subject_code' => $subjectCode,
                 'teacher' => $row->staff ? $row->staff->name : 'N/A',
                 'time_from' => $row->time_from,
                 'time_to' => $row->time_to,
@@ -80,7 +82,7 @@ class TimetableController extends \Modules\Core\Http\Controllers\Api\Controller
             return null;
         }
 
-        $setting = Setting::where('is_active', 1)->first();
+        $setting = Setting::where('is_active', 'yes')->first();
 
         return StudentSession::where('student_id', $studentId)
             ->when($setting, fn($q) => $q->where('session_id', $setting->id))

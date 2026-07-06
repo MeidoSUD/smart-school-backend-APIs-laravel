@@ -32,7 +32,7 @@ class OnlineExamController extends \Modules\Core\Http\Controllers\Api\Controller
 
         $examList = OnlineExam::where('class_id', $studentSession->class_id)
             ->where('section_id', $studentSession->section_id)
-            ->where('is_active', 1)
+            ->where('is_active', 'yes')
             ->get();
 
         $data = [
@@ -95,7 +95,7 @@ class OnlineExamController extends \Modules\Core\Http\Controllers\Api\Controller
             return null;
         }
 
-        $setting = Setting::where('is_active', 1)->first();
+        $setting = Setting::where('is_active', 'yes')->first();
 
         return StudentSession::where('student_id', $studentId)
             ->when($setting, fn($q) => $q->where('session_id', $setting->id))

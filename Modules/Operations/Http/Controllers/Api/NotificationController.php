@@ -6,7 +6,7 @@ use Modules\Operations\Entities\Notification;
 use Modules\Operations\Entities\ReadNotification;
 use Modules\Academic\Entities\StudentSession;
 use Modules\Academic\Entities\Student;
-use Modules\Academic\Entities\Staff;
+use Modules\Staff\Entities\Staff;
 use Modules\Core\Entities\Setting;
 use Dedoc\Scramble\Attributes\BodyParameter;
 use Illuminate\Http\JsonResponse;

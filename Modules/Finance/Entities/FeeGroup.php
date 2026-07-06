@@ -10,7 +10,5 @@ class FeeGroup extends Model
     protected $primaryKey = 'id';
     public $timestamps = false;
 
-    protected $fillable = ['name', 'is_system', 'description', 'is_active'];
-
-    protected $casts = ['is_active' => 'boolean'];
+    protected $fillable = ['name', 'is_system', 'description', 'is_active', 'created_at'];
 }

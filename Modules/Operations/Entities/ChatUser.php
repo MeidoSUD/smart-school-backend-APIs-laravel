@@ -12,5 +12,5 @@ class ChatUser extends Model
 
     protected $fillable = ['user_type', 'staff_id', 'student_id', 'create_staff_id', 'create_student_id', 'is_active'];
 
-    protected $casts = ['is_active' => 'boolean'];
+
 }

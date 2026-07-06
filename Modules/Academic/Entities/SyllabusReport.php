@@ -4,6 +4,7 @@ namespace Modules\Academic\Entities;
 
 use Illuminate\Database\Eloquent\Model;
 
+// FIXME: Table 'syllabus_report' does not exist in SQL schema
 class SyllabusReport extends Model
 {
     protected $table = 'syllabus_report';

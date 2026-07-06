@@ -8,7 +8,7 @@ class TransportRoute extends Model
 {
     protected $table = 'transport_route';
     protected $primaryKey = 'id';
-    public $timestamps = false;
+    public $timestamps = true;
 
-    protected $fillable = ['route_title', 'route_code', 'no_of_vehicle', 'status'];
+    protected $fillable = ['route_title', 'no_of_vehicle', 'note', 'is_active'];
 }

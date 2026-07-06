@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ExamResult extends Model
 {
+    // FIXME: Table 'exam_results' does not exist in SQL schema
     protected $table = 'exam_results';
     protected $primaryKey = 'id';
     public $timestamps = false;
@@ -19,5 +20,5 @@ class ExamResult extends Model
         'is_active',
     ];
 
-    protected $casts = ['is_active' => 'boolean'];
+
 }

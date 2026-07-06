@@ -8,9 +8,7 @@ class Grade extends Model
 {
     protected $table = 'grades';
     protected $primaryKey = 'id';
-    public $timestamps = false;
+    public $timestamps = true;
 
-    protected $fillable = ['name', 'from_mark', 'to_mark', 'grade_point', 'description', 'is_active'];
-
-    protected $casts = ['is_active' => 'boolean'];
+    protected $fillable = ['exam_type', 'name', 'point', 'mark_from', 'mark_upto', 'description', 'is_active'];
 }

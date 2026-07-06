@@ -8,15 +8,15 @@ use Modules\Staff\Entities\Staff;
 
 class ClassTimetable extends Model
 {
-    protected $table = 'class_timetable';
+    protected $table = 'subject_timetable';
     protected $primaryKey = 'id';
     public $timestamps = false;
 
-    protected $fillable = ['class_section_id', 'subject_id', 'staff_id', 'day', 'time_from', 'time_to', 'room_no', 'session_id'];
+    protected $fillable = ['session_id', 'class_id', 'section_id', 'subject_group_id', 'subject_group_subject_id', 'staff_id', 'day', 'time_from', 'time_to', 'start_time', 'end_time', 'room_no'];
 
-    public function subject(): BelongsTo
+    public function subjectGroupSubject(): BelongsTo
     {
-        return $this->belongsTo(Subject::class, 'subject_id');
+        return $this->belongsTo(SubjectGroupSubject::class, 'subject_group_subject_id');
     }
 
     public function staff(): BelongsTo

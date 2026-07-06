@@ -22,7 +22,5 @@ class Classe extends Model
         'updated_at',
     ];
 
-    protected $casts = [
-        'is_active' => 'boolean',
-    ];
+
 }

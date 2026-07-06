@@ -100,7 +100,7 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
                 'guardian_phone' => $student->guardian_phone,
                 'guardian_relation' => $student->guardian_relation,
                 'guardian_address' => $student->guardian_address,
-                'current_address' => $student->local_address ?? $student->permanent_address ?? '',
+                'current_address' => $student->current_address ?? $student->permanent_address ?? '',
                 'category' => $student->category?->category,
                 'class' => $studentSession->class->class ?? null,
                 'section' => $studentSession->section->section ?? null,

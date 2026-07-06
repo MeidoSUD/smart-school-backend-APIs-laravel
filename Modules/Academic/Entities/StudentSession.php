@@ -20,27 +20,16 @@ class StudentSession extends Model
 
     protected $primaryKey = 'id';
 
-    public $timestamps = false;
+    public $timestamps = true;
 
     protected $fillable = [
-        'student_id',
-        'class_id',
-        'section_id',
-        'session_id',
-        'route_id',
-        'hostel_room_id',
-        'transport_fee',
-        'route_pickup_point_id',
-        'transport_fee_month',
-        'default_login',
-        'dis_reason',
-        'disc_date',
-        'created_at',
-        'updated_at',
+        'student_id', 'class_id', 'section_id', 'session_id', 'hostel_room_id',
+        'vehroute_id', 'route_pickup_point_id', 'transport_fees', 'fees_discount',
+        'is_leave', 'is_active', 'is_alumni', 'default_login',
     ];
 
     protected $casts = [
-        'transport_fee' => 'decimal:2',
+        'transport_fees' => 'decimal:2',
     ];
 
     public function student(): BelongsTo

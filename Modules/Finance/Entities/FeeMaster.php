@@ -8,9 +8,7 @@ class FeeMaster extends Model
 {
     protected $table = 'feemasters';
     protected $primaryKey = 'id';
-    public $timestamps = false;
+    public $timestamps = true;
 
     protected $fillable = ['session_id', 'feetype_id', 'class_id', 'amount', 'description', 'is_active'];
-
-    protected $casts = ['is_active' => 'boolean'];
 }

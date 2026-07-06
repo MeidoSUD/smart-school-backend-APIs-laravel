@@ -12,5 +12,5 @@ class LibraryMember extends Model
 
     protected $fillable = [ 'library_card_no', 'member_type', 'member_id','is_active'];
 
-    protected $casts = ['is_active' => 'boolean'];
+
 }

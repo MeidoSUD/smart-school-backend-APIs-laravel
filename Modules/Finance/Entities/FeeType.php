@@ -8,9 +8,7 @@ class FeeType extends Model
 {
     protected $table = 'feetype';
     protected $primaryKey = 'id';
-    public $timestamps = false;
+    public $timestamps = true;
 
     protected $fillable = ['is_system', 'feecategory_id', 'type', 'code', 'is_active', 'description'];
-
-    protected $casts = ['is_active' => 'boolean'];
 }

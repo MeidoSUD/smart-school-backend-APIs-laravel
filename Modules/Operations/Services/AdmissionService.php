@@ -24,12 +24,12 @@ class AdmissionService
 
     public function getFormConfig(): array
     {
-        $classlist = Classe::where('is_active', 1)->get();
-        $category = Category::where('is_active', 1)->get();
-        $bloodgroup = BloodGroup::where('is_active', 1)->get();
-        $houses = House::where('is_active', 1)->get();
+        $classlist = Classe::where('is_active', 'yes')->get();
+        $category = Category::where('is_active', 'yes')->get();
+        $bloodgroup = BloodGroup::where('is_active', 'yes')->get();
+        $houses = House::where('is_active', 'yes')->get();
         $custom_fields = CustomField::where('belong_to', 'students')
-            ->where('is_active', 1)
+            ->where('is_active', 'yes')
             ->get();
 
         return [
@@ -44,14 +44,14 @@ class AdmissionService
 
     public function getActiveClasses()
     {
-        return Classe::where('is_active', 1)->get();
+        return Classe::where('is_active', 'yes')->get();
     }
 
     public function getSectionsForClass(int $classId)
     {
         return Section::whereHas('classSections', function ($q) use ($classId) {
             $q->where('class_id', $classId);
-        })->where('is_active', 1)->get();
+        })->where('is_active', 'yes')->get();
     }
 
     public function submitAdmission(Request $request): OnlineStudent

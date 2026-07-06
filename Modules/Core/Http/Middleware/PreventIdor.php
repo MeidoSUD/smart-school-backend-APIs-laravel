@@ -10,7 +10,7 @@ class PreventIdor
     public function handle(Request $request, Closure $next, string $modelClass, string $ownerColumn = 'user_id')
     {
         $user = $request->user();
-        $resourceId = $request->route('id') ?? $request->route parameter('id');
+        $resourceId = $request->route('id');
 
         if (!$resourceId) {
             return $next($request);

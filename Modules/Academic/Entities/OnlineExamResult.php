@@ -12,5 +12,5 @@ class OnlineExamResult extends Model
 
     protected $fillable = ['online_exam_id', 'student_id', 'answers', 'obtained_marks', 'attended_on', 'is_active'];
 
-    protected $casts = ['is_active' => 'boolean'];
+
 }

@@ -55,6 +55,12 @@ class Staff extends Model
         'other_document_file',
         'user_id',
         'is_active',
+        'account_title',
+        'bank_name',
+        'ifsc_code',
+        'bank_branch',
+        'payscale',
+        'basic_salary',
     ];
 
     protected $hidden = [
@@ -69,7 +75,6 @@ class Staff extends Model
         'date_of_joining' => 'date',
         'date_of_leaving' => 'date',
         'disable_at' => 'date',
-        'is_active' => 'boolean',
     ];
 
     public function user(): BelongsTo

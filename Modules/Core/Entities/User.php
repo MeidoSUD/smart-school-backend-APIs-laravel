@@ -33,14 +33,11 @@ class User extends Authenticatable
         'currency_id',
         'verification_code',
         'is_active',
+        'token',
     ];
 
     protected $hidden = [
         'password',
-    ];
-
-    protected $casts = [
-        'is_active' => 'boolean',
     ];
 
     public function student(): HasOne

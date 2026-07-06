@@ -8,12 +8,10 @@ class StudentFee extends Model
 {
     protected $table = 'student_fees';
     protected $primaryKey = 'id';
-    public $timestamps = false;
+    public $timestamps = true;
 
     protected $fillable = [
-        'student_session_id', 'fee_groups_feetype_id', 'amount',
-        'amount_discount', 'amount_fine', 'date', 'description', 'is_active',
+        'student_session_id', 'feemaster_id', 'amount',
+        'amount_discount', 'amount_fine', 'description', 'date', 'payment_mode', 'is_active',
     ];
-
-    protected $casts = ['is_active' => 'boolean'];
 }

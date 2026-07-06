@@ -27,7 +27,6 @@ class OfflinePayment extends Model
         'reply',
         'approved_by',
         'is_active',
+        'created_at',
     ];
-
-    protected $casts = ['is_active' => 'boolean'];
 }

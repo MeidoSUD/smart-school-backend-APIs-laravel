@@ -13,20 +13,18 @@ class Content extends Model
     protected $fillable = [
         'title', 'type', 'is_public', 'class_id', 'cls_sec_id',
         'file', 'date', 'note', 'is_active', 'created_by',
+        'created_at', 'updated_at',
     ];
-
-    protected $casts = ['is_active' => 'boolean'];
 }
 
 class ShareContent extends Model
 {
-    protected $table = 'share_content';
+    protected $table = 'share_contents';
     protected $primaryKey = 'id';
     public $timestamps = false;
 
     protected $fillable = [
-        'content_id', 'visible_to', 'created_by', 'share_date', 'valid_upto',
-        'class_id', 'section_id', 'role_id',
+        'send_to', 'title', 'share_date', 'valid_upto', 'description', 'created_by',
     ];
 }
 
@@ -37,6 +35,4 @@ class ClassSection extends Model
     public $timestamps = false;
 
     protected $fillable = ['class_id', 'section_id', 'is_active'];
-
-    protected $casts = ['is_active' => 'boolean'];
 }

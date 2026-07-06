@@ -15,7 +15,5 @@ class StudentTimeline extends Model
         'status', 'date', 'created_student_id',
     ];
 
-    protected $casts = [
-        'status' => 'boolean',
-    ];
+    protected $casts = [];
 }

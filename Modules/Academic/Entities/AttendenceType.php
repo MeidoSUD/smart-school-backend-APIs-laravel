@@ -8,9 +8,7 @@ class AttendenceType extends Model
 {
     protected $table = 'attendence_type';
     protected $primaryKey = 'id';
-    public $timestamps = false;
+    public $timestamps = true;
 
-    protected $fillable = ['type', 'key_value', 'is_active', 'for_qr_attendance', 'long_lang_name', 'long_name_style'];
-
-    protected $casts = ['is_active' => 'boolean'];
+    protected $fillable = ['type', 'key_value', 'long_lang_name', 'long_name_style', 'is_active', 'for_qr_attendance'];
 }

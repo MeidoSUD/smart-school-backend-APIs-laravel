@@ -11,9 +11,7 @@ class StudentFeeMaster extends Model
     protected $primaryKey = 'id';
     public $timestamps = false;
 
-    protected $fillable = ['is_system', 'student_session_id', 'fee_session_group_id', 'amount', 'is_active'];
-
-    protected $casts = ['is_active' => 'boolean'];
+    protected $fillable = ['is_system', 'student_session_id', 'fee_session_group_id', 'amount', 'is_active', 'created_at'];
 
     public function feeSessionGroup(): BelongsTo
     {

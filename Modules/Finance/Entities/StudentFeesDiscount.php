@@ -11,9 +11,7 @@ class StudentFeesDiscount extends Model
     protected $primaryKey = 'id';
     public $timestamps = false;
 
-    protected $fillable = ['student_session_id', 'fees_discount_id', 'status', 'payment_id', 'description', 'is_active'];
-
-    protected $casts = ['is_active' => 'boolean'];
+    protected $fillable = ['student_session_id', 'fees_discount_id', 'status', 'payment_id', 'description', 'is_active', 'created_at'];
 
     public function feeDiscount(): BelongsTo
     {

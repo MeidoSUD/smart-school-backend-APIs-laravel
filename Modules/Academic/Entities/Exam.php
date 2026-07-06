@@ -8,9 +8,7 @@ class Exam extends Model
 {
     protected $table = 'exams';
     protected $primaryKey = 'id';
-    public $timestamps = false;
+    public $timestamps = true;
 
     protected $fillable = ['name', 'sesion_id', 'note', 'is_active'];
-
-    protected $casts = ['is_active' => 'boolean'];
 }

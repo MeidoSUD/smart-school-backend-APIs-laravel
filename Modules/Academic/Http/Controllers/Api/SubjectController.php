@@ -81,7 +81,7 @@ class SubjectController extends \Modules\Core\Http\Controllers\Api\Controller
             return $this->errorResponse('Class section not found');
         }
 
-        $currentSession = Setting::where('is_active', 1)->first();
+        $currentSession = Setting::where('is_active', 'yes')->first();
 
         $subjects = DB::table('teacher_subjects')
             ->join('subjects', 'subjects.id', '=', 'teacher_subjects.subject_id')
@@ -109,7 +109,7 @@ class SubjectController extends \Modules\Core\Http\Controllers\Api\Controller
             return null;
         }
 
-        $setting = Setting::where('is_active', 1)->first();
+        $setting = Setting::where('is_active', 'yes')->first();
 
         return StudentSession::where('student_id', $studentId)
             ->when($setting, fn($q) => $q->where('session_id', $setting->id))

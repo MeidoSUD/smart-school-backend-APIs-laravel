@@ -11,9 +11,7 @@ class FeeSessionGroup extends Model
     protected $primaryKey = 'id';
     public $timestamps = false;
 
-    protected $fillable = ['fee_groups_id', 'session_id', 'is_active'];
-
-    protected $casts = ['is_active' => 'boolean'];
+    protected $fillable = ['fee_groups_id', 'session_id', 'is_active', 'created_at'];
 
     public function feeGroup(): BelongsTo
     {

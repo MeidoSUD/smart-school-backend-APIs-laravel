@@ -11,9 +11,7 @@ class SubjectGroup extends Model
     protected $primaryKey = 'id';
     public $timestamps = false;
 
-    protected $fillable = ['name', 'description', 'session_id', 'is_active'];
-
-    protected $casts = ['is_active' => 'boolean'];
+    protected $fillable = ['name', 'description', 'session_id'];
 
     public function subjects(): BelongsToMany
     {

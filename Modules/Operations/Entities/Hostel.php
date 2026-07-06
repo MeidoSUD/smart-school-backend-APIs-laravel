@@ -9,11 +9,9 @@ class Hostel extends Model
 {
     protected $table = 'hostel';
     protected $primaryKey = 'id';
-    public $timestamps = false;
+    public $timestamps = true;
 
-    protected $fillable = ['hostel_name', 'type', 'address', 'note', 'is_active'];
-
-    protected $casts = ['is_active' => 'boolean'];
+    protected $fillable = ['hostel_name', 'type', 'address', 'intake', 'description', 'is_active'];
 
     public function rooms(): HasMany
     {

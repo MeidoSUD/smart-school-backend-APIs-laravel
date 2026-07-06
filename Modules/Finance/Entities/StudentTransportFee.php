@@ -11,9 +11,7 @@ class StudentTransportFee extends Model
     protected $primaryKey = 'id';
     public $timestamps = false;
 
-    protected $fillable = ['transport_feemaster_id', 'student_session_id', 'route_pickup_point_id', 'generated_by', 'is_active'];
-
-    protected $casts = ['is_active' => 'boolean'];
+    protected $fillable = ['transport_feemaster_id', 'student_session_id', 'route_pickup_point_id', 'generated_by', 'created_at'];
 
     public function transportFeemaster(): BelongsTo
     {

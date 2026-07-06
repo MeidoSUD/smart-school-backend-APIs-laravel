@@ -3,21 +3,12 @@
 namespace Modules\Academic\Entities;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Modules\Staff\Entities\Staff;
 
 class Subject extends Model
 {
     protected $table = 'subjects';
     protected $primaryKey = 'id';
-    public $timestamps = false;
+    public $timestamps = true;
 
-    protected $fillable = ['name', 'type', 'code', 'teacher_id', 'is_active'];
-
-    protected $casts = ['is_active' => 'boolean'];
-
-    public function teacher(): BelongsTo
-    {
-        return $this->belongsTo(Staff::class, 'teacher_id');
-    }
+    protected $fillable = ['name', 'type', 'code', 'is_active'];
 }

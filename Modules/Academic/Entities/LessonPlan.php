@@ -4,6 +4,7 @@ namespace Modules\Academic\Entities;
 
 use Illuminate\Database\Eloquent\Model;
 
+// FIXME: Table 'lesson_plan' does not exist in SQL schema. Closest table is 'subject_syllabus'.
 class LessonPlan extends Model
 {
     protected $table = 'lesson_plan';

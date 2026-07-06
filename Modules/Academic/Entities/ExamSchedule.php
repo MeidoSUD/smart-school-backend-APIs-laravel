@@ -11,14 +11,12 @@ class ExamSchedule extends Model
 {
     protected $table = 'exam_schedules';
     protected $primaryKey = 'id';
-    public $timestamps = false;
+    public $timestamps = true;
 
     protected $fillable = [
-        'session_id', 'exam_id', 'teacher_subject_id', 'date_of_exam',
+        'session_id', 'exam_id', 'class_id', 'teacher_subject_id', 'date_of_exam',
         'start_to', 'end_from', 'room_no', 'full_marks', 'passing_marks', 'note', 'is_active',
     ];
-
-    protected $casts = ['is_active' => 'boolean'];
 
     public function exam(): BelongsTo
     {

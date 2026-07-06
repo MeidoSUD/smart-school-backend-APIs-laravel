@@ -13,16 +13,13 @@ class Session extends Model
 
     protected $primaryKey = 'id';
 
-    public $timestamps = false;
+    public $timestamps = true;
+
+    const CREATED_AT = 'created_at';
+    const UPDATED_AT = 'updated_at';
 
     protected $fillable = [
         'session',
         'is_active',
-        'created_at',
-        'updated_at',
-    ];
-
-    protected $casts = [
-        'is_active' => 'boolean',
     ];
 }

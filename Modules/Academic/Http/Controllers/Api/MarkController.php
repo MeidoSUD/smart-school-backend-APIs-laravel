@@ -39,19 +39,14 @@ class MarkController extends \Modules\Core\Http\Controllers\Api\Controller
             $examIds = $reportcard->pluck('exam_id')->toArray();
             $allResults = DB::table('exam_schedules')
                 ->join('teacher_subjects', 'teacher_subjects.id', '=', 'exam_schedules.teacher_subject_id')
-                ->join('exam_results', 'exam_results.exam_schedule_id', '=', 'exam_schedules.id')
                 ->join('subjects', 'subjects.id', '=', 'teacher_subjects.subject_id')
                 ->whereIn('exam_schedules.exam_id', $examIds)
                 ->where('teacher_subjects.session_id', $studentSession->session_id)
-                ->where('exam_results.student_id', $studentSession->student_id)
                 ->select(
                     'exam_schedules.id as exam_schedule_id',
                     'exam_schedules.full_marks',
                     'exam_schedules.exam_id',
                     'exam_schedules.passing_marks',
-                    'exam_results.attendence',
-                    'exam_results.get_marks',
-                    'exam_results.note',
                     'subjects.name',
                     'subjects.code',
                     'subjects.type'
@@ -68,8 +63,6 @@ class MarkController extends \Modules\Core\Http\Controllers\Api\Controller
                         'full_marks' => $result->full_marks,
                         'passing_marks' => $result->passing_marks,
                         'exam_name' => $exam->name ?? $result->name ?? 'Exam',
-                        'get_marks' => $result->get_marks,
-                        'attendence' => $result->attendence,
                     ];
                 }
             }
@@ -108,19 +101,14 @@ class MarkController extends \Modules\Core\Http\Controllers\Api\Controller
             $examIds = $examList->pluck('exam_id')->toArray();
             $allResults = DB::table('exam_schedules')
                 ->join('teacher_subjects', 'teacher_subjects.id', '=', 'exam_schedules.teacher_subject_id')
-                ->join('exam_results', 'exam_results.exam_schedule_id', '=', 'exam_schedules.id')
                 ->join('subjects', 'subjects.id', '=', 'teacher_subjects.subject_id')
                 ->whereIn('exam_schedules.exam_id', $examIds)
                 ->where('teacher_subjects.session_id', $studentSession->session_id)
-                ->where('exam_results.student_id', $studentSession->student_id)
                 ->select(
                     'exam_schedules.id as exam_schedule_id',
                     'exam_schedules.full_marks',
                     'exam_schedules.exam_id',
                     'exam_schedules.passing_marks',
-                    'exam_results.attendence',
-                    'exam_results.get_marks',
-                    'exam_results.note',
                     'subjects.name',
                     'subjects.code',
                     'subjects.type'

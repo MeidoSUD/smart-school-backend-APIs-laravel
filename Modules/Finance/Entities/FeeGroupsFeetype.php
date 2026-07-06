@@ -14,9 +14,8 @@ class FeeGroupsFeetype extends Model
     protected $fillable = [
         'fee_session_group_id', 'fee_groups_id', 'feetype_id', 'session_id',
         'amount', 'fine_type', 'due_date', 'fine_percentage', 'fine_amount', 'is_active',
+        'created_at',
     ];
-
-    protected $casts = ['is_active' => 'boolean'];
 
     protected $dates = ['due_date'];
 

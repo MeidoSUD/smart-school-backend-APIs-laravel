@@ -32,7 +32,7 @@ trait HasStudentSession
 
     public function getCurrentSession(): ?Session
     {
-        return Session::where('is_active', 1)->first();
+        return Session::where('is_active', 'yes')->first();
     }
 
     private function resolveStudentId(User $user): ?int

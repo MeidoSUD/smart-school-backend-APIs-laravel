@@ -90,7 +90,7 @@ class BookController extends \Modules\Core\Http\Controllers\Api\Controller
 
 
         
-        $setting = Setting::where('is_active', 1)->first();
+        $setting = Setting::where('is_active', 'yes')->first();
         
         return StudentSession::where('student_id', $studentId)
             ->when($setting, fn($q) => $q->where('session_id', $setting->id))

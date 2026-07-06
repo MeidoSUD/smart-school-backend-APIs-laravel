@@ -9,11 +9,11 @@ class SubjectGroupClassSection extends Model
 {
     protected $table = 'subject_group_class_sections';
     protected $primaryKey = 'id';
-    public $timestamps = false;
+    public $timestamps = true;
 
-    protected $fillable = ['class_section_id', 'subject_group_id', 'session_id', 'is_active'];
+    protected $fillable = ['class_section_id', 'subject_group_id', 'session_id', 'description', 'is_active'];
 
-    protected $casts = ['is_active' => 'boolean'];
+
 
     public function subjectGroup(): BelongsTo
     {

@@ -15,5 +15,5 @@ class OnlineExam extends Model
         'duration', 'minimum_percentage', 'max_attempts', 'is_active',
     ];
 
-    protected $casts = ['is_active' => 'boolean'];
+
 }

@@ -8,9 +8,10 @@ class Classe extends Model
 {
     protected $table = 'classes';
     protected $primaryKey = 'id';
-    public $timestamps = false;
+    public $timestamps = true;
+
+    const CREATED_AT = 'created_at';
+    const UPDATED_AT = 'updated_at';
 
     protected $fillable = ['class', 'is_active'];
-
-    protected $casts = ['is_active' => 'boolean'];
 }

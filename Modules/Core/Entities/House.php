@@ -10,7 +10,5 @@ class House extends Model
     protected $primaryKey = 'id';
     public $timestamps = false;
 
-    protected $fillable = ['house_name', 'is_active'];
-
-    protected $casts = ['is_active' => 'boolean'];
+    protected $fillable = ['house_name', 'description', 'is_active'];
 }

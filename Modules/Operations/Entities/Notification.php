@@ -8,7 +8,7 @@ class Notification extends Model
 {
     protected $table = 'send_notification';
     protected $primaryKey = 'id';
-    public $timestamps = false;
+    public $timestamps = true;
 
     protected $fillable = [
         'title',
@@ -23,6 +23,4 @@ class Notification extends Model
         'created_id',
         'is_active',
     ];
-
-    protected $casts = ['is_active' => 'boolean'];
 }

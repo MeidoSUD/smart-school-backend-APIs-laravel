@@ -25,27 +25,19 @@ class RouteController extends \Modules\Core\Http\Controllers\Api\Controller
     {
         $user = $request->user();
         $studentId = $this->getStudentId($user);
-        
-        $studentList = Student::find($studentId);
-        
-        if (!$studentList) {
-            return $this->errorResponse('Student not found', null, 404);
-            }
 
+        $studentSession = StudentSession::where('student_id', $studentId)->first();
 
-        
-        $pickupPoint = [];
-        if ($studentList->route_id) {
-            $pickupPoint = PickupPoint::where('route_id', $studentList->route_id)->get();
-            }
+        if (!$studentSession) {
+            return $this->errorResponse('Student session not found', null, 404);
+        }
 
+        $data = [
+            'vehroute_id' => $studentSession->vehroute_id,
+            'route_pickup_point_id' => $studentSession->route_pickup_point_id,
+        ];
 
-        
-        $studentList->pickup_point = $pickupPoint;
-        
-        $data = ['listroute' => $studentList];
-        
-        return $this->successResponse($data);
+        return $this->successResponse(['listroute' => $data]);
         }
 
 

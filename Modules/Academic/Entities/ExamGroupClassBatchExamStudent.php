@@ -15,5 +15,5 @@ class ExamGroupClassBatchExamStudent extends Model
         'roll_no', 'teacher_remark', 'rank', 'is_active',
     ];
 
-    protected $casts = ['is_active' => 'boolean'];
+
 }

@@ -6,11 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class PickupPoint extends Model
 {
-    protected $table = 'pickup_points';
+    protected $table = 'pickup_point';
     protected $primaryKey = 'id';
     public $timestamps = false;
 
-    protected $fillable = ['route_id', 'point_name', 'arrival_time', 'distance', 'pickup_route_id', 'drop_route_id', 'is_active'];
-
-    protected $casts = ['is_active' => 'boolean'];
+    protected $fillable = ['name', 'latitude', 'longitude'];
 }

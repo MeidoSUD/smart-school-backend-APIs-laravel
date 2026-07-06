@@ -4,6 +4,7 @@ namespace Modules\Academic\Entities;
 
 use Illuminate\Database\Eloquent\Model;
 
+// FIXME: Table 'syllabus_status' does not exist in SQL schema
 class SyllabusStatus extends Model
 {
     protected $table = 'syllabus_status';
