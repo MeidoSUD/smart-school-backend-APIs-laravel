@@ -3,45 +3,73 @@
 namespace Modules\Academic\Http\Controllers\Api;
 
 use Modules\Academic\Entities\ClassTimetable;
-use Modules\Academic\Entities\StudentSession;
-use Modules\Academic\Entities\Student;
-use Modules\Academic\Entities\SubjectGroup;
-use Modules\Academic\Entities\SubjectGroupSubject;
-use Modules\Academic\Entities\Classe;
-use Modules\Academic\Entities\Section;
 use Modules\Core\Entities\Session;
+use Modules\Core\Services\StudentSessionService;
 use Modules\Staff\Entities\Staff;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Modules\Core\Traits\HasStudentSession;
 
 class TimetableController extends \Modules\Core\Http\Controllers\Api\Controller
 {
-    use HasStudentSession;
-
-    public function __construct()
-    {
+    public function __construct(
+        private readonly StudentSessionService $studentSessionService
+    ) {
         $this->setControllerName('TimetableController');
     }
 
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        $studentSession = $this->getStudentSession($user);
 
-        if (!$studentSession) {
-            return $this->errorResponse('Student session not found');
+        if (in_array($user->role, ['student', 'parent'])) {
+            $studentSession = $this->studentSessionService->getStudentSession($user);
+
+            if (!$studentSession) {
+                return $this->errorResponse('Student session not found');
+            }
+
+            $timetable = ClassTimetable::select(
+                'subject_timetable.*',
+                'subjects.name as subject_name',
+                'subjects.code as subject_code',
+                'staff.name as teacher_name'
+            )
+                ->leftJoin('subject_group_subjects', 'subject_timetable.subject_group_subject_id', '=', 'subject_group_subjects.id')
+                ->leftJoin('subjects', 'subjects.id', '=', 'subject_group_subjects.subject_id')
+                ->leftJoin('staff', 'staff.id', '=', 'subject_timetable.staff_id')
+                ->where('subject_timetable.class_id', $studentSession->class_id)
+                ->where('subject_timetable.section_id', $studentSession->section_id)
+                ->orderBy('subject_timetable.day')
+                ->orderBy('subject_timetable.time_from')
+                ->get();
+        } elseif (in_array($user->role, ['teacher', 'staff'])) {
+            $staff = Staff::where('user_id', $user->id)->where('is_active', 1)->first();
+
+            if (!$staff) {
+                return $this->errorResponse('Staff record not found');
+            }
+
+            $timetable = ClassTimetable::select(
+                'subject_timetable.*',
+                'subjects.name as subject_name',
+                'subjects.code as subject_code',
+                'staff.name as teacher_name',
+                'classes.class as class_name',
+                'sections.section as section_name'
+            )
+                ->leftJoin('subject_group_subjects', 'subject_timetable.subject_group_subject_id', '=', 'subject_group_subjects.id')
+                ->leftJoin('subjects', 'subjects.id', '=', 'subject_group_subjects.subject_id')
+                ->leftJoin('staff', 'staff.id', '=', 'subject_timetable.staff_id')
+                ->leftJoin('classes', 'classes.id', '=', 'subject_timetable.class_id')
+                ->leftJoin('sections', 'sections.id', '=', 'subject_timetable.section_id')
+                ->where('subject_timetable.staff_id', $staff->id)
+                ->orderBy('subject_timetable.day')
+                ->orderBy('subject_timetable.time_from')
+                ->get();
+        } else {
+            return $this->errorResponse('Unauthorized role');
         }
-
-        $timetable = ClassTimetable::where('class_id', $studentSession->class_id)
-            ->where('section_id', $studentSession->section_id)
-            ->where('session_id', $studentSession->session_id)
-            ->with('subjectGroupSubject.subjectGroup.subjects')
-            ->with('staff')
-            ->orderBy('day')
-            ->orderBy('time_from')
-            ->get();
 
         $result = [];
         foreach ($timetable as $row) {
@@ -50,26 +78,23 @@ class TimetableController extends \Modules\Core\Http\Controllers\Api\Controller
                 $result[$day] = [];
             }
 
-            $subjectName = 'N/A';
-            $subjectCode = '';
-            if ($row->subjectGroupSubject && $row->subjectGroupSubject->subjectGroup && $row->subjectGroupSubject->subjectGroup->subjects) {
-                $subject = $row->subjectGroupSubject->subjectGroup->subjects->first();
-                if ($subject) {
-                    $subjectName = $subject->name;
-                    $subjectCode = $subject->code;
-                }
-            }
-
-            $result[$day][] = [
+            $entry = [
                 'id' => $row->id,
-                'subject' => $subjectName,
-                'subject_code' => $subjectCode,
-                'teacher' => $row->staff ? $row->staff->name : 'N/A',
+                'subject' => $row->subject_name ?? 'N/A',
+                'subject_code' => $row->subject_code ?? '',
+                'teacher' => $row->teacher_name ?? 'N/A',
                 'time_from' => $row->time_from,
                 'time_to' => $row->time_to,
                 'room' => $row->room_no ?? '',
                 'day' => $row->day,
             ];
+
+            if (in_array($user->role, ['teacher', 'staff'])) {
+                $entry['class_name'] = $row->class_name ?? '';
+                $entry['section_name'] = $row->section_name ?? '';
+            }
+
+            $result[$day][] = $entry;
         }
 
         return $this->successResponse(['timetable' => $result]);
