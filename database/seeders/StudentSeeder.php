@@ -243,49 +243,6 @@ class StudentSeeder extends Seeder
             ]);
         }
 
-        // ===== Online Admissions =====
-        DB::table('online_admissions')->insert([
-            'admission_no' => 'ONL2025001',
-            'reference_no' => 'REF-' . uniqid(),
-            'admission_date' => now()->format('Y-m-d'),
-            'firstname' => 'راشد',
-            'lastname' => 'المالكي',
-            'middlename' => '',
-            'mobileno' => '0555666601',
-            'email' => 'rashed.almalki@email.com',
-            'state' => 'الرياض',
-            'city' => 'الرياض',
-            'dob' => '2013-05-10',
-            'gender' => 'Male',
-            'cast' => '',
-            'current_address' => 'الرياض',
-            'permanent_address' => 'الرياض',
-            'guardian_is' => 'father',
-            'guardian_occupation' => '',
-            'father_name' => 'سالم المالكي',
-            'father_phone' => '0555666600',
-            'father_pic' => '',
-            'mother_name' => 'نوال المالكي',
-            'mother_phone' => '0555666602',
-            'mother_pic' => '',
-            'guardian_name' => 'سالم المالكي',
-            'guardian_relation' => 'والد',
-            'guardian_phone' => '0555666600',
-            'guardian_email' => 'salem.almalki@email.com',
-            'guardian_pic' => '',
-            'route_id' => 0,
-            'vehroute_id' => 0,
-            'blood_group' => '',
-            'height' => '',
-            'weight' => '',
-            'note' => '',
-            'is_enroll' => 0,
-            'form_status' => 1,
-            'paid_status' => 0,
-            'submit_date' => now()->format('Y-m-d'),
-            'created_at' => now(),
-        ]);
-
         // ===== Alumni Students =====
         $alumniStudent = Student::create([
             'parent_id' => 0,

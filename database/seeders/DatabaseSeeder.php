@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             BookSeeder::class,
             HostelRoomTypeSeeder::class,
             HostelSeeder::class,
+            OnlineAdmissionSeeder::class,
         ]);
     }
 }
