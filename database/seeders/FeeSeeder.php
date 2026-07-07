@@ -102,13 +102,14 @@ class FeeSeeder extends Seeder
                 'is_active' => 'yes',
             ]);
 
-            $amountDetail = json_encode([
+            $amountDetail = json_encode([[
                 'amount' => 1000.00,
                 'amount_discount' => 0.00,
                 'amount_fine' => 0.00,
                 'date' => now()->format('Y-m-d'),
                 'payment_mode' => 'Online',
-            ]);
+                'description' => '', 'inv_no' => '',
+            ]]);
 
             StudentFeesDeposite::create([
                 'student_fees_master_id' => $feeMaster->id,
