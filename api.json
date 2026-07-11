@@ -37,16 +37,12 @@
                     },
                     "timestamp": {
                       "type": "string"
-                    },
-                    "php_version": {
-                      "type": "string"
                     }
                   },
                   "required": [
                     "status",
                     "message",
-                    "timestamp",
-                    "php_version"
+                    "timestamp"
                   ]
                 }
               }
@@ -58,7 +54,6 @@
     "/admission": {
       "get": {
         "operationId": "admission.index",
-        "summary": "Check if online admission is enabled",
         "tags": [
           "Admission"
         ],
@@ -148,14 +143,12 @@
               }
             }
           }
-        },
-        "security": []
+        }
       }
     },
     "/admission/form_config": {
       "get": {
         "operationId": "admission.formConfig",
-        "summary": "Get admission form configuration (classes, categories, blood groups, etc.)",
         "tags": [
           "Admission"
         ],
@@ -195,7 +188,17 @@
                           "additionalItems": false
                         },
                         "class_list": {
-                          "type": "string"
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            }
+                          ]
                         },
                         "category_list": {
                           "anyOf": [
@@ -276,14 +279,12 @@
               }
             }
           }
-        },
-        "security": []
+        }
       }
     },
     "/admission/classes": {
       "get": {
         "operationId": "admission.classes",
-        "summary": "Get list of active classes",
         "tags": [
           "Admission"
         ],
@@ -300,7 +301,17 @@
                       "const": "success"
                     },
                     "data": {
-                      "type": "string"
+                      "anyOf": [
+                        {
+                          "type": "object"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      ]
                     },
                     "message": {
                       "type": "null"
@@ -319,14 +330,12 @@
               }
             }
           }
-        },
-        "security": []
+        }
       }
     },
     "/admission/sections": {
       "get": {
         "operationId": "admission.sections",
-        "summary": "Get sections for a given class",
         "tags": [
           "Admission"
         ],
@@ -403,14 +412,12 @@
               }
             }
           }
-        },
-        "security": []
+        }
       }
     },
     "/admission/submit": {
       "post": {
         "operationId": "admission.submit",
-        "summary": "Submit online admission form",
         "tags": [
           "Admission"
         ],
@@ -419,62 +426,7 @@
           "content": {
             "multipart/form-data": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "firstname": {
-                    "type": "string",
-                    "maxLength": 100
-                  },
-                  "dob": {
-                    "type": "string"
-                  },
-                  "class_id": {
-                    "type": "string"
-                  },
-                  "section_id": {
-                    "type": "string"
-                  },
-                  "gender": {
-                    "type": "string",
-                    "enum": [
-                      "Male",
-                      "Female",
-                      "Other"
-                    ]
-                  },
-                  "email": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "format": "email"
-                  },
-                  "guardian_is": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "guardian_name": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "guardian_relation": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  }
-                },
-                "required": [
-                  "firstname",
-                  "dob",
-                  "class_id",
-                  "section_id",
-                  "gender"
-                ]
+                "$ref": "#/components/schemas/AdmissionSubmitRequest"
               }
             }
           }
@@ -495,10 +447,10 @@
                       "type": "object",
                       "properties": {
                         "admission_id": {
-                          "type": "string"
+                          "type": "integer"
                         },
                         "reference_no": {
-                          "type": "integer"
+                          "type": "string"
                         },
                         "message": {
                           "type": "string",
@@ -534,57 +486,28 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "anyOf": [
-                    {
-                      "type": "object",
-                      "properties": {
-                        "status": {
-                          "type": "string",
-                          "const": "error"
-                        },
-                        "message": {
-                          "type": "string",
-                          "const": "Invalid class or section"
-                        },
-                        "errors": {
-                          "type": "null"
-                        },
-                        "timestamp": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "status",
-                        "message",
-                        "errors",
-                        "timestamp"
-                      ]
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
                     },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "status": {
-                          "type": "string",
-                          "const": "error"
-                        },
-                        "message": {
-                          "type": "string",
-                          "const": "Online admission is currently disabled"
-                        },
-                        "errors": {
-                          "type": "null"
-                        },
-                        "timestamp": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "status",
-                        "message",
-                        "errors",
-                        "timestamp"
-                      ]
+                    "message": {
+                      "type": "string",
+                      "const": "Online admission is currently disabled"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
                     }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
                   ]
                 }
               }
@@ -593,14 +516,12 @@
           "422": {
             "$ref": "#/components/responses/ValidationException"
           }
-        },
-        "security": []
+        }
       }
     },
     "/admission/status": {
       "get": {
         "operationId": "admission.status",
-        "summary": "Check admission status by reference number",
         "tags": [
           "Admission"
         ],
@@ -737,8 +658,7 @@
               }
             }
           }
-        },
-        "security": []
+        }
       }
     },
     "/apply_leave": {
@@ -842,6 +762,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -878,12 +801,6 @@
                       "anyOf": [
                         {
                           "type": "object"
-                        },
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "object"
-                          }
                         },
                         {
                           "type": "null"
@@ -938,6 +855,41 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Student session not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       },
@@ -988,6 +940,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -1103,6 +1058,9 @@
           },
           "422": {
             "$ref": "#/components/responses/ValidationException"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -1131,7 +1089,7 @@
                         "attendence_type": {
                           "anyOf": [
                             {
-                              "type": "string"
+                              "type": "integer"
                             },
                             {
                               "type": "string",
@@ -1174,6 +1132,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -1324,6 +1285,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -1445,6 +1409,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -1589,36 +1556,7 @@
         ],
         "responses": {
           "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "const": "error"
-                    },
-                    "message": {
-                      "type": "string",
-                      "const": "Not logged in"
-                    },
-                    "errors": {
-                      "type": "null"
-                    },
-                    "timestamp": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "status",
-                    "message",
-                    "errors",
-                    "timestamp"
-                  ]
-                }
-              }
-            }
+            "$ref": "#/components/responses/AuthenticationException"
           },
           "200": {
             "description": "",
@@ -1766,36 +1704,7 @@
             }
           },
           "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "const": "error"
-                    },
-                    "message": {
-                      "type": "string",
-                      "const": "Unauthorized"
-                    },
-                    "errors": {
-                      "type": "null"
-                    },
-                    "timestamp": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "status",
-                    "message",
-                    "errors",
-                    "timestamp"
-                  ]
-                }
-              }
-            }
+            "$ref": "#/components/responses/AuthenticationException"
           },
           "422": {
             "$ref": "#/components/responses/ValidationException"
@@ -1868,6 +1777,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -1973,6 +1885,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -2181,6 +2096,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -2261,6 +2179,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -2329,6 +2250,9 @@
           },
           "422": {
             "$ref": "#/components/responses/ValidationException"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -2393,6 +2317,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       },
@@ -2443,6 +2370,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -2510,6 +2440,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -2569,20 +2502,7 @@
                         "userList": {
                           "type": "array",
                           "items": {
-                            "anyOf": [
-                              {
-                                "type": "object"
-                              },
-                              {
-                                "type": "array",
-                                "items": {
-                                  "type": "object"
-                                }
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
+                            "type": "string"
                           }
                         }
                       },
@@ -2607,6 +2527,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -2672,14 +2595,7 @@
                           "type": "string"
                         },
                         "user_last_chat": {
-                          "anyOf": [
-                            {
-                              "type": "object"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
+                          "type": "string"
                         }
                       },
                       "required": [
@@ -2705,6 +2621,73 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Chat connection not found or access denied"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Chat user not found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -2758,10 +2741,14 @@
                       "properties": {
                         "last_insert_id": {
                           "type": "string"
+                        },
+                        "chat_connection_id": {
+                          "type": "string"
                         }
                       },
                       "required": [
-                        "last_insert_id"
+                        "last_insert_id",
+                        "chat_connection_id"
                       ]
                     },
                     "message": {
@@ -2784,6 +2771,9 @@
           },
           "422": {
             "$ref": "#/components/responses/ValidationException"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -2834,6 +2824,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -2925,6 +2918,467 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/content/assignment": {
+      "get": {
+        "operationId": "content.assignment",
+        "tags": [
+          "Content"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "title_list": {
+                          "type": "string",
+                          "const": "List of Assignment"
+                        },
+                        "list": {
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "title_list",
+                        "list"
+                      ]
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Student session not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/content/studymaterial": {
+      "get": {
+        "operationId": "content.studymaterial",
+        "tags": [
+          "Content"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "title_list": {
+                          "type": "string",
+                          "const": "List of Study Material"
+                        },
+                        "list": {
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "title_list",
+                        "list"
+                      ]
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Student session not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/content/syllabus": {
+      "get": {
+        "operationId": "content.syllabus",
+        "tags": [
+          "Content"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "title_list": {
+                          "type": "string",
+                          "const": "List of Syllabus"
+                        },
+                        "list": {
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "title_list",
+                        "list"
+                      ]
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Student session not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/content/other": {
+      "get": {
+        "operationId": "content.other",
+        "tags": [
+          "Content"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "title_list": {
+                          "type": "string",
+                          "const": "List of Other Download"
+                        },
+                        "list": {
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "title_list",
+                        "list"
+                      ]
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Student session not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/content/download/{file}": {
+      "get": {
+        "operationId": "content.download",
+        "tags": [
+          "Content"
+        ],
+        "parameters": [
+          {
+            "name": "file",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "file": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "file"
+                      ]
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -3038,198 +3492,9 @@
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/content/assignment": {
-      "get": {
-        "operationId": "content.assignment",
-        "tags": [
-          "Content"
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "const": "success"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "title_list": {
-                          "type": "string",
-                          "const": "List of Assignment"
-                        },
-                        "list": {
-                          "anyOf": [
-                            {
-                              "type": "object"
-                            },
-                            {
-                              "type": "array",
-                              "items": {
-                                "type": "object"
-                              }
-                            }
-                          ]
-                        }
-                      },
-                      "required": [
-                        "title_list",
-                        "list"
-                      ]
-                    },
-                    "message": {
-                      "type": "null"
-                    },
-                    "timestamp": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "status",
-                    "data",
-                    "message",
-                    "timestamp"
-                  ]
-                }
-              }
-            }
           },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "const": "error"
-                    },
-                    "message": {
-                      "type": "string",
-                      "const": "Student session not found"
-                    },
-                    "errors": {
-                      "type": "null"
-                    },
-                    "timestamp": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "status",
-                    "message",
-                    "errors",
-                    "timestamp"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/content/studymaterial": {
-      "get": {
-        "operationId": "content.studymaterial",
-        "tags": [
-          "Content"
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "const": "success"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "title_list": {
-                          "type": "string",
-                          "const": "List of Study Material"
-                        },
-                        "list": {
-                          "anyOf": [
-                            {
-                              "type": "object"
-                            },
-                            {
-                              "type": "array",
-                              "items": {
-                                "type": "object"
-                              }
-                            }
-                          ]
-                        }
-                      },
-                      "required": [
-                        "title_list",
-                        "list"
-                      ]
-                    },
-                    "message": {
-                      "type": "null"
-                    },
-                    "timestamp": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "status",
-                    "data",
-                    "message",
-                    "timestamp"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "const": "error"
-                    },
-                    "message": {
-                      "type": "string",
-                      "const": "Student session not found"
-                    },
-                    "errors": {
-                      "type": "null"
-                    },
-                    "timestamp": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "status",
-                    "message",
-                    "errors",
-                    "timestamp"
-                  ]
-                }
-              }
-            }
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -3262,17 +3527,7 @@
                           "type": "string"
                         },
                         "examlist": {
-                          "anyOf": [
-                            {
-                              "type": "object"
-                            },
-                            {
-                              "type": "array",
-                              "items": {
-                                "type": "object"
-                              }
-                            }
-                          ]
+                          "type": "object"
                         }
                       },
                       "required": [
@@ -3329,6 +3584,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -3433,6 +3691,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -3524,6 +3785,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -3615,6 +3879,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -3708,6 +3975,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -3776,13 +4046,58 @@
                               "type": "null"
                             }
                           ]
+                        },
+                        "studentlist": {
+                          "type": "string"
+                        },
+                        "report": {
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "homeworkdocs": {
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            }
+                          ]
+                        },
+                        "created_by": {
+                          "type": "string"
+                        },
+                        "evaluated_by": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "submitted",
+                            ""
+                          ]
                         }
                       },
                       "required": [
                         "homework_status",
                         "homework_id",
                         "title",
-                        "result"
+                        "result",
+                        "studentlist",
+                        "report",
+                        "homeworkdocs",
+                        "created_by",
+                        "evaluated_by",
+                        "status"
                       ]
                     },
                     "message": {
@@ -3833,6 +4148,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -3848,28 +4166,7 @@
           "content": {
             "multipart/form-data": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "homework_id": {
-                    "type": "string"
-                  },
-                  "message": {
-                    "type": "string"
-                  },
-                  "file": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "format": "binary",
-                    "contentMediaType": "application/octet-stream",
-                    "maxLength": 10240
-                  }
-                },
-                "required": [
-                  "homework_id",
-                  "message"
-                ]
+                "$ref": "#/components/schemas/HomeworkRequest"
               }
             }
           }
@@ -3939,6 +4236,9 @@
               }
             }
           },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
           "422": {
             "$ref": "#/components/responses/ValidationException"
           }
@@ -4000,6 +4300,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -4026,17 +4329,10 @@
                       "type": "object",
                       "properties": {
                         "listroom": {
-                          "anyOf": [
-                            {
-                              "type": "object"
-                            },
-                            {
-                              "type": "array",
-                              "items": {
-                                "type": "object"
-                              }
-                            }
-                          ]
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/HostelRoom"
+                          }
                         }
                       },
                       "required": [
@@ -4059,6 +4355,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -4120,17 +4419,7 @@
                                 ]
                               },
                               "exam_result": {
-                                "anyOf": [
-                                  {
-                                    "type": "object"
-                                  },
-                                  {
-                                    "type": "array",
-                                    "items": {
-                                      "type": "object"
-                                    }
-                                  }
-                                ]
+                                "type": "string"
                               }
                             },
                             "required": [
@@ -4211,6 +4500,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -4237,10 +4529,7 @@
                       "type": "object",
                       "properties": {
                         "notificationlist": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          }
+                          "type": "string"
                         }
                       },
                       "required": [
@@ -4263,6 +4552,41 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Notifications not available for this role"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -4333,6 +4657,41 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Unable to update notification status"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -4441,6 +4800,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -4549,6 +4911,9 @@
           },
           "422": {
             "$ref": "#/components/responses/ValidationException"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -4657,6 +5022,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -4775,6 +5143,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -4850,6 +5221,9 @@
           },
           "422": {
             "$ref": "#/components/responses/ValidationException"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -4876,19 +5250,18 @@
                       "type": "object",
                       "properties": {
                         "listroute": {
-                          "anyOf": [
-                            {
-                              "type": "object"
+                          "type": "object",
+                          "properties": {
+                            "vehroute_id": {
+                              "type": "string"
                             },
-                            {
-                              "type": "array",
-                              "items": {
-                                "type": "object"
-                              }
-                            },
-                            {
-                              "type": "null"
+                            "route_pickup_point_id": {
+                              "type": "string"
                             }
+                          },
+                          "required": [
+                            "vehroute_id",
+                            "route_pickup_point_id"
                           ]
                         }
                       },
@@ -4926,7 +5299,7 @@
                     },
                     "message": {
                       "type": "string",
-                      "const": "Student not found"
+                      "const": "Student session not found"
                     },
                     "errors": {
                       "type": "null"
@@ -4944,6 +5317,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -5011,6 +5387,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -5037,30 +5416,7 @@
                       "type": "object",
                       "properties": {
                         "subjects": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "id": {
-                                "type": "string"
-                              },
-                              "name": {
-                                "type": "string"
-                              },
-                              "type": {
-                                "type": "string"
-                              },
-                              "code": {
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "id",
-                              "name",
-                              "type",
-                              "code"
-                            ]
-                          }
+                          "type": "string"
                         }
                       },
                       "required": [
@@ -5089,32 +5445,64 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "const": "error"
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Class section not found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
                     },
-                    "message": {
-                      "type": "string",
-                      "const": "Student session not found"
-                    },
-                    "errors": {
-                      "type": "null"
-                    },
-                    "timestamp": {
-                      "type": "string"
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Student session not found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
                     }
-                  },
-                  "required": [
-                    "status",
-                    "message",
-                    "errors",
-                    "timestamp"
                   ]
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -5219,6 +5607,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -5272,6 +5663,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -5298,7 +5692,8 @@
                       "type": "object",
                       "properties": {
                         "subjects_data": {
-                          "type": "string"
+                          "type": "array",
+                          "items": {}
                         },
                         "status": {
                           "type": "array",
@@ -5370,6 +5765,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -5461,6 +5859,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -5476,19 +5877,7 @@
           "content": {
             "multipart/form-data": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "syllabus_id": {
-                    "type": "string"
-                  },
-                  "message": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "syllabus_id",
-                  "message"
-                ]
+                "$ref": "#/components/schemas/SyllabusMessageRequest"
               }
             }
           }
@@ -5525,6 +5914,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           },
           "422": {
             "$ref": "#/components/responses/ValidationException"
@@ -5677,6 +6069,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -5750,6 +6145,9 @@
           },
           "422": {
             "$ref": "#/components/responses/ValidationException"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -5800,15 +6198,7 @@
                       "const": "success"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "id"
-                      ]
+                      "type": "object"
                     },
                     "message": {
                       "type": "string",
@@ -5828,8 +6218,75 @@
               }
             }
           },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "You can only add timeline for yourself"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Unauthorized"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
           "422": {
             "$ref": "#/components/responses/ValidationException"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -5839,6 +6296,624 @@
         "operationId": "timetable.index",
         "tags": [
           "Timetable"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "timetable": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "timetable"
+                      ]
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Unauthorized role"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Staff record not found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Student session not found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      },
+      "post": {
+        "operationId": "timetable.store",
+        "tags": [
+          "Timetable"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "class_id": {
+                    "type": "integer"
+                  },
+                  "section_id": {
+                    "type": "integer"
+                  },
+                  "subject_group_id": {
+                    "type": "integer"
+                  },
+                  "subject_group_subject_id": {
+                    "type": "integer"
+                  },
+                  "staff_id": {
+                    "type": "integer"
+                  },
+                  "day": {
+                    "type": "string",
+                    "enum": [
+                      "Sunday",
+                      "Monday",
+                      "Tuesday",
+                      "Wednesday",
+                      "Thursday"
+                    ]
+                  },
+                  "time_from": {
+                    "type": "string"
+                  },
+                  "time_to": {
+                    "type": "string"
+                  },
+                  "room_no": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 20
+                  },
+                  "is_active": {
+                    "type": "string",
+                    "enum": [
+                      "yes",
+                      "no",
+                      "1",
+                      "0"
+                    ]
+                  },
+                  "start_time": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "end_time": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "class_id",
+                  "section_id",
+                  "subject_group_id",
+                  "subject_group_subject_id",
+                  "staff_id",
+                  "day",
+                  "time_from",
+                  "time_to"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "timetable": {
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "timetable"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Timetable created successfully"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "No active session found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/timetable/{id}": {
+      "put": {
+        "operationId": "timetable.update",
+        "tags": [
+          "Timetable"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "class_id": {
+                    "type": "integer"
+                  },
+                  "section_id": {
+                    "type": "integer"
+                  },
+                  "subject_group_id": {
+                    "type": "integer"
+                  },
+                  "subject_group_subject_id": {
+                    "type": "integer"
+                  },
+                  "staff_id": {
+                    "type": "integer"
+                  },
+                  "day": {
+                    "type": "string",
+                    "enum": [
+                      "Sunday",
+                      "Monday",
+                      "Tuesday",
+                      "Wednesday",
+                      "Thursday"
+                    ]
+                  },
+                  "time_from": {
+                    "type": "string"
+                  },
+                  "time_to": {
+                    "type": "string"
+                  },
+                  "room_no": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 20
+                  },
+                  "is_active": {
+                    "type": "string",
+                    "enum": [
+                      "yes",
+                      "no",
+                      "1",
+                      "0"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "timetable": {
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "timetable"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Timetable updated successfully"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Timetable not found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "timetable.destroy",
+        "tags": [
+          "Timetable"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "null"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Timetable deleted successfully"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Timetable not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/user/choose": {
+      "get": {
+        "operationId": "user.choose",
+        "tags": [
+          "User"
+        ],
+        "parameters": [
+          {
+            "name": "clschg",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -5857,12 +6932,20 @@
                         "data": {
                           "type": "object",
                           "properties": {
-                            "timetable": {
+                            "student_lists": {
+                              "type": "string"
+                            },
+                            "sch_setting": {
+                              "$ref": "#/components/schemas/Setting"
+                            },
+                            "role": {
                               "type": "string"
                             }
                           },
                           "required": [
-                            "timetable"
+                            "student_lists",
+                            "sch_setting",
+                            "role"
                           ]
                         },
                         "message": {
@@ -5889,23 +6972,18 @@
                         "data": {
                           "type": "object",
                           "properties": {
-                            "timetable": {
-                              "type": "array",
-                              "items": {
-                                "type": "string"
-                              },
-                              "minItems": 0,
-                              "maxItems": 0,
-                              "additionalItems": false
+                            "redirect": {
+                              "type": "string",
+                              "const": "user/user/dashboard"
                             }
                           },
                           "required": [
-                            "timetable"
+                            "redirect"
                           ]
                         },
                         "message": {
                           "type": "string",
-                          "const": "No timetable found"
+                          "const": "Class selected successfully"
                         },
                         "timestamp": {
                           "type": "string"
@@ -5928,32 +7006,90 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "const": "error"
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Student session not found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
                     },
-                    "message": {
-                      "type": "string",
-                      "const": "Student session not found"
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Student session ID is required"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
                     },
-                    "errors": {
-                      "type": "null"
-                    },
-                    "timestamp": {
-                      "type": "string"
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Unauthorized"
+                        },
+                        "errors": {
+                          "type": "integer",
+                          "const": 401
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
                     }
-                  },
-                  "required": [
-                    "status",
-                    "message",
-                    "errors",
-                    "timestamp"
                   ]
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -5981,6 +7117,34 @@
                       "properties": {
                         "attendence_percentage": {
                           "type": "number"
+                        },
+                        "bookList": {
+                          "type": "boolean"
+                        },
+                        "homeworklist": {
+                          "type": "string"
+                        },
+                        "notificationlist": {
+                          "type": "string"
+                        },
+                        "subjects_data": {
+                          "type": "string"
+                        },
+                        "timetable": {
+                          "type": "string"
+                        },
+                        "visitor_list": {
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            }
+                          ]
                         },
                         "studentsession_username": {
                           "type": [
@@ -6029,24 +7193,24 @@
                           ]
                         },
                         "low_attendance_limit": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "integer",
-                              "enum": [
-                                75
-                              ]
-                            }
-                          ]
+                          "type": "integer"
+                        },
+                        "teacherlist": {
+                          "type": "string"
                         }
                       },
                       "required": [
                         "attendence_percentage",
+                        "bookList",
+                        "homeworklist",
+                        "notificationlist",
+                        "subjects_data",
+                        "timetable",
+                        "visitor_list",
                         "studentsession_username",
                         "student_data",
-                        "low_attendance_limit"
+                        "low_attendance_limit",
+                        "teacherlist"
                       ]
                     },
                     "message": {
@@ -6127,6 +7291,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -6153,14 +7320,7 @@
                       "type": "object",
                       "properties": {
                         "sch_setting": {
-                          "anyOf": [
-                            {
-                              "$ref": "#/components/schemas/Setting"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
+                          "$ref": "#/components/schemas/Setting"
                         },
                         "student": {
                           "type": "object",
@@ -6245,10 +7405,7 @@
                               ]
                             },
                             "category": {
-                              "type": [
-                                "string",
-                                "null"
-                              ]
+                              "type": "string"
                             },
                             "class": {
                               "type": [
@@ -6417,6 +7574,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -6443,14 +7603,7 @@
                       "type": "object",
                       "properties": {
                         "sch_setting": {
-                          "anyOf": [
-                            {
-                              "$ref": "#/components/schemas/Setting"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
+                          "$ref": "#/components/schemas/Setting"
                         },
                         "student": {
                           "type": "object",
@@ -6577,6 +7730,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -6603,19 +7759,12 @@
                       "type": "object",
                       "properties": {
                         "sch_setting": {
-                          "anyOf": [
-                            {
-                              "$ref": "#/components/schemas/Setting"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
+                          "$ref": "#/components/schemas/Setting"
                         },
                         "adm_auto_insert": {
                           "anyOf": [
                             {
-                              "type": "string"
+                              "type": "integer"
                             },
                             {
                               "type": "boolean"
@@ -6671,31 +7820,13 @@
                           "type": "boolean"
                         },
                         "student_due_fee": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          },
-                          "minItems": 0,
-                          "maxItems": 0,
-                          "additionalItems": false
+                          "type": "string"
                         },
                         "transport_fees": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          },
-                          "minItems": 0,
-                          "maxItems": 0,
-                          "additionalItems": false
+                          "type": "string"
                         },
                         "student_discount_fee": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          },
-                          "minItems": 0,
-                          "maxItems": 0,
-                          "additionalItems": false
+                          "type": "string"
                         }
                       },
                       "required": [
@@ -6786,6 +7917,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -6884,6 +8018,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -6988,6 +8125,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -7079,6 +8219,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -7092,6 +8235,259 @@
       }
     },
     "schemas": {
+      "AdmissionSubmitRequest": {
+        "type": "object",
+        "properties": {
+          "firstname": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "middlename": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "lastname": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "dob": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "class_id": {
+            "type": "integer"
+          },
+          "section_id": {
+            "type": "integer"
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "Male",
+              "Female",
+              "Other"
+            ]
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "email",
+            "maxLength": 100
+          },
+          "mobileno": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 20
+          },
+          "guardian_is": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 50
+          },
+          "guardian_name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
+          "guardian_relation": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "guardian_phone": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 20
+          },
+          "guardian_email": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "email",
+            "maxLength": 100
+          },
+          "guardian_occupation": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
+          "guardian_address": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "father_name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
+          "father_phone": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 20
+          },
+          "father_occupation": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
+          "mother_name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
+          "mother_phone": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 20
+          },
+          "mother_occupation": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
+          "school_house_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "blood_group": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 10
+          },
+          "category": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "religion": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "cast": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "current_address": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "permanent_address": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "bank_account_no": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 50
+          },
+          "bank_name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
+          "ifsc_code": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 20
+          },
+          "adhar_no": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 20
+          },
+          "samagra_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 50
+          },
+          "rte": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 10
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "firstname",
+          "dob",
+          "class_id",
+          "section_id",
+          "gender"
+        ],
+        "title": "AdmissionSubmitRequest"
+      },
       "CalendarEvent": {
         "type": "object",
         "properties": {
@@ -7112,6 +8508,12 @@
           },
           "event_type": {
             "type": "string"
+          },
+          "status": {
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "event_color": {
             "type": "string"
@@ -7136,6 +8538,7 @@
           "start_date",
           "end_date",
           "event_type",
+          "status",
           "event_color",
           "event_for",
           "role_id",
@@ -7164,6 +8567,122 @@
           "new_pass_confirmation"
         ],
         "title": "ChangePasswordRequest"
+      },
+      "HomeworkRequest": {
+        "type": "object",
+        "properties": {
+          "class_id": {
+            "type": "integer"
+          },
+          "section_id": {
+            "type": "integer"
+          },
+          "subject_id": {
+            "type": "integer"
+          },
+          "homework_date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "submit_date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "marks": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "document": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "binary",
+            "contentMediaType": "application/octet-stream",
+            "maxLength": 10240
+          }
+        },
+        "required": [
+          "class_id",
+          "section_id",
+          "subject_id",
+          "homework_date",
+          "submit_date",
+          "description"
+        ],
+        "title": "HomeworkRequest"
+      },
+      "HostelRoom": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "hostel_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "room_type_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "room_no": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "no_of_bed": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "cost_per_bed": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "hostel_id",
+          "room_type_id",
+          "room_no",
+          "no_of_bed",
+          "cost_per_bed",
+          "title",
+          "description",
+          "created_at"
+        ],
+        "title": "HostelRoom"
       },
       "LoginRequest": {
         "type": "object",
@@ -7874,6 +9393,22 @@
           "updated_at"
         ],
         "title": "Setting"
+      },
+      "SyllabusMessageRequest": {
+        "type": "object",
+        "properties": {
+          "syllabus_id": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "syllabus_id",
+          "message"
+        ],
+        "title": "SyllabusMessageRequest"
       }
     },
     "responses": {
@@ -7902,6 +9437,25 @@
               "required": [
                 "message",
                 "errors"
+              ]
+            }
+          }
+        }
+      },
+      "AuthenticationException": {
+        "description": "Unauthenticated",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "Error overview."
+                }
+              },
+              "required": [
+                "message"
               ]
             }
           }

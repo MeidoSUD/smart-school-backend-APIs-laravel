@@ -1,1 +1,0 @@
-ALTER TABLE `users` ADD `token` VARCHAR(199) NULL DEFAULT NULL AFTER `updated_at`;
