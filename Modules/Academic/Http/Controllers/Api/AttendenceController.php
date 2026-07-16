@@ -36,7 +36,10 @@ class AttendenceController extends \Modules\Core\Http\Controllers\Api\Controller
     #[BodyParameter('date', description: 'Date to check attendance (Y-m-d format). Defaults to today.', type: 'string', example: '2024-01-15')]
     public function getdaysubattendence(Request $request): JsonResponse
     {
-        $date = $request->get('date') ?? date('Y-m-d');
+        $date = $request->get('date');
+        if (empty($date) || !strtotime($date)) {
+            $date = date('Y-m-d');
+        }
         $date = Carbon::parse($date)->format('Y-m-d');
 
         $attendencetypes = AttendenceType::where('is_active', 'yes')->get();
