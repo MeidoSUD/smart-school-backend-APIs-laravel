@@ -27,6 +27,7 @@ class User extends Authenticatable
         'user_id',
         'username',
         'password',
+        'hash_password',
         'childs',
         'role',
         'lang_id',
@@ -38,6 +39,7 @@ class User extends Authenticatable
 
     protected $hidden = [
         'password',
+        'hash_password',
     ];
 
     public function student(): HasOne
@@ -48,6 +50,11 @@ class User extends Authenticatable
     public function staff(): HasOne
     {
         return $this->hasOne(\Modules\Staff\Entities\Staff::class, 'user_id', 'id');
+    }
+
+    public function getAuthPassword(): string
+    {
+        return $this->hash_password ?? '';
     }
 
     public function isActive(): bool

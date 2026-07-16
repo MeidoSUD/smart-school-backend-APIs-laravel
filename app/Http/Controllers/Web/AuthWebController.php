@@ -28,14 +28,19 @@ class AuthWebController extends Controller
             'password' => 'required|string',
         ]);
 
-        $credentials = $request->only('username', 'password');
+        $user = User::where('username', $request->input('username'))->first();
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+        if (
+            $user
+            && $user->hash_password
+            && Hash::check($request->input('password'), $user->hash_password)
+        ) {
+            Auth::login($user, $request->boolean('remember'));
             $request->session()->regenerate();
 
             $user = Auth::user();
 
-            if (!$user->is_active) {
+            if (!$user->isActive()) {
                 Auth::logout();
                 return back()->withErrors([
                     'username' => __('messages.account_disabled'),
@@ -125,7 +130,7 @@ class AuthWebController extends Controller
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function (User $user, string $password) {
                 $user->forceFill([
-                    'password'       => Hash::make($password),
+                    'hash_password'  => Hash::make($password),
                     'remember_token' => Str::random(60),
                 ])->save();
             }

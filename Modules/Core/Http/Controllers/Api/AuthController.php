@@ -38,7 +38,7 @@ class AuthController extends \Modules\Core\Http\Controllers\Api\Controller
             return $this->errorResponse('Your account is disabled, please contact administrator.', null, 403);
         }
 
-        if (!Hash::check($credentials['password'], $user->password)) {
+        if (!Hash::check($credentials['password'], $user->hash_password)) {
             ApiLogger::logAuth('login_failed', $credentials['username'], false, $user->id);
             return $this->errorResponse('Invalid username or password', null, 401);
         }
@@ -91,12 +91,12 @@ class AuthController extends \Modules\Core\Http\Controllers\Api\Controller
 
         $validated = $request->validated();
 
-        if (!Hash::check($validated['current_pass'], $user->password)) {
+        if (!Hash::check($validated['current_pass'], $user->hash_password)) {
             return $this->errorResponse('Invalid current password');
         }
 
         DB::transaction(function () use ($user, $validated) {
-            $user->password = Hash::make($validated['new_pass']);
+            $user->hash_password = Hash::make($validated['new_pass']);
             $user->save();
             $user->tokens()->delete();
         });

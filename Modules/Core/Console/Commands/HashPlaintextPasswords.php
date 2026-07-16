@@ -23,14 +23,21 @@ class HashPlaintextPasswords extends Command
             if (Hash::needsRehash($user->password)) {
                 DB::table('users')
                     ->where('id', $user->id)
-                    ->update(['password' => Hash::make($user->password)]);
+                    ->update([
+                        'hash_password' => Hash::make($user->password),
+                    ]);
                 $hashed++;
             } else {
+                DB::table('users')
+                    ->where('id', $user->id)
+                    ->update([
+                        'hash_password' => $user->password,
+                    ]);
                 $skipped++;
             }
         }
 
-        $this->info("Done. Hashed: {$hashed}, Already hashed: {$skipped}");
+        $this->info("Done. Hash copied to hash_password: {$hashed}, Already hashed: {$skipped}");
 
         return Command::SUCCESS;
     }
