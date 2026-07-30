@@ -90,6 +90,8 @@ class ApplyLeaveController extends \Modules\Core\Http\Controllers\Api\Controller
             'to_date' => Carbon::parse($request->to_date)->format('Y-m-d'),
             'student_session_id' => $studentSession->id,
             'reason' => $request->message,
+            'status' => 0,
+            'request_type' => 0,
         ];
 
         $leaveId = $request->leave_id;

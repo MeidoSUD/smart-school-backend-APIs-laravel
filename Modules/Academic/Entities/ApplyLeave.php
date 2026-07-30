@@ -9,9 +9,18 @@ class ApplyLeave extends Model
     protected $table = 'student_applyleave';
     protected $primaryKey = 'id';
     public $timestamps = true;
+    const UPDATED_AT = null;
 
     protected $fillable = [
-        'student_session_id', 'from_date', 'to_date', 'apply_date',
-        'status', 'docs', 'reason', 'approve_by', 'approve_date', 'request_type',
+        'student_session_id',
+        'from_date',
+        'to_date',
+        'apply_date',
+        'status',
+        'docs',
+        'reason',
+        'approve_by',
+        'approve_date',
+        'request_type',
     ];
 }
