@@ -7,7 +7,6 @@ use Modules\Core\Entities\Setting;
 use Modules\Core\Entities\Classe;
 use Modules\Core\Entities\Section;
 use Modules\Core\Entities\Category;
-use Modules\Core\Entities\BloodGroup;
 use Modules\Core\Entities\House;
 use Modules\Core\Entities\CustomField;
 use Modules\Academic\Entities\ClassSection;
@@ -26,7 +25,7 @@ class AdmissionService
     {
         $classlist = Classe::where('is_active', 'yes')->get();
         $category = Category::where('is_active', 'yes')->get();
-        $bloodgroup = BloodGroup::where('is_active', 'yes')->get();
+        $bloodgroup = ['O+', 'A+', 'B+', 'AB+', 'O-', 'A-', 'B-', 'AB-'];
         $houses = House::where('is_active', 'yes')->get();
         $custom_fields = CustomField::where('belong_to', 'students')
             ->where('is_active', 1)
