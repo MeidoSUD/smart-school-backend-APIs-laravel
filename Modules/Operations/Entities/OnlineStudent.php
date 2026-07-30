@@ -24,6 +24,7 @@ class OnlineStudent extends Model
         'school_house_id', 'blood_group', 'image',
         'form_status', 'paid_status', 'route_id', 'vehroute_id', 'hostel_room_id',
         'previous_school', 'height', 'weight', 'note', 'document',
+        'father_pic', 'mother_pic', 'guardian_pic',
         'admission_no', 'roll_no', 'admission_date', 'rte', 'is_enroll',
     ];
 

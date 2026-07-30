@@ -108,6 +108,16 @@ class AdmissionService
                 $data['blood_group'] = $request->blood_group;
             }
 
+            $data['route_id'] = $request->route_id ?? 0;
+            $data['vehroute_id'] = $request->vehroute_id ?? 0;
+            $data['form_status'] = 0;
+            $data['paid_status'] = 0;
+            $data['father_pic'] = $request->father_pic ?? '';
+            $data['mother_pic'] = $request->mother_pic ?? '';
+            $data['guardian_pic'] = $request->guardian_pic ?? '';
+            $data['height'] = $request->height ?? '';
+            $data['weight'] = $request->weight ?? '';
+
             $data['reference_no'] = $this->generateUniqueReferenceNo();
 
             return OnlineStudent::create($data);
