@@ -4,9 +4,9 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Modules\Core\Entities\Category;
-use Modules\Core\Entities\House;
-use Modules\Academic\Entities\ClassSection;
+use App\Models\Category;
+use App\Models\House;
+use App\Models\ClassSection;
 
 class OnlineAdmissionSeeder extends Seeder
 {

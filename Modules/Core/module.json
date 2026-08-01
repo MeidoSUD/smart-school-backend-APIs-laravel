@@ -1,9 +1,0 @@
-{
-    "name": "Core",
-    "alias": "core",
-    "description": "Core Module - User, Auth, Settings, Middleware",
-    "priority": 1,
-    "providers": [
-        "Modules\\Core\\Providers\\CoreServiceProvider"
-    ]
-}

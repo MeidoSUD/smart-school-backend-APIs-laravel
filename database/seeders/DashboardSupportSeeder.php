@@ -5,10 +5,10 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Modules\Core\Entities\Session;
-use Modules\Staff\Entities\Staff;
-use Modules\Academic\Entities\StudentSession;
-use Modules\Operations\Entities\LibraryMember;
+use App\Models\Session;
+use App\Models\Staff;
+use App\Models\StudentSession;
+use App\Models\LibraryMember;
 
 class DashboardSupportSeeder extends Seeder
 {

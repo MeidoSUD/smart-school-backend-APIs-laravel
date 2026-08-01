@@ -1,9 +1,0 @@
-{
-    "name": "Operations",
-    "alias": "operations",
-    "description": "Operations Module - Transport, Hostel, Library, Chat, Visitors",
-    "priority": 5,
-    "providers": [
-        "Modules\\Operations\\Providers\\OperationsServiceProvider"
-    ]
-}

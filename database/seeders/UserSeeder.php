@@ -4,13 +4,13 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Modules\Core\Entities\User;
-use Modules\Academic\Entities\Student;
-use Modules\Academic\Entities\StudentSession;
-use Modules\Academic\Entities\Classe;
-use Modules\Academic\Entities\Section;
-use Modules\Core\Entities\Session;
-use Modules\Staff\Entities\Staff;
+use App\Models\User;
+use App\Models\Student;
+use App\Models\StudentSession;
+use App\Models\Classe;
+use App\Models\Section;
+use App\Models\Session;
+use App\Models\Staff;
 
 class UserSeeder extends Seeder
 {

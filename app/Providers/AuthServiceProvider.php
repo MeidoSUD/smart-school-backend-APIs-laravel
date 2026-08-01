@@ -4,14 +4,6 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
-use Modules\Academic\Entities\Exam;
-use Modules\Academic\Entities\Student;
-use Modules\Core\Entities\User;
-use Modules\Finance\Entities\StudentFee;
-use App\Policies\ExamPolicy;
-use App\Policies\FeePolicy;
-use App\Policies\StudentPolicy;
-use App\Policies\UserPolicy;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -27,5 +19,13 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('admin', fn($user) => $user->role === 'admin');
         Gate::define('staff', fn($user) => in_array($user->role, ['admin', 'staff', 'teacher']));
         Gate::define('student-or-parent', fn($user) => in_array($user->role, ['student', 'parent']));
+
+        Gate::before(function ($user, $ability) {
+            if ($user->isSuperAdmin()) {
+                return true;
+            }
+        });
+
+        Gate::define('permission', fn($user, string $permission) => $user->hasPermission($permission));
     }
 }

@@ -3,9 +3,9 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Modules\Academic\Entities\ClassSection;
-use Modules\Academic\Entities\Classe;
-use Modules\Academic\Entities\Section;
+use App\Models\ClassSection;
+use App\Models\Classe;
+use App\Models\Section;
 
 class ClassSectionSeeder extends Seeder
 {

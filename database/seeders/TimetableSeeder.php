@@ -3,16 +3,16 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Modules\Academic\Entities\ClassTimetable;
-use Modules\Academic\Entities\Classe;
-use Modules\Academic\Entities\Section;
-use Modules\Academic\Entities\ClassSection;
-use Modules\Academic\Entities\Subject;
-use Modules\Academic\Entities\SubjectGroup;
-use Modules\Academic\Entities\SubjectGroupClassSection;
-use Modules\Academic\Entities\SubjectGroupSubject;
-use Modules\Core\Entities\Session;
-use Modules\Staff\Entities\Staff;
+use App\Models\ClassTimetable;
+use App\Models\Classe;
+use App\Models\Section;
+use App\Models\ClassSection;
+use App\Models\Subject;
+use App\Models\SubjectGroup;
+use App\Models\SubjectGroupClassSection;
+use App\Models\SubjectGroupSubject;
+use App\Models\Session;
+use App\Models\Staff;
 
 class TimetableSeeder extends Seeder
 {

@@ -5,18 +5,18 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Modules\Academic\Entities\StudentSession;
-use Modules\Core\Entities\Session;
-use Modules\Finance\Entities\FeeDiscount;
-use Modules\Finance\Entities\FeeGroup;
-use Modules\Finance\Entities\FeeSessionGroup;
-use Modules\Finance\Entities\FeeGroupsFeetype;
-use Modules\Finance\Entities\FeeType;
-use Modules\Finance\Entities\StudentFeeMaster;
-use Modules\Finance\Entities\StudentFeesDeposite;
-use Modules\Finance\Entities\StudentFeesDiscount;
-use Modules\Finance\Entities\StudentTransportFee;
-use Modules\Finance\Entities\TransportFeemaster;
+use App\Models\StudentSession;
+use App\Models\Session;
+use App\Models\FeeDiscount;
+use App\Models\FeeGroup;
+use App\Models\FeeSessionGroup;
+use App\Models\FeeGroupsFeetype;
+use App\Models\FeeType;
+use App\Models\StudentFeeMaster;
+use App\Models\StudentFeesDeposite;
+use App\Models\StudentFeesDiscount;
+use App\Models\StudentTransportFee;
+use App\Models\TransportFeemaster;
 
 class FeeSeeder extends Seeder
 {

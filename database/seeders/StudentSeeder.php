@@ -4,17 +4,17 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Modules\Academic\Entities\Student;
-use Modules\Academic\Entities\StudentSession;
-use Modules\Academic\Entities\StudentTimeline;
-use Modules\Academic\Entities\ApplyLeave;
-use Modules\Academic\Entities\StudentAttendence;
-use Modules\Academic\Entities\AttendenceType;
-use Modules\Academic\Entities\Classe;
-use Modules\Academic\Entities\Section;
-use Modules\Core\Entities\Category;
-use Modules\Core\Entities\House;
-use Modules\Core\Entities\Session;
+use App\Models\Student;
+use App\Models\StudentSession;
+use App\Models\StudentTimeline;
+use App\Models\ApplyLeave;
+use App\Models\StudentAttendence;
+use App\Models\AttendenceType;
+use App\Models\Classe;
+use App\Models\Section;
+use App\Models\Category;
+use App\Models\House;
+use App\Models\Session;
 
 class StudentSeeder extends Seeder
 {

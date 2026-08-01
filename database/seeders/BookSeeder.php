@@ -4,8 +4,8 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Modules\Academic\Entities\Student;
-use Modules\Operations\Entities\LibraryMember;
+use App\Models\Student;
+use App\Models\LibraryMember;
 
 class BookSeeder extends Seeder
 {

@@ -1,0 +1,33 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('fees_discounts', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
+            $table->charset = 'utf8mb4';
+
+            $table->id();
+            $table->integer('session_id')->unsigned();
+            $table->string('fees_discount_name', 100);
+            $table->string('fees_discount_id', 100);
+            $table->decimal('percentage', 5, 2);
+            $table->text('description');
+            $table->enum('is_active', ['active', 'inactive'])->default('active');
+
+            $table->timestamps();
+
+            $table->index('session_id');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('fees_discounts');
+    }
+};

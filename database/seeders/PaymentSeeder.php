@@ -4,14 +4,14 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Modules\Academic\Entities\Classe;
-use Modules\Academic\Entities\StudentSession;
-use Modules\Core\Entities\Session;
-use Modules\Finance\Entities\FeeMaster;
-use Modules\Finance\Entities\FeeType;
-use Modules\Finance\Entities\StudentFee;
-use Modules\Finance\Entities\OfflinePayment;
-use Modules\Finance\Entities\StudentFeesDeposite;
+use App\Models\Classe;
+use App\Models\StudentSession;
+use App\Models\Session;
+use App\Models\FeeMaster;
+use App\Models\FeeType;
+use App\Models\StudentFee;
+use App\Models\OfflinePayment;
+use App\Models\StudentFeesDeposite;
 
 class PaymentSeeder extends Seeder
 {
