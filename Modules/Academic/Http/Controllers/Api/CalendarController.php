@@ -77,7 +77,7 @@ class CalendarController extends \Modules\Core\Http\Controllers\Api\Controller
     {
         $validated = $request->validate([
             'task_title' => 'required|string|max:255',
-            'task_date' => 'required',
+            'task_date' => 'required|date',
         ]);
 
         $user = $request->user();
