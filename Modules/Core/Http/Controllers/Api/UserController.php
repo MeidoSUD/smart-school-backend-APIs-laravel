@@ -10,6 +10,7 @@ use Modules\Academic\Entities\Homework;
 use Modules\Academic\Entities\SubmitAssignment;
 use Modules\Academic\Entities\Syllabus;
 use Modules\Academic\Entities\ClassTimetable;
+use Modules\Core\Entities\Category;
 use Modules\Core\Services\SchoolSettingsService;
 use Modules\Core\Services\StudentSessionService;
 use Modules\Finance\Entities\FeeSessionGroup;
@@ -330,9 +331,21 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
         }
 
         $student = Student::find($studentSession->student_id);
+        $setting = $this->schoolSettingsService->getSettings();
+        $feeData = $this->buildStudentFeeData($studentSession);
+
+        $student_due_fee = $feeData['student_due_fee']
+            ->filter(fn($fee) => ($fee['amount'] - $fee['amount_deposited']) > 0)
+            ->values();
+
+        $transport_fees = $feeData['transport_fees']
+            ->filter(fn($fee) => (($fee['fees'] ?? 0) + ($fee['fine_amount'] ?? 0) - $fee['amount_deposited']) > 0)
+            ->values();
 
         return $this->successResponse([
-            'sch_setting' => $this->schoolSettingsService->getSettings(),
+            'sch_setting' => $setting,
+            'adm_auto_insert' => $setting ? $setting->adm_auto_insert : false,
+            'categorylist' => Category::query()->get(),
             'student' => [
                 'id' => $student->id,
                 'firstname' => $student->firstname,
@@ -340,8 +353,13 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
                 'class' => $studentSession->class->class ?? null,
                 'section' => $studentSession->section->section ?? null,
                 'student_session_id' => $studentSession->id,
+                'class_id' => $studentSession->class_id,
+                'section_id' => $studentSession->section_id,
             ],
             'payment_method' => false,
+            'student_due_fee' => $student_due_fee,
+            'transport_fees' => $transport_fees,
+            'student_discount_fee' => $feeData['student_discount_fee'],
         ]);
     }
 
@@ -360,7 +378,30 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
 
         $setting = $this->schoolSettingsService->getSettings();
         $student = Student::find($studentSession->student_id);
+        $feeData = $this->buildStudentFeeData($studentSession);
 
+        return $this->successResponse([
+            'sch_setting' => $setting,
+            'adm_auto_insert' => $setting ? $setting->adm_auto_insert : false,
+            'student' => [
+                'id' => $student->id,
+                'firstname' => $student->firstname,
+                'lastname' => $student->lastname,
+                'class' => $studentSession->class->class ?? null,
+                'section' => $studentSession->section->section ?? null,
+                'student_session_id' => $studentSession->id,
+                'class_id' => $studentSession->class_id,
+                'section_id' => $studentSession->section_id,
+            ],
+            'payment_method' => false,
+            'student_due_fee' => $feeData['student_due_fee'],
+            'transport_fees' => $feeData['transport_fees'],
+            'student_discount_fee' => $feeData['student_discount_fee'],
+        ]);
+    }
+
+    private function buildStudentFeeData(StudentSession $studentSession): array
+    {
         $studentSession->load([
             'studentFeeMasters.feeSessionGroup.feeGroup',
             'studentTransportFees.transportFeemaster',
@@ -394,7 +435,7 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
                     'fine_amount' => $ft->fine_amount,
                 ]),
                 'amount_detail' => $amountDetail->map(fn($dep) => $dep->amount_detail),
-                'amount_deposited' => $amountDetail->sum(function($dep) { $d = json_decode($dep->amount_detail, true); return (float)($d['amount'] ?? 0); }),
+                'amount_deposited' => $this->sumDepositedAmount($amountDetail),
             ];
         })->values();
 
@@ -406,10 +447,12 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
                 'route_pickup_point_id' => $transportFee->route_pickup_point_id,
                 'month' => $transportFee->transportFeemaster->month ?? null,
                 'due_date' => $transportFee->transportFeemaster->due_date ?? null,
+                'fees' => (float) (DB::table('route_pickup_point')->where('id', $transportFee->route_pickup_point_id)->value('fees') ?? 0),
                 'fine_amount' => $transportFee->transportFeemaster->fine_amount ?? 0,
                 'fine_type' => $transportFee->transportFeemaster->fine_type ?? null,
                 'fine_percentage' => $transportFee->transportFeemaster->fine_percentage ?? 0,
                 'amount_detail' => $amountDetail->map(fn($dep) => $dep->amount_detail),
+                'amount_deposited' => $this->sumDepositedAmount($amountDetail),
             ];
         })->values();
 
@@ -429,23 +472,21 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
             ];
         })->values();
 
-        return $this->successResponse([
-            'sch_setting' => $setting,
-            'adm_auto_insert' => $setting ? $setting->adm_auto_insert : false,
-            'student' => [
-                'id' => $student->id,
-                'firstname' => $student->firstname,
-                'lastname' => $student->lastname,
-                'class' => $studentSession->class->class ?? null,
-                'section' => $studentSession->section->section ?? null,
-                'student_session_id' => $studentSession->id,
-                'class_id' => $studentSession->class_id,
-                'section_id' => $studentSession->section_id,
-            ],
-            'payment_method' => false,
+        return [
             'student_due_fee' => $student_due_fee,
             'transport_fees' => $transport_fees,
             'student_discount_fee' => $student_discount_fee,
-        ]);
+        ];
+    }
+
+    private function sumDepositedAmount($amountDetail): float
+    {
+        return $amountDetail->sum(function ($dep) {
+            $decoded = json_decode($dep->amount_detail, true);
+            if (!is_array($decoded) || empty($decoded)) {
+                return 0;
+            }
+            return (float) array_sum(array_column($decoded, 'amount'));
+        });
     }
 }
