@@ -39,7 +39,7 @@ class StudentSessionService
         $setting = $this->schoolSettingsService->getSettings();
 
         return StudentSession::where('student_id', $studentId)
-            ->when($setting, fn($q) => $q->where('session_id', $setting->id))
+            ->when($setting, fn($q) => $q->where('session_id', $setting->session_id))
             ->first()
             ?? StudentSession::where('student_id', $studentId)
                 ->where('default_login', 1)

@@ -61,7 +61,7 @@ class ExamScheduleController extends \Modules\Core\Http\Controllers\Api\Controll
         $setting = Setting::where('is_active', 'yes')->first();
 
         return StudentSession::where('student_id', $studentId)
-            ->when($setting, fn($q) => $q->where('session_id', $setting->id))
+            ->when($setting, fn($q) => $q->where('session_id', $setting->session_id))
             ->first();
     }
 }
