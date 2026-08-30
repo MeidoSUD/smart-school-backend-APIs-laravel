@@ -1,6 +1,9 @@
 <?php
+
 use Illuminate\Support\Facades\Route;
+use Modules\Academic\Http\Controllers\Api\ApplyLeaveController;
 use Modules\Academic\Http\Controllers\Api\AttendenceController;
+use Modules\Academic\Http\Controllers\Api\CalendarController;
 use Modules\Academic\Http\Controllers\Api\ExamController;
 use Modules\Academic\Http\Controllers\Api\ExamScheduleController;
 use Modules\Academic\Http\Controllers\Api\HomeworkController;
@@ -10,8 +13,6 @@ use Modules\Academic\Http\Controllers\Api\SubjectController;
 use Modules\Academic\Http\Controllers\Api\SyllabusController;
 use Modules\Academic\Http\Controllers\Api\TimelineController;
 use Modules\Academic\Http\Controllers\Api\TimetableController;
-use Modules\Academic\Http\Controllers\Api\ApplyLeaveController;
-use Modules\Academic\Http\Controllers\Api\CalendarController;
 
 Route::middleware('auth:sanctum')->prefix('api')->group(function () {
     Route::get('/attendence', [AttendenceController::class, 'index']);
@@ -37,6 +38,7 @@ Route::middleware('auth:sanctum')->prefix('api')->group(function () {
     Route::get('/subject/{id}', [SubjectController::class, 'view']);
 
     Route::get('/syllabus', [SyllabusController::class, 'index']);
+    Route::post('/syllabus/get_weekdates', [SyllabusController::class, 'getWeekdates']);
     Route::get('/syllabus/status', [SyllabusController::class, 'status']);
     Route::get('/syllabus/download/{id}', [SyllabusController::class, 'download']);
     Route::post('/syllabus/addmessage', [SyllabusController::class, 'addmessage']);

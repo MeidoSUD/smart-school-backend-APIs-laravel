@@ -16,7 +16,6 @@ use Modules\Core\Services\StudentSessionService;
 use Modules\Finance\Entities\FeeSessionGroup;
 use Modules\Finance\Entities\FeeGroupsFeetype;
 use Modules\Finance\Entities\StudentFeesDeposite;
-use Modules\Finance\Entities\TransportFeemaster;
 use Modules\Operations\Entities\LibraryMember;
 use Modules\Operations\Entities\Notification;
 use Modules\Operations\Entities\Visitor;
@@ -334,32 +333,55 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
         $setting = $this->schoolSettingsService->getSettings();
         $feeData = $this->buildStudentFeeData($studentSession);
 
-        $student_due_fee = $feeData['student_due_fee']
-            ->filter(fn($fee) => ($fee['amount'] - $fee['amount_deposited']) > 0)
-            ->values();
+        $student_due_fee = $feeData['student_due_fee'];
 
-        $transport_fees = $feeData['transport_fees']
-            ->filter(fn($fee) => (($fee['fees'] ?? 0) + ($fee['fine_amount'] ?? 0) - $fee['amount_deposited']) > 0)
-            ->values();
+        $transport_active = DB::table('permission_group')->where('short_code', 'transport')->value('is_active');
+        $transport_fees = $transport_active ? $feeData['transport_fees'] : [];
+
+        $student_processing_fee = false;
+        $processingRecords = DB::table('student_fees_processing')
+            ->whereIn('student_fees_master_id', collect($student_due_fee)->pluck('id'))
+            ->get();
+        foreach ($processingRecords as $processing_value) {
+            if (!empty($processing_value->fees)) {
+                $student_processing_fee = true;
+            }
+        }
+
+        $categorylist = Category::query()->get()->map(fn($cat) => [
+            'id' => $cat->id,
+            'category' => $cat->category,
+        ])->values();
 
         return $this->successResponse([
+            'categorylist' => $categorylist,
             'sch_setting' => $setting,
             'adm_auto_insert' => $setting ? $setting->adm_auto_insert : false,
-            'categorylist' => Category::query()->get(),
+            'paymentoption' => false,
+            'payment_method' => !empty($this->payment_method ?? false),
+            'student_discount_fee' => $feeData['student_discount_fee'],
+            'student_due_fee' => $student_due_fee,
             'student' => [
                 'id' => $student->id,
+                'admission_no' => $student->admission_no,
+                'roll_no' => $student->roll_no,
                 'firstname' => $student->firstname,
+                'middlename' => $student->middlename,
                 'lastname' => $student->lastname,
+                'image' => $student->image,
+                'mobileno' => $student->mobileno,
+                'category_id' => $student->category_id,
+                'rte' => $student->rte,
+                'father_name' => $student->father_name,
+                'guardian_phone' => $student->guardian_phone,
+                'guardian_email' => $student->guardian_email,
+                'parent_app_key' => $student->parent_app_key,
                 'class' => $studentSession->class->class ?? null,
                 'section' => $studentSession->section->section ?? null,
                 'student_session_id' => $studentSession->id,
-                'class_id' => $studentSession->class_id,
-                'section_id' => $studentSession->section_id,
             ],
-            'payment_method' => false,
-            'student_due_fee' => $student_due_fee,
             'transport_fees' => $transport_fees,
-            'student_discount_fee' => $feeData['student_discount_fee'],
+            'student_processing_fee' => $student_processing_fee,
         ]);
     }
 
@@ -376,27 +398,59 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
             return $this->errorResponse('Student session not found');
         }
 
-        $setting = $this->schoolSettingsService->getSettings();
         $student = Student::find($studentSession->student_id);
+        $setting = $this->schoolSettingsService->getSettings();
         $feeData = $this->buildStudentFeeData($studentSession);
 
+        $student_due_fee = $feeData['student_due_fee'];
+
+        $transport_active = DB::table('permission_group')->where('short_code', 'transport')->value('is_active');
+        $transport_fees = $transport_active ? $feeData['transport_fees'] : [];
+
+        $student_processing_fee = false;
+        $processingRecords = DB::table('student_fees_processing')
+            ->whereIn('student_fees_master_id', collect($student_due_fee)->pluck('id'))
+            ->get();
+        foreach ($processingRecords as $processing_value) {
+            if (!empty($processing_value->fees)) {
+                $student_processing_fee = true;
+            }
+        }
+
+        $categorylist = Category::query()->get()->map(fn($cat) => [
+            'id' => $cat->id,
+            'category' => $cat->category,
+        ])->values();
+
         return $this->successResponse([
+            'categorylist' => $categorylist,
             'sch_setting' => $setting,
             'adm_auto_insert' => $setting ? $setting->adm_auto_insert : false,
+            'paymentoption' => false,
+            'payment_method' => !empty($this->payment_method ?? false),
+            'student_discount_fee' => $feeData['student_discount_fee'],
+            'student_due_fee' => $student_due_fee,
             'student' => [
                 'id' => $student->id,
+                'admission_no' => $student->admission_no,
+                'roll_no' => $student->roll_no,
                 'firstname' => $student->firstname,
+                'middlename' => $student->middlename,
                 'lastname' => $student->lastname,
+                'image' => $student->image,
+                'mobileno' => $student->mobileno,
+                'category_id' => $student->category_id,
+                'rte' => $student->rte,
+                'father_name' => $student->father_name,
+                'guardian_phone' => $student->guardian_phone,
+                'guardian_email' => $student->guardian_email,
+                'parent_app_key' => $student->parent_app_key,
                 'class' => $studentSession->class->class ?? null,
                 'section' => $studentSession->section->section ?? null,
                 'student_session_id' => $studentSession->id,
-                'class_id' => $studentSession->class_id,
-                'section_id' => $studentSession->section_id,
             ],
-            'payment_method' => false,
-            'student_due_fee' => $feeData['student_due_fee'],
-            'transport_fees' => $feeData['transport_fees'],
-            'student_discount_fee' => $feeData['student_discount_fee'],
+            'transport_fees' => $transport_fees,
+            'student_processing_fee' => $student_processing_fee,
         ]);
     }
 
@@ -408,69 +462,75 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
             'studentFeesDiscounts.feeDiscount',
         ]);
 
-        $student_due_fee = $studentSession->studentFeeMasters->map(function ($feeMaster) {
-            $amountDetail = StudentFeesDeposite::where('student_fees_master_id', $feeMaster->id)->get();
-            $feeGroupsFeetype = collect();
-            if ($feeMaster->feeSessionGroup) {
-                $feeGroupsFeetype = FeeGroupsFeetype::where('fee_session_group_id', $feeMaster->fee_session_group_id)
-                    ->with('feeType')
-                    ->get();
-            }
-            return [
-                'id' => $feeMaster->id,
-                'is_system' => $feeMaster->is_system,
-                'student_session_id' => $feeMaster->student_session_id,
-                'fee_session_group_id' => $feeMaster->fee_session_group_id,
-                'amount' => $feeMaster->amount,
-                'fee_group' => $feeMaster->feeSessionGroup->feeGroup->name ?? null,
-                'fee_group_id' => $feeMaster->feeSessionGroup->feeGroup->id ?? null,
-                'fee_types' => $feeGroupsFeetype->map(fn($ft) => [
-                    'id' => $ft->id,
-                    'fee_type' => $ft->feeType->type ?? null,
-                    'fee_type_code' => $ft->feeType->code ?? null,
-                    'amount' => $ft->amount,
-                    'due_date' => $ft->due_date,
-                    'fine_type' => $ft->fine_type,
-                    'fine_percentage' => $ft->fine_percentage,
-                    'fine_amount' => $ft->fine_amount,
-                ]),
-                'amount_detail' => $amountDetail->map(fn($dep) => $dep->amount_detail),
-                'amount_deposited' => $this->sumDepositedAmount($amountDetail),
-            ];
-        })->values();
+        $student_due_fee = [];
 
-        $transport_fees = $studentSession->studentTransportFees->map(function ($transportFee) {
-            $amountDetail = StudentFeesDeposite::where('student_transport_fee_id', $transportFee->id)->get();
-            return [
+        foreach ($studentSession->studentFeeMasters as $feeMaster) {
+            $feeGroupsFeetype = FeeGroupsFeetype::where('fee_session_group_id', $feeMaster->fee_session_group_id)
+                ->with('feeType')
+                ->get();
+
+            $fees = [];
+            foreach ($feeGroupsFeetype as $ft) {
+                $deposit = StudentFeesDeposite::where('student_fees_master_id', $feeMaster->id)
+                    ->where('fee_groups_feetype_id', $ft->id)
+                    ->first();
+
+                $fees[] = (object) [
+                    'id' => $feeMaster->id,
+                    'is_system' => $feeMaster->is_system,
+                    'student_session_id' => $feeMaster->student_session_id,
+                    'fee_session_group_id' => $feeMaster->fee_session_group_id,
+                    'amount' => $ft->amount,
+                    'fee_groups_feetype_id' => $ft->id,
+                    'due_date' => $ft->due_date,
+                    'fine_amount' => $ft->fine_amount,
+                    'name' => $feeMaster->feeSessionGroup->feeGroup->name ?? null,
+                    'code' => $ft->feeType->code ?? null,
+                    'type' => $ft->feeType->type ?? null,
+                    'student_fees_deposite_id' => $deposit ? $deposit->id : 0,
+                    'amount_detail' => $deposit ? $deposit->amount_detail : 0,
+                ];
+            }
+
+            if ($feeMaster->is_system != 0 && !empty($fees)) {
+                $fees[0]->amount = $feeMaster->amount;
+            }
+
+            $student_due_fee[] = (object) [
+                'id' => $feeMaster->id,
+                'fees' => $fees,
+            ];
+        }
+
+        $transport_fees = [];
+        foreach ($studentSession->studentTransportFees as $transportFee) {
+            $deposit = StudentFeesDeposite::where('student_transport_fee_id', $transportFee->id)->first();
+
+            $transport_fees[] = (object) [
                 'id' => $transportFee->id,
-                'transport_feemaster_id' => $transportFee->transport_feemaster_id,
-                'route_pickup_point_id' => $transportFee->route_pickup_point_id,
                 'month' => $transportFee->transportFeemaster->month ?? null,
                 'due_date' => $transportFee->transportFeemaster->due_date ?? null,
                 'fees' => (float) (DB::table('route_pickup_point')->where('id', $transportFee->route_pickup_point_id)->value('fees') ?? 0),
                 'fine_amount' => $transportFee->transportFeemaster->fine_amount ?? 0,
                 'fine_type' => $transportFee->transportFeemaster->fine_type ?? null,
                 'fine_percentage' => $transportFee->transportFeemaster->fine_percentage ?? 0,
-                'amount_detail' => $amountDetail->map(fn($dep) => $dep->amount_detail),
-                'amount_deposited' => $this->sumDepositedAmount($amountDetail),
+                'student_fees_deposite_id' => $deposit ? $deposit->id : 0,
+                'amount_detail' => $deposit ? $deposit->amount_detail : 0,
             ];
-        })->values();
+        }
 
-        $student_discount_fee = $studentSession->studentFeesDiscounts->map(function ($discount) {
-            return [
-                'id' => $discount->id,
-                'student_session_id' => $discount->student_session_id,
-                'fees_discount_id' => $discount->fees_discount_id,
+        $student_discount_fee = [];
+        foreach ($studentSession->studentFeesDiscounts as $discount) {
+            $student_discount_fee[] = [
+                'code' => $discount->feeDiscount->code ?? null,
                 'status' => $discount->status,
                 'payment_id' => $discount->payment_id,
-                'description' => $discount->description,
-                'name' => $discount->feeDiscount->name ?? null,
-                'code' => $discount->feeDiscount->code ?? null,
+                'student_fees_discount_description' => $discount->description ?? null,
                 'type' => $discount->feeDiscount->type ?? null,
-                'percentage' => $discount->feeDiscount->percentage ?? null,
                 'amount' => $discount->feeDiscount->amount ?? null,
+                'percentage' => $discount->feeDiscount->percentage ?? null,
             ];
-        })->values();
+        }
 
         return [
             'student_due_fee' => $student_due_fee,
@@ -479,14 +539,5 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
         ];
     }
 
-    private function sumDepositedAmount($amountDetail): float
-    {
-        return $amountDetail->sum(function ($dep) {
-            $decoded = json_decode($dep->amount_detail, true);
-            if (!is_array($decoded) || empty($decoded)) {
-                return 0;
-            }
-            return (float) array_sum(array_column($decoded, 'amount'));
-        });
-    }
+
 }

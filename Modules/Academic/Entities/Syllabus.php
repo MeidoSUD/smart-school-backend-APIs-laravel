@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\DB;
 class Syllabus extends Model
 {
     protected $table = 'subject_syllabus';
+
     protected $primaryKey = 'id';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -76,6 +78,49 @@ class Syllabus extends Model
             ->join('lesson', 'lesson.id', '=', 'topic.lesson_id')
             ->where('topic.lesson_id', $lessonId)
             ->select('topic.id', 'topic.name', 'topic.status', 'topic.complete_date')
+            ->get();
+    }
+
+    public static function getStudentSyllabus(int $classId, int $sectionId, int $sessionId): Collection
+    {
+        return DB::table('class_sections')
+            ->join('subject_group_class_sections', 'subject_group_class_sections.class_section_id', '=', 'class_sections.id')
+            ->where('subject_group_class_sections.session_id', $sessionId)
+            ->where('class_sections.class_id', $classId)
+            ->where('class_sections.section_id', $sectionId)
+            ->select(
+                'class_sections.id as class_section_id',
+                'subject_group_class_sections.id as subject_group_class_section_id'
+            )
+            ->get();
+    }
+
+    public static function getSubjectSyllabusByDate(int $subjectGroupClassSectionId, string $date, int $sessionId): Collection
+    {
+        return DB::table('subject_syllabus')
+            ->join('topic', 'topic.id', '=', 'subject_syllabus.topic_id')
+            ->join('lesson', 'lesson.id', '=', 'topic.lesson_id')
+            ->join('subject_group_subjects', 'subject_group_subjects.id', '=', 'lesson.subject_group_subject_id')
+            ->join('subject_groups', 'subject_groups.id', '=', 'subject_group_subjects.subject_group_id')
+            ->join('subjects', 'subjects.id', '=', 'subject_group_subjects.subject_id')
+            ->join('subject_group_class_sections', 'subject_group_class_sections.id', '=', 'lesson.subject_group_class_sections_id')
+            ->join('class_sections', 'class_sections.id', '=', 'subject_group_class_sections.class_section_id')
+            ->join('sections', 'sections.id', '=', 'class_sections.section_id')
+            ->join('classes', 'classes.id', '=', 'class_sections.class_id')
+            ->where('lesson.subject_group_class_sections_id', $subjectGroupClassSectionId)
+            ->where('subject_syllabus.date', $date)
+            ->where('subject_syllabus.session_id', $sessionId)
+            ->groupBy('subject_syllabus.id')
+            ->select(
+                'subject_syllabus.*',
+                'subject_groups.name as sgname',
+                'subjects.name as subname',
+                'subjects.code as scode',
+                'sections.section as sname',
+                'classes.class as cname',
+                'lesson.name as lessonname',
+                'topic.name as topic_name'
+            )
             ->get();
     }
 }
