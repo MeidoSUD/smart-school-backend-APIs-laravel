@@ -1,6 +1,7 @@
 <?php
 
 namespace Modules\Core\Http\Controllers\Api;
+use Illuminate\Support\Facades\Log;
 
 use Modules\Core\Http\Requests\LoginRequest;
 use Modules\Core\Http\Requests\ChangePasswordRequest;
@@ -20,32 +21,43 @@ class AuthController extends \Modules\Core\Http\Controllers\Api\Controller
         $this->setControllerName('AuthController');
     }
 
-    public function login(LoginRequest $request): JsonResponse
+    public function login(Request $request): JsonResponse
     {
-        $credentials = $request->validated();
+        $username = $request->input('username');
+        $password = $request->input('password');
+        Log::info('API Request', [
+            'endpoint' => $request->all(),
 
-        ApiLogger::logAuth('login_attempt', $credentials['username'], false);
+        ]);
+        if (empty($username) || empty($password)) {
+            return $this->errorResponse('Validation failed', [
+                'username' => [empty($username) ? 'Username is required' : ''],
+                'password' => [empty($password) ? 'Password is required' : ''],
+            ], 422);
+        }
 
-        $user = User::where('username', $credentials['username'])->first();
+        ApiLogger::logAuth('login_attempt', $username, false);
+
+        $user = User::where('username', $username)->first();
 
         if (!$user) {
-            ApiLogger::logAuth('login_failed', $credentials['username'], false);
+            ApiLogger::logAuth('login_failed', $username, false);
             return $this->errorResponse('Invalid username or password', null, 401);
         }
 
         if (!$user->isActive()) {
-            ApiLogger::logAuth('login_disabled', $credentials['username'], false, $user->id);
+            ApiLogger::logAuth('login_disabled', $username, false, $user->id);
             return $this->errorResponse('Your account is disabled, please contact administrator.', null, 403);
         }
 
-        if (!Hash::check($credentials['password'], $user->hash_password)) {
-            ApiLogger::logAuth('login_failed', $credentials['username'], false, $user->id);
+        if ($password !== $user->password) {
+            ApiLogger::logAuth('login_failed', $username, false, $user->id);
             return $this->errorResponse('Invalid username or password', null, 401);
         }
 
         $token = $user->createToken('api-token', [$user->role])->plainTextToken;
 
-        ApiLogger::logAuth('login_success', $credentials['username'], true, $user->id);
+        ApiLogger::logAuth('login_success', $username, true, $user->id);
 
         $userData = $this->userResponseService->buildUserResponse($user);
 
@@ -91,12 +103,12 @@ class AuthController extends \Modules\Core\Http\Controllers\Api\Controller
 
         $validated = $request->validated();
 
-        if (!Hash::check($validated['current_pass'], $user->hash_password)) {
+        if ($validated['current_pass'] !== $user->password) {
             return $this->errorResponse('Invalid current password');
         }
 
         DB::transaction(function () use ($user, $validated) {
-            $user->hash_password = Hash::make($validated['new_pass']);
+            $user->password = $validated['new_pass'];
             $user->save();
             $user->tokens()->delete();
         });
