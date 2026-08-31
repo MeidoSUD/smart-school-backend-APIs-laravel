@@ -34,29 +34,49 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
 
         $studentId = $studentSession->student_id;
 
+        $mapHomework = function ($homework) {
+            $evaluation = $homework->homeworkEvaluations->first();
+            $homework->homework_evaluation_id = $evaluation ? $evaluation->id : 0;
+            $homework->evaluation_marks = $evaluation ? $evaluation->marks : null;
+            $homework->note = $evaluation ? $evaluation->note : '';
+            
+            $homework->status = $homework->submission_status > 0 ? 'submitted' : '';
+
+            $homework->class = $homework->class->class ?? '';
+            $homework->section = $homework->section->section ?? '';
+            $homework->subject_name = $homework->subject->name ?? '';
+            $homework->subject_code = $homework->subject->code ?? '';
+
+            $homework->makeHidden(['class', 'section', 'subject', 'homeworkEvaluations']);
+            
+            return $homework;
+        };
+
         $homeworklist = Homework::where('class_id', $studentSession->class_id)
             ->where('section_id', $studentSession->section_id)
             ->where('submit_date', '>=', now()->toDateString())
+            ->with(['class', 'section', 'subject', 'homeworkEvaluations' => function ($q) use ($studentId) {
+                $q->where('student_id', $studentId);
+            }])
             ->withCount(['submitAssignments as submission_status' => function ($query) use ($studentId) {
                 $query->where('student_id', $studentId);
             }])
+            ->orderBy('homework_date', 'desc')
             ->get()
-            ->map(function ($homework) {
-                $homework->status = $homework->submission_status > 0 ? 'submitted' : '';
-                return $homework;
-            });
+            ->map($mapHomework);
 
         $closedhomeworklist = Homework::where('class_id', $studentSession->class_id)
             ->where('section_id', $studentSession->section_id)
             ->where('submit_date', '<', now()->toDateString())
+            ->with(['class', 'section', 'subject', 'homeworkEvaluations' => function ($q) use ($studentId) {
+                $q->where('student_id', $studentId);
+            }])
             ->withCount(['submitAssignments as submission_status' => function ($query) use ($studentId) {
                 $query->where('student_id', $studentId);
             }])
+            ->orderBy('homework_date', 'desc')
             ->get()
-            ->map(function ($homework) {
-                $homework->status = $homework->submission_status > 0 ? 'submitted' : '';
-                return $homework;
-            });
+            ->map($mapHomework);
 
         $data = [
             'created_by' => '',

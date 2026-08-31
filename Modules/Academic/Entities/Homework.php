@@ -38,4 +38,9 @@ class Homework extends Model
     {
         return $this->hasMany(SubmitAssignment::class, 'homework_id');
     }
+
+    public function homeworkEvaluations(): HasMany
+    {
+        return $this->hasMany(HomeworkEvaluation::class, 'homework_id');
+    }
 }

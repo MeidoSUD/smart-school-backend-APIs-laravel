@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             OnlineAdmissionSeeder::class,
             DashboardSupportSeeder::class,
             OnlineExamSeeder::class,
+            HomeworkPageSeeder::class,
         ]);
     }
 }
