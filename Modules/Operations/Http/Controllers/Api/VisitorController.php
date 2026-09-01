@@ -31,7 +31,7 @@ class VisitorController extends \Modules\Core\Http\Controllers\Api\Controller
 
         
         $visitorList = Visitor::where('student_session_id', $studentSession->id)
-            ->orderBy('date', 'desc')
+            ->orderBy('id', 'desc')
             ->get();
         
         $data = ['visitor_list' => $visitorList];

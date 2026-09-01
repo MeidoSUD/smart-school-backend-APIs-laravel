@@ -15,5 +15,8 @@ class ExamGroupClassBatchExamStudent extends Model
         'roll_no', 'teacher_remark', 'rank', 'is_active',
     ];
 
-
+    public function examGroupClassBatchExam()
+    {
+        return $this->belongsTo(ExamGroupClassBatchExam::class, 'exam_group_class_batch_exam_id');
+    }
 }

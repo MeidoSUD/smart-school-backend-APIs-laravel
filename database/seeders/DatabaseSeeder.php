@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             AcademicSeeder::class,
             StudentSeeder::class,
+            VisitorPageSeeder::class,
             ClassSectionSeeder::class,
             FeeSeeder::class,
             PaymentSeeder::class,
@@ -24,6 +25,7 @@ class DatabaseSeeder extends Seeder
             DashboardSupportSeeder::class,
             OnlineExamSeeder::class,
             HomeworkPageSeeder::class,
+            ContentPageSeeder::class,
         ]);
     }
 }
