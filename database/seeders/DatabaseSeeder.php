@@ -26,6 +26,10 @@ class DatabaseSeeder extends Seeder
             OnlineExamSeeder::class,
             HomeworkPageSeeder::class,
             ContentPageSeeder::class,
+            StudentTimelineSeeder::class,
+            StudentDocumentSeeder::class,
+            StudentExamSeeder::class,
+            StudentAttendenceSeeder::class,
         ]);
     }
 }

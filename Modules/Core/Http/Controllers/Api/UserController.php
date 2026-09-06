@@ -7,6 +7,7 @@ use Modules\Academic\Entities\StudentSession;
 use Modules\Academic\Entities\StudentAttendence;
 use Modules\Academic\Entities\AttendenceType;
 use Modules\Academic\Entities\Homework;
+use Modules\Academic\Entities\HomeworkEvaluation;
 use Modules\Academic\Entities\SubmitAssignment;
 use Modules\Academic\Entities\Syllabus;
 use Modules\Academic\Entities\ClassTimetable;
@@ -18,6 +19,7 @@ use Modules\Finance\Entities\FeeGroupsFeetype;
 use Modules\Finance\Entities\StudentFeesDeposite;
 use Modules\Operations\Entities\LibraryMember;
 use Modules\Operations\Entities\Notification;
+use Modules\Operations\Entities\ReadNotification;
 use Modules\Operations\Entities\Visitor;
 use Modules\Staff\Entities\Staff;
 use Illuminate\Http\JsonResponse;
@@ -66,13 +68,57 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
         }
 
         $memberType = 'student';
-        $checkIsMember = LibraryMember::where('member_type', $memberType)
+        $libraryMember = LibraryMember::where('member_type', $memberType)
             ->where('member_id', $studentId)
             ->first();
-        $bookList = $checkIsMember ? true : false;
+        $bookList = false;
+        if ($libraryMember) {
+            $bookList = DB::table('book_issues')
+                ->leftJoin('libarary_members', 'libarary_members.id', '=', 'book_issues.member_id')
+                ->leftJoin('books', 'books.id', '=', 'book_issues.book_id')
+                ->where('libarary_members.id', $libraryMember->id)
+                ->select(
+                    'book_issues.return_date',
+                    'books.book_no',
+                    'book_issues.issue_date',
+                    'book_issues.is_returned',
+                    'books.book_title',
+                    'books.author',
+                    'book_issues.duereturn_date'
+                )
+                ->orderBy('book_issues.is_returned', 'asc')
+                ->get();
+        }
 
-        $homeworklist = Homework::where('class_id', $classId)
-            ->where('section_id', $sectionId)
+        $sessionId = $this->schoolSettingsService->getSettings()->session_id;
+        $homeworklist = Homework::where('homework.class_id', $classId)
+            ->where('homework.section_id', $sectionId)
+            ->where('homework.session_id', $sessionId)
+            ->where('homework.submit_date', '>=', now()->toDateString())
+            ->leftJoin('homework_evaluation', function ($join) use ($studentSessionId) {
+                $join->on('homework_evaluation.homework_id', '=', 'homework.id')
+                    ->where('homework_evaluation.student_session_id', '=', $studentSessionId);
+            })
+            ->leftJoin('classes', 'classes.id', '=', 'homework.class_id')
+            ->leftJoin('sections', 'sections.id', '=', 'homework.section_id')
+            ->leftJoin('subject_group_subjects', 'subject_group_subjects.id', '=', 'homework.subject_group_subject_id')
+            ->leftJoin('subjects', 'subjects.id', '=', 'subject_group_subjects.subject_id')
+            ->leftJoin('subject_groups', 'subject_groups.id', '=', 'subject_group_subjects.subject_group_id')
+            ->select(
+                'homework.*',
+                'homework_evaluation.id as homework_evaluation_id',
+                'homework_evaluation.note',
+                'homework_evaluation.marks as evaluation_marks',
+                'classes.class',
+                'sections.section',
+                'subject_group_subjects.subject_id',
+                'subject_group_subjects.id as subject_group_subject_id',
+                'subjects.name as subject_name',
+                'subjects.code as subject_code',
+                'subject_groups.id as subject_groups_id',
+                'subject_groups.name'
+            )
+            ->orderBy('homework.homework_date', 'desc')
             ->get()
             ->map(function ($hw) use ($studentId) {
                 $checkstatus = SubmitAssignment::where('homework_id', $hw->id)
@@ -82,17 +128,35 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
                 return $hw;
             });
 
-        $notifications = Notification::where('is_active', 'yes')
-            ->where('publish_date', '<=', now()->toDateString())
-            ->when($user->role === 'student', fn($q) => $q->where('visible_student', 'yes'))
-            ->when($user->role === 'parent', fn($q) => $q->where('visible_parent', 'yes'))
-            ->orderByDesc('publish_date')
+        $notifications = DB::table('send_notification')
+            ->leftJoin('staff', 'staff.id', '=', 'send_notification.created_id')
+            ->leftJoin('read_notification', function ($join) use ($user) {
+                $join->on('read_notification.notification_id', '=', 'send_notification.id');
+                if ($user->role === 'student') {
+                    $join->where('read_notification.student_id', '=', $user->id);
+                } elseif ($user->role === 'parent') {
+                    $join->where('read_notification.parent_id', '=', $user->id);
+                }
+            })
+            ->where($user->role === 'student' ? 'visible_student' : 'visible_parent', 'Yes')
+            ->orderByDesc('send_notification.publish_date')
+            ->select(
+                'send_notification.id',
+                'send_notification.title',
+                'send_notification.publish_date',
+                'send_notification.date',
+                'send_notification.message',
+                'send_notification.attachment',
+                'staff.employee_id',
+                'staff.name',
+                'staff.surname',
+                DB::raw("IF(read_notification.id IS NULL, 'unread', 'read') as notification_id")
+            )
             ->get()
             ->filter(fn($n) => strtotime(date('Y-m-d')) >= strtotime($n->publish_date))
             ->values();
 
         $setting = $this->schoolSettingsService->getSettings();
-        $sessionId = $setting->session_id;
 
         $subjects = Syllabus::getMySubjects($classId, $sectionId, $sessionId);
         $subjectsData = [];
@@ -105,7 +169,7 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
                 $incomplete = round(($subjectDetails->incomplete / $subjectDetails->total) * 100);
             }
             $lebel = $value->name . ($value->code ? ' (' . $value->code . ')' : '');
-            $subjectsData[$value->subject_group_subjects_id] = [
+            $subjectsData[] = [
                 'lebel' => $lebel,
                 'complete' => $complete,
                 'incomplete' => $incomplete,
@@ -138,12 +202,16 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
                     }
                     return [
                         'id' => $row->id,
-                        'subject' => $subjectName,
-                        'subject_code' => $subjectCode,
-                        'teacher' => $row->staff ? $row->staff->name : 'N/A',
+                        'subject_name' => $subjectName,
+                        'code' => $subjectCode,
+                        'name' => $row->staff ? $row->staff->name : 'N/A',
+                        'surname' => $row->staff ? $row->staff->surname : '',
+                        'employee_id' => $row->staff ? $row->staff->employee_id : '',
+                        'image' => $row->staff ? $row->staff->image : '',
+                        'gender' => $row->staff ? $row->staff->gender : '',
                         'time_from' => $row->time_from,
                         'time_to' => $row->time_to,
-                        'room' => $row->room_no ?? '',
+                        'room_no' => $row->room_no ?? '',
                         'day' => $row->day,
                     ];
                 });
@@ -152,14 +220,90 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
         $visitors = Visitor::where('student_session_id', $studentSessionId)->get();
 
         $teachers = [];
-        $studentTeacher = ClassTimetable::where('class_id', $classId)
-            ->where('section_id', $sectionId)
-            ->with('staff')
-            ->get()
-            ->pluck('staff')
-            ->filter()
-            ->unique('id')
-            ->values();
+        $sessionId = $this->schoolSettingsService->getSettings()->session_id;
+
+        $subjectTeachers = DB::table('subject_timetable')
+            ->join('subject_group_subjects', 'subject_group_subjects.id', '=', 'subject_timetable.subject_group_subject_id')
+            ->leftJoin('subjects', 'subjects.id', '=', 'subject_group_subjects.subject_id')
+            ->join('staff', 'staff.id', '=', 'subject_timetable.staff_id')
+            ->leftJoin('classes', 'classes.id', '=', 'subject_timetable.class_id')
+            ->leftJoin('sections', 'sections.id', '=', 'subject_timetable.section_id')
+            ->leftJoin('class_teacher', function ($join) {
+                $join->on('class_teacher.class_id', '=', 'classes.id')
+                    ->on('class_teacher.staff_id', '=', 'staff.id')
+                    ->on('class_teacher.section_id', '=', 'sections.id');
+            })
+            ->where('staff.is_active', '1')
+            ->where('subject_timetable.class_id', $classId)
+            ->where('subject_timetable.section_id', $sectionId)
+            ->where('subject_timetable.session_id', $sessionId)
+            ->select(
+                DB::raw("'subject' as type"),
+                'class_teacher.staff_id as class_teacher',
+                'subjects.id as subject_id',
+                'subjects.name as subject_name',
+                'subjects.code',
+                'subjects.type',
+                'staff.name',
+                'staff.surname',
+                'staff.email',
+                'staff.contact_no',
+                'staff.employee_id',
+                'subject_timetable.staff_id as staff_id',
+                'staff.image',
+                'staff.gender',
+                'subject_timetable.time_from',
+                'subject_timetable.day',
+                'subject_timetable.room_no',
+                'subject_timetable.time_to',
+                'sections.section as section_name',
+                'classes.class as class_name'
+            )
+            ->get();
+
+        $classTeachers = DB::table('class_teacher')
+            ->join('staff', 'staff.id', '=', 'class_teacher.staff_id')
+            ->join('classes', 'classes.id', '=', 'class_teacher.class_id')
+            ->join('sections', 'sections.id', '=', 'class_teacher.section_id')
+            ->where('staff.is_active', '1')
+            ->where('class_teacher.class_id', $classId)
+            ->where('class_teacher.section_id', $sectionId)
+            ->where('class_teacher.session_id', $sessionId)
+            ->select(
+                DB::raw("'class' as type"),
+                'class_teacher.staff_id as class_teacher',
+                DB::raw("'' as subject_id"),
+                DB::raw("'' as subject_name"),
+                DB::raw("'' as code"),
+                DB::raw("'' as type_col"),
+                'staff.name',
+                'staff.surname',
+                'staff.email',
+                'staff.contact_no',
+                'staff.employee_id',
+                'staff.id as staff_id',
+                'staff.image',
+                'staff.gender',
+                DB::raw("'' as time_from"),
+                DB::raw("'' as time_to"),
+                DB::raw("'' as day"),
+                DB::raw("'' as room_no"),
+                'sections.section as section_name',
+                'classes.class as class_name'
+            )
+            ->get();
+
+        $allTeachers = $subjectTeachers->merge($classTeachers);
+
+        $seenStaff = [];
+        foreach ($allTeachers as $teacher) {
+            if (!in_array($teacher->staff_id, $seenStaff)) {
+                $seenStaff[] = $teacher->staff_id;
+                $teachers[] = $teacher;
+            }
+        }
+
+        $student = Student::find($studentId);
 
         $data = [
             'attendence_percentage' => $attendencePercentage,
@@ -177,9 +321,12 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
                 'student_id' => $studentId,
                 'class' => $studentSession->class->class ?? null,
                 'section' => $studentSession->section->section ?? null,
+                'image' => $student ? $student->image : '',
+                'gender' => $student ? $student->gender : '',
             ],
             'low_attendance_limit' => $this->schoolSettingsService->lowAttendanceLimit(),
-            'teacherlist' => $studentTeacher,
+            'teachers' => $teachers,
+            'teacherlist' => $teachers,
         ];
 
         return $this->successResponse($data);
@@ -277,8 +424,102 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
             return $this->errorResponse('Student not found');
         }
 
+        $setting = $this->schoolSettingsService->getSettings();
+        $feeData = $this->buildStudentFeeData($studentSession);
+        $transport_active = DB::table('permission_group')->where('short_code', 'transport')->value('is_active');
+        $transport_fees = $transport_active ? $feeData['transport_fees'] : [];
+
+        $timeline = DB::table('student_timeline')->where('student_id', $student->id)->where('status', 'yes')->get();
+        
+        $student_doc = DB::table('student_doc')->where('student_id', $student->id)->get();
+
+        $sessionDates = $this->schoolSettingsService->sessionDates();
+        $attendances = StudentAttendence::with('attendenceType')
+            ->where('student_session_id', $studentSession->id)
+            ->whereBetween('date', [$sessionDates['start'], $sessionDates['end']])
+            ->get();
+            
+        $countAttendance = $attendances->count();
+        $attendanceByDate = $attendances->keyBy('date');
+
+        $resultlist = [];
+        $start = \Carbon\Carbon::parse($sessionDates['start']);
+        $end = \Carbon\Carbon::parse($sessionDates['end']);
+        $period = \Carbon\CarbonPeriod::create($start, $end);
+        foreach ($period as $date) {
+            $dateKey = $date->format('Y-m-d');
+            if (isset($attendanceByDate[$dateKey])) {
+                $att = $attendanceByDate[$dateKey];
+                $resultlist[$dateKey] = [
+                    'att_type' => $att->attendenceType->type ?? '',
+                    'key' => $att->attendenceType->key_value ?? '',
+                ];
+            } else {
+                $resultlist[$dateKey] = [];
+            }
+        }
+
+        $startMonth = $setting->start_month ?? 1;
+        if ($startMonth == 1) {
+            $endMonth = 12;
+        } else {
+            $endMonth = $startMonth - 1;
+        }
+
+        $sessionName = $setting->session ?? '';
+        $parts = explode('-', $sessionName);
+        $startYear = $parts[0] ?? date('Y');
+        if (isset($parts[1]) && strlen($parts[1]) == 2) {
+            $nextYear = substr($startYear, 0, 2) . $parts[1];
+        } else {
+            $nextYear = $parts[1] ?? $startYear;
+        }
+
+        $monthlist = [];
+        for ($x = $startMonth; $x < $startMonth + 12; $x++) {
+            $month = date('m', mktime(0, 0, 0, $x, 10));
+            $monthlist[$month] = date('F', mktime(0, 0, 0, $x, 10));
+        }
+
+        $exam_result = DB::table('exam_group_class_batch_exam_students')
+            ->join('exam_group_class_batch_exams', 'exam_group_class_batch_exams.id', '=', 'exam_group_class_batch_exam_students.exam_group_class_batch_exam_id')
+            ->where('exam_group_class_batch_exam_students.student_session_id', $studentSession->id)
+            ->get();
+
+        $unread_notifications = DB::table('send_notification')
+            ->where('visible_student', 'Yes')
+            ->where('publish_date', '<=', date('Y-m-d'))
+            ->whereNotIn('id', function ($query) use ($user) {
+                $query->select('notification_id')
+                    ->from('read_notification')
+                    ->where('student_id', $user->user_id);
+            })->get();
+
+        $marks_division = DB::table('mark_divisions')->get();
+        $category_list = DB::table('categories')->get();
+        $gradeList = DB::table('grades')->get();
+        $attendencetypeslist = DB::table('attendence_type')->orderBy('id')->get();
+
+        $gradeTypes = config('app.exam_type', [
+            'basic_system' => 'Basic System',
+            'school_grade_system' => 'School Grade System',
+            'coll_grade_system' => 'College Grade System',
+            'gpa' => 'GPA Grading System',
+            'average_passing' => 'Average Passing',
+        ]);
+        $exam_grade = [];
+        foreach ($gradeTypes as $key => $label) {
+            $exam_grade[] = [
+                'exam_key' => $key,
+                'exm_type_value' => $label,
+                'exam_grade_values' => DB::table('grades')->where('exam_type', $key)->get(),
+            ];
+        }
+
         $data = [
-            'sch_setting' => $this->schoolSettingsService->getSettings(),
+            'sch_setting' => $setting,
+            'superadmin_restriction' => $setting->superadmin_restriction ?? 0,
+            'marks_division' => $marks_division,
             'student' => [
                 'id' => $student->id,
                 'admission_no' => $student->admission_no,
@@ -309,8 +550,30 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
                 'student_session_id' => $studentSession->id,
                 'class_id' => $studentSession->class_id,
                 'section_id' => $studentSession->section_id,
+                'total_points' => 0,
             ],
             'role' => $user->role,
+            'student_due_fee' => $feeData['student_due_fee'],
+            'student_discount_fee' => $feeData['student_discount_fee'],
+            'transport_fees' => $transport_fees,
+            'timeline_list' => $timeline,
+            'student_doc' => $student_doc,
+            'student_doc_id' => $student->id,
+            'category_list' => $category_list,
+            'gradeList' => $gradeList,
+            'examSchedule' => [],
+            'exam_result' => $exam_result,
+            'exam_grade' => $exam_grade,
+            'countAttendance' => $countAttendance,
+            'resultlist' => $resultlist,
+            'monthlist' => $monthlist,
+            'attendencetypeslist' => $attendencetypeslist,
+            'session_year_start' => $sessionDates['start'],
+            'session_year_end' => $sessionDates['end'],
+            'start_year' => $startYear,
+            'Next_year' => $nextYear,
+            'student_timeline' => $setting->student_timeline ?? 0,
+            'unread_notifications' => $unread_notifications,
         ];
 
         return $this->successResponse($data);
