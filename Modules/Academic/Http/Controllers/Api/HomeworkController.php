@@ -8,11 +8,13 @@ use Modules\Academic\Entities\SubmitAssignment;
 use Modules\Academic\Entities\DailyAssignment;
 use Modules\Academic\Entities\Student;
 use Modules\Academic\Http\Requests\HomeworkRequest;
+use Modules\Academic\Http\Requests\DailyAssignmentRequest;
 use Modules\Core\Services\StudentSessionService;
 use Modules\Core\Entities\Setting;
 use Modules\Staff\Entities\Staff;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use DB;
 
 class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
@@ -210,8 +212,17 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
             return $this->errorResponse('Student session not found');
         }
 
-        $dailyassignmentlist = DailyAssignment::where('student_session_id', $studentSession->id)
-            ->orderBy('date', 'desc')
+        $studentId = $this->studentSessionService->getStudentId($user);
+
+        // Fetching data with joins matching CodeIgniter behavior
+        $dailyassignmentlist = DB::table('daily_assignment')
+            ->select('daily_assignment.*', 'subjects.name as subject_name', 'subjects.code as subject_code')
+            ->leftJoin('student_session', 'student_session.id', '=', 'daily_assignment.student_session_id')
+            ->leftJoin('subject_group_subjects', 'subject_group_subjects.id', '=', 'daily_assignment.subject_group_subject_id')
+            ->join('subjects', 'subjects.id', '=', 'subject_group_subjects.subject_id')
+            ->where('daily_assignment.student_session_id', $studentSession->id)
+            ->orWhere('student_session.student_id', $studentId)
+            ->orderBy('daily_assignment.id', 'desc')
             ->get();
 
         $data = [
@@ -219,5 +230,107 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
         ];
 
         return $this->successResponse($data);
+    }
+
+    public function createdailyassignment(DailyAssignmentRequest $request): JsonResponse
+    {
+        $user = $request->user();
+        $studentSession = $this->studentSessionService->getStudentSession($user);
+
+        if (!$studentSession) {
+            return $this->errorResponse('Student session not found');
+        }
+
+        $data = [
+            'title' => $request->title,
+            'student_session_id' => $studentSession->id,
+            'description' => $request->description,
+            'subject_group_subject_id' => $request->subject,
+            'date' => date('Y-m-d'),
+            'evaluated_by' => null,
+            'attachment' => null,
+            'remark' => ''
+        ];
+
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $filename = time() . '_' . bin2hex(random_bytes(16)) . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('uploads/homework/daily_assignment', $filename, 'local');
+            $data['attachment'] = $filename;
+        }
+
+        DailyAssignment::create($data);
+
+        return $this->successResponse(null, 'Record Saved Successfully');
+    }
+
+    public function updatedailyassignment(DailyAssignmentRequest $request): JsonResponse
+    {
+        $user = $request->user();
+        $studentSession = $this->studentSessionService->getStudentSession($user);
+
+        if (!$studentSession) {
+            return $this->errorResponse('Student session not found');
+        }
+
+        $assignment = DailyAssignment::find($request->assigment_id);
+        if (!$assignment) {
+            return $this->errorResponse('Assignment not found', null, 404);
+        }
+
+        $data = [
+            'title' => $request->title,
+            'student_session_id' => $studentSession->id,
+            'description' => $request->description,
+            'subject_group_subject_id' => $request->subject,
+            'date' => date('Y-m-d'),
+        ];
+
+        if ($request->hasFile('file')) {
+            if ($assignment->attachment) {
+                Storage::disk('local')->delete('uploads/homework/daily_assignment/' . $assignment->attachment);
+            }
+            $file = $request->file('file');
+            $filename = time() . '_' . bin2hex(random_bytes(16)) . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('uploads/homework/daily_assignment', $filename, 'local');
+            $data['attachment'] = $filename;
+        }
+
+        $assignment->update($data);
+
+        return $this->successResponse(null, 'Record Updated Successfully');
+    }
+
+    public function deletedailyassignment($id): JsonResponse
+    {
+        $assignment = DailyAssignment::find($id);
+
+        if (!$assignment) {
+            return $this->errorResponse('Assignment not found', null, 404);
+        }
+
+        if ($assignment->attachment) {
+            Storage::disk('local')->delete('uploads/homework/daily_assignment/' . $assignment->attachment);
+        }
+
+        $assignment->delete();
+
+        return $this->successResponse(null, 'Record Deleted Successfully');
+    }
+
+    public function dailyassigmnetdownload($id)
+    {
+        $assignment = DailyAssignment::find($id);
+
+        if (!$assignment || !$assignment->attachment) {
+            return $this->errorResponse('File not found', null, 404);
+        }
+
+        $path = storage_path('app/uploads/homework/daily_assignment/' . $assignment->attachment);
+        if (!file_exists($path)) {
+            return $this->errorResponse('File not found', null, 404);
+        }
+
+        return response()->download($path);
     }
 }

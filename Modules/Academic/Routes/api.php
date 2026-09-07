@@ -28,6 +28,12 @@ Route::middleware('auth:sanctum')->prefix('api')->group(function () {
     Route::get('/homework/homework_detail/{id}/{status}', [HomeworkController::class, 'homework_detail']);
     Route::post('/homework/upload_docs', [HomeworkController::class, 'upload_docs']);
 
+    Route::get('/homework/dailyassignment', [HomeworkController::class, 'dailyassignment']);
+    Route::post('/homework/createdailyassignment', [HomeworkController::class, 'createdailyassignment']);
+    Route::post('/homework/updatedailyassignment', [HomeworkController::class, 'updatedailyassignment']);
+    Route::delete('/homework/deletedailyassignment/{id}', [HomeworkController::class, 'deletedailyassignment']);
+    Route::get('/homework/dailyassigmnetdownload/{id}', [HomeworkController::class, 'dailyassigmnetdownload']);
+
     Route::get('/mark/marklist', [MarkController::class, 'marklist']);
 
     Route::get('/onlineexam', [OnlineExamController::class, 'index']);

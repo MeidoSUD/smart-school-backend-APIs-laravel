@@ -83,8 +83,14 @@ class Controller extends BaseController
 
     private function getCurrentMethod(): string
     {
-        $trace = [];
-        return $trace[1]['function'] ?? 'unknown';
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5);
+        foreach ($trace as $frame) {
+            $function = $frame['function'] ?? '';
+            if (!in_array($function, ['getCurrentMethod', 'successResponse', 'errorResponse', 'logRequest'])) {
+                return $function;
+            }
+        }
+        return 'unknown';
     }
 
     protected function logRequest($data = null)

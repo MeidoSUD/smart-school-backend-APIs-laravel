@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Modules\Core\Services\ApiLogger;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -21,7 +22,6 @@ class Handler extends ExceptionHandler
     public function register(): void
     {
         $this->reportable(function (Throwable $e) {
-            //
         });
     }
 
@@ -40,23 +40,39 @@ class Handler extends ExceptionHandler
                 $status = $e->getStatusCode();
             }
 
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage() ?: 'Server Error',
-                'code' => $status,
-                'exception' => class_basename($e),
-                'errors' => $e instanceof ValidationException
-                    ? $e->errors()
-                    : null,
-                'file' => app()->isLocal()
-                    ? $e->getFile()
-                    : null,
-                'line' => app()->isLocal()
-                    ? $e->getLine()
-                    : null,
-            ], $status);
+            return $this->apiErrorResponse($request, $e, $status);
         }
 
         return parent::render($request, $e);
+    }
+
+    private function apiErrorResponse(Request $request, Throwable $e, int $status)
+    {
+        ApiLogger::logError(
+            'ExceptionHandler',
+            $request->method() . ' ' . $request->path(),
+            $e->getMessage() ?: 'Server Error',
+            [
+                'exception'   => get_class($e),
+                'status_code' => $status,
+                'file'        => $e->getFile(),
+                'line'        => $e->getLine(),
+                'trace'       => array_slice(
+                    array_map(fn($t) => ($t['file'] ?? '') . ':' . ($t['line'] ?? ''), $e->getTrace()),
+                    0,
+                    10
+                ),
+            ]
+        );
+
+        return response()->json([
+            'success'   => false,
+            'message'   => $e->getMessage() ?: 'Server Error',
+            'code'      => $status,
+            'exception' => class_basename($e),
+            'errors'    => $e instanceof ValidationException ? $e->errors() : null,
+            'file'      => app()->isLocal() ? $e->getFile() : null,
+            'line'      => app()->isLocal() ? $e->getLine() : null,
+        ], $status);
     }
 }
