@@ -5,10 +5,12 @@ namespace Modules\Academic\Http\Controllers\Api;
 use Modules\Academic\Entities\ApplyLeave;
 use Modules\Academic\Entities\StudentSession;
 use Modules\Academic\Entities\Student;
+use Modules\Academic\Http\Requests\ApplyLeaveRequest;
 use Modules\Core\Services\StudentSessionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ApplyLeaveController extends \Modules\Core\Http\Controllers\Api\Controller
 {
@@ -28,11 +30,19 @@ class ApplyLeaveController extends \Modules\Core\Http\Controllers\Api\Controller
         }
 
         $studentId = $this->studentSessionService->getStudentId($user);
-        $student = Student::find($studentId);
 
         $results = ApplyLeave::where('student_session_id', $studentSession->id)
-            ->orderBy('apply_date', 'desc')
-            ->get();
+            ->with(['studentSession.class', 'studentSession.section', 'staff'])
+            ->orderBy('id', 'desc')
+            ->get()
+            ->map(function ($item) {
+                $array = $item->toArray();
+                $array['class'] = $item->studentSession->class->class ?? '';
+                $array['section'] = $item->studentSession->section->section ?? '';
+                $array['staff_name'] = $item->staff->name ?? '';
+                $array['surname'] = $item->staff->surname ?? '';
+                return $array;
+            });
 
         $studentClasses = StudentSession::where('student_id', $studentId)->with(['class', 'section'])->get();
 
@@ -53,66 +63,93 @@ class ApplyLeaveController extends \Modules\Core\Http\Controllers\Api\Controller
             return $this->errorResponse('Student session not found');
         }
 
-        $data = ApplyLeave::where('id', $id)
+        $leave = ApplyLeave::where('id', $id)
             ->where('student_session_id', $studentSession->id)
             ->first();
 
-        if (!$data) {
+        if (!$leave) {
             return $this->errorResponse('Leave not found', null, 404);
         }
 
-        $data->from_date = Carbon::parse($data->from_date)->format('d-m-Y');
-        $data->to_date = Carbon::parse($data->to_date)->format('d-m-Y');
-        $data->apply_date = Carbon::parse($data->apply_date)->format('d-m-Y');
+        $data = $leave->toArray();
+        $data['from_date'] = $leave->from_date ? Carbon::parse($leave->from_date)->format('d-m-Y') : '';
+        $data['to_date'] = $leave->to_date ? Carbon::parse($leave->to_date)->format('d-m-Y') : '';
+        $data['apply_date'] = $leave->apply_date ? Carbon::parse($leave->apply_date)->format('d-m-Y') : '';
 
         return $this->successResponse($data);
     }
 
-    public function add(Request $request): JsonResponse
+    public function add(ApplyLeaveRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'apply_date' => 'required',
-            'from_date' => 'required',
-            'to_date' => 'required',
-            'message' => 'required|string',
-        ]);
+        $validated = $request->validated();
 
-        $user = $request->user();
-        $studentSession = $this->studentSessionService->getStudentSession($user);
+        $studentSession = $this->studentSessionService->getStudentSession($request->user());
 
         if (!$studentSession) {
             return $this->errorResponse('Student session not found');
         }
 
+        $leaveId = $this->storeLeave($validated, $studentSession->id);
+
+        $this->uploadLeaveDocument($request, $leaveId);
+
+        return response()->json([
+            'status' => 'success',
+            'error' => '',
+            'message' => 'Leave application submitted successfully',
+            'leave_id' => $leaveId,
+        ]);
+    }
+
+    private function storeLeave(array $input, int $studentSessionId): mixed
+    {
         $data = [
-            'apply_date' => Carbon::parse($request->apply_date)->format('Y-m-d'),
-            'from_date' => Carbon::parse($request->from_date)->format('Y-m-d'),
-            'to_date' => Carbon::parse($request->to_date)->format('Y-m-d'),
-            'student_session_id' => $studentSession->id,
-            'reason' => $request->message,
-            'status' => 0,
-            'request_type' => 0,
+            'apply_date' => Carbon::parse($input['apply_date'])->format('Y-m-d'),
+            'from_date' => Carbon::parse($input['from_date'])->format('Y-m-d'),
+            'to_date' => Carbon::parse($input['to_date'])->format('Y-m-d'),
+            'student_session_id' => $studentSessionId,
+            'reason' => $input['reason'],
         ];
 
-        $leaveId = $request->leave_id;
+        if (!empty($input['leave_id'])) {
+            ApplyLeave::where('id', $input['leave_id'])->update($data);
 
-        if ($leaveId) {
-            $data['id'] = $leaveId;
-            ApplyLeave::where('id', $leaveId)->update($data);
-        } else {
-            $leave = ApplyLeave::create($data);
-            $leaveId = $leave->id;
+            return $input['leave_id'];
         }
 
-        $document = null;
-        if ($request->hasFile('files')) {
-            $file = $request->file('files')[0];
-            $document = time() . '_' . bin2hex(random_bytes(16)) . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('uploads/student_leavedocuments', $document, 'local');
-            ApplyLeave::where('id', $leaveId)->update(['docs' => $document]);
+        $data['status'] = 0;
+        $data['request_type'] = 0;
+
+        return ApplyLeave::create($data)->id;
+    }
+
+    private function uploadLeaveDocument(Request $request, mixed $leaveId): void
+    {
+        $file = $request->file('docs')
+            ?? $request->file('files')
+            ?? $request->file('file')
+            ?? $request->file('document');
+
+        if (!$file) {
+            return;
+        }
+        $fileToUpload = is_array($file) ? $file[0] : $file;
+
+        if (!$fileToUpload || !$fileToUpload->isValid()) {
+            return;
         }
 
-        return $this->successResponse(['leave_id' => $leaveId], 'Leave application submitted successfully');
+        $originalName = $fileToUpload->getClientOriginalName();
+        $document = time() . '-' . uniqid(rand(), true) . '!' . $originalName;
+        $destinationPath = public_path('uploads/student_leavedocuments');
+
+        if (!file_exists($destinationPath)) {
+            mkdir($destinationPath, 0755, true);
+        }
+
+        $fileToUpload->move($destinationPath, $document);
+
+        ApplyLeave::where('id', $leaveId)->update(['docs' => $document]);
     }
 
     public function remove_leave($id): JsonResponse
@@ -122,12 +159,31 @@ class ApplyLeaveController extends \Modules\Core\Http\Controllers\Api\Controller
         if ($row && $row->docs) {
             $filePath = public_path('uploads/student_leavedocuments/' . $row->docs);
             if (file_exists($filePath)) {
-                unlink($filePath);
+                @unlink($filePath);
             }
         }
 
-        ApplyLeave::destroy($id);
+        if ($row) {
+            $row->delete();
+        }
 
         return $this->successResponse(null, 'Leave removed successfully');
+    }
+
+    public function download($id): JsonResponse|BinaryFileResponse
+    {
+        $row = ApplyLeave::find($id);
+
+        if (!$row || !$row->docs) {
+            return $this->errorResponse('Document not found', null, 404);
+        }
+
+        $filePath = public_path('uploads/student_leavedocuments/' . $row->docs);
+
+        if (!file_exists($filePath)) {
+            return $this->errorResponse('File does not exist on server', null, 404);
+        }
+
+        return response()->download($filePath, $row->docs);
     }
 }

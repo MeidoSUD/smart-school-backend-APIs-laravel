@@ -23,4 +23,14 @@ class ApplyLeave extends Model
         'approve_date',
         'request_type',
     ];
+
+    public function studentSession()
+    {
+        return $this->belongsTo(StudentSession::class, 'student_session_id');
+    }
+
+    public function staff()
+    {
+        return $this->belongsTo(\Modules\Staff\Entities\Staff::class, 'approve_by');
+    }
 }

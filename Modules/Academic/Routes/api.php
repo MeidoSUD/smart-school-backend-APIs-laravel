@@ -56,8 +56,11 @@ Route::middleware('auth:sanctum')->prefix('api')->group(function () {
     Route::delete('/timetable/{id}', [TimetableController::class, 'destroy']);
 
     Route::get('/apply_leave', [ApplyLeaveController::class, 'index']);
-    Route::get('/apply_leave/{id}', [ApplyLeaveController::class, 'get_details']);
+    Route::match(['get', 'post'], '/apply_leave/get_details/{id}', [ApplyLeaveController::class, 'get_details']);
+    Route::get('/apply_leave/download/{id}', [ApplyLeaveController::class, 'download']);
     Route::post('/apply_leave/add', [ApplyLeaveController::class, 'add']);
+    Route::match(['get', 'post', 'delete'], '/apply_leave/remove_leave/{id}', [ApplyLeaveController::class, 'remove_leave']);
+    Route::get('/apply_leave/{id}', [ApplyLeaveController::class, 'get_details']);
     Route::delete('/apply_leave/{id}', [ApplyLeaveController::class, 'remove_leave']);
 
     Route::get('/calendar', [CalendarController::class, 'index']);
