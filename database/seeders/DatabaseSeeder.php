@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             FeeSeeder::class,
             PaymentSeeder::class,
             TimetableSeeder::class,
+            SyllabusPageSeeder::class,
             BookSeeder::class,
             HostelRoomTypeSeeder::class,
             HostelSeeder::class,
