@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             StudentAttendenceSeeder::class,
             CalendarPageSeeder::class,
             VideoTutorialPageSeeder::class,
+            RoutePageSeeder::class,
         ]);
     }
 }
