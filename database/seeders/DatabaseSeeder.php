@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
             StudentDocumentSeeder::class,
             StudentExamSeeder::class,
             StudentAttendenceSeeder::class,
+            CalendarPageSeeder::class,
         ]);
     }
 }
