@@ -38,6 +38,7 @@ Route::middleware('auth:sanctum')->prefix('api')->group(function () {
 
     Route::get('/onlineexam', [OnlineExamController::class, 'index']);
     Route::get('/onlineexam/{id}', [OnlineExamController::class, 'exam_detail']);
+    Route::post('/onlineexam/startexam', [OnlineExamController::class, 'startexam']);
     Route::post('/onlineexam/submit', [OnlineExamController::class, 'submit']);
 
     Route::get('/subject', [SubjectController::class, 'index']);
