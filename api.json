@@ -214,17 +214,44 @@
                           ]
                         },
                         "blood_group_list": {
-                          "anyOf": [
+                          "type": "array",
+                          "prefixItems": [
                             {
-                              "type": "object"
+                              "type": "string",
+                              "const": "O+"
                             },
                             {
-                              "type": "array",
-                              "items": {
-                                "type": "object"
-                              }
+                              "type": "string",
+                              "const": "A+"
+                            },
+                            {
+                              "type": "string",
+                              "const": "B+"
+                            },
+                            {
+                              "type": "string",
+                              "const": "AB+"
+                            },
+                            {
+                              "type": "string",
+                              "const": "O-"
+                            },
+                            {
+                              "type": "string",
+                              "const": "A-"
+                            },
+                            {
+                              "type": "string",
+                              "const": "B-"
+                            },
+                            {
+                              "type": "string",
+                              "const": "AB-"
                             }
-                          ]
+                          ],
+                          "minItems": 8,
+                          "maxItems": 8,
+                          "additionalItems": false
                         },
                         "house_list": {
                           "anyOf": [
@@ -661,9 +688,9 @@
         }
       }
     },
-    "/apply_leave": {
+    "/user/apply_leave": {
       "get": {
-        "operationId": "applyLeave.index",
+        "operationId": "modules.academic.applyLeave.index_0",
         "tags": [
           "ApplyLeave"
         ],
@@ -683,17 +710,7 @@
                       "type": "object",
                       "properties": {
                         "results": {
-                          "anyOf": [
-                            {
-                              "type": "object"
-                            },
-                            {
-                              "type": "array",
-                              "items": {
-                                "type": "object"
-                              }
-                            }
-                          ]
+                          "type": "string"
                         },
                         "studentclasses": {
                           "anyOf": [
@@ -769,9 +786,9 @@
         }
       }
     },
-    "/apply_leave/{id}": {
+    "/user/apply_leave/get_details/{id}": {
       "get": {
-        "operationId": "applyLeave.getDetails",
+        "operationId": "modules.academic.applyLeave.getDetails_0",
         "tags": [
           "ApplyLeave"
         ],
@@ -798,14 +815,374 @@
                       "const": "success"
                     },
                     "data": {
-                      "anyOf": [
-                        {
-                          "type": "object"
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Leave not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Student session not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/user/apply_leave/download/{id}": {
+      "get": {
+        "operationId": "modules.academic.applyLeave.download_0",
+        "tags": [
+          "ApplyLeave"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "required": true,
+                "schema": {
+                  "type": "string"
+                },
+                "example": "attachment"
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
                         },
-                        {
+                        "message": {
+                          "type": "string",
+                          "const": "File does not exist on server"
+                        },
+                        "errors": {
                           "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
                         }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
                       ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Document not found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/user/apply_leave/add": {
+      "post": {
+        "operationId": "modules.academic.applyLeave.add_0",
+        "tags": [
+          "ApplyLeave"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplyLeaveRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Leave application submitted successfully"
+                    },
+                    "leave_id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "error",
+                    "message",
+                    "leave_id"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Student session not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      }
+    },
+    "/user/apply_leave/remove_leave/{id}": {
+      "get": {
+        "operationId": "modules.academic.applyLeave.removeLeave_0",
+        "tags": [
+          "ApplyLeave"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "null"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Leave removed successfully"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/user/apply_leave/{id}": {
+      "get": {
+        "operationId": "modules.academic.applyLeave.getDetails_0",
+        "tags": [
+          "ApplyLeave"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "string"
                     },
                     "message": {
                       "type": "null"
@@ -894,7 +1271,7 @@
         }
       },
       "delete": {
-        "operationId": "applyLeave.removeLeave",
+        "operationId": "modules.academic.applyLeave.removeLeave_1",
         "tags": [
           "ApplyLeave"
         ],
@@ -947,42 +1324,12 @@
         }
       }
     },
-    "/apply_leave/add": {
-      "post": {
-        "operationId": "applyLeave.add",
+    "/apply_leave": {
+      "get": {
+        "operationId": "modules.academic.applyLeave.index_0",
         "tags": [
           "ApplyLeave"
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "apply_date": {
-                    "type": "string"
-                  },
-                  "from_date": {
-                    "type": "string"
-                  },
-                  "to_date": {
-                    "type": "string"
-                  },
-                  "message": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "apply_date",
-                  "from_date",
-                  "to_date",
-                  "message"
-                ]
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "",
@@ -998,17 +1345,30 @@
                     "data": {
                       "type": "object",
                       "properties": {
-                        "leave_id": {
+                        "results": {
                           "type": "string"
+                        },
+                        "studentclasses": {
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            }
+                          ]
                         }
                       },
                       "required": [
-                        "leave_id"
+                        "results",
+                        "studentclasses"
                       ]
                     },
                     "message": {
-                      "type": "string",
-                      "const": "Leave application submitted successfully"
+                      "type": "null"
                     },
                     "timestamp": {
                       "type": "string"
@@ -1056,8 +1416,543 @@
               }
             }
           },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/apply_leave/get_details/{id}": {
+      "get": {
+        "operationId": "modules.academic.applyLeave.getDetails_0",
+        "tags": [
+          "ApplyLeave"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Leave not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Student session not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/apply_leave/download/{id}": {
+      "get": {
+        "operationId": "modules.academic.applyLeave.download_0",
+        "tags": [
+          "ApplyLeave"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "required": true,
+                "schema": {
+                  "type": "string"
+                },
+                "example": "attachment"
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "File does not exist on server"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Document not found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/apply_leave/add": {
+      "post": {
+        "operationId": "modules.academic.applyLeave.add_0",
+        "tags": [
+          "ApplyLeave"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplyLeaveRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Leave application submitted successfully"
+                    },
+                    "leave_id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "error",
+                    "message",
+                    "leave_id"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Student session not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
           "422": {
             "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      }
+    },
+    "/apply_leave/remove_leave/{id}": {
+      "get": {
+        "operationId": "modules.academic.applyLeave.removeLeave_0",
+        "tags": [
+          "ApplyLeave"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "null"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Leave removed successfully"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/apply_leave/{id}": {
+      "get": {
+        "operationId": "modules.academic.applyLeave.getDetails_0",
+        "tags": [
+          "ApplyLeave"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Leave not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Student session not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "modules.academic.applyLeave.removeLeave_1",
+        "tags": [
+          "ApplyLeave"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "null"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Leave removed successfully"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
           },
           "401": {
             "$ref": "#/components/responses/AuthenticationException"
@@ -1423,11 +2318,18 @@
           "Auth"
         ],
         "requestBody": {
-          "required": true,
           "content": {
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/LoginRequest"
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
               }
             }
           }
@@ -1543,7 +2445,72 @@
             }
           },
           "422": {
-            "$ref": "#/components/responses/ValidationException"
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Validation failed"
+                    },
+                    "errors": {
+                      "type": "object",
+                      "properties": {
+                        "username": {
+                          "type": "array",
+                          "prefixItems": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "Username is required",
+                                ""
+                              ]
+                            }
+                          ],
+                          "minItems": 1,
+                          "maxItems": 1,
+                          "additionalItems": false
+                        },
+                        "password": {
+                          "type": "array",
+                          "prefixItems": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "Password is required",
+                                ""
+                              ]
+                            }
+                          ],
+                          "minItems": 1,
+                          "maxItems": 1,
+                          "additionalItems": false
+                        }
+                      },
+                      "required": [
+                        "username",
+                        "password"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
           }
         }
       }
@@ -2204,7 +3171,8 @@
                     "maxLength": 255
                   },
                   "task_date": {
-                    "type": "string"
+                    "type": "string",
+                    "format": "date-time"
                   }
                 },
                 "required": [
@@ -2802,10 +3770,14 @@
                         "title": {
                           "type": "string",
                           "const": "Downloads"
+                        },
+                        "contents": {
+                          "type": "string"
                         }
                       },
                       "required": [
-                        "title"
+                        "title",
+                        "contents"
                       ]
                     },
                     "message": {
@@ -2819,6 +3791,38 @@
                     "status",
                     "data",
                     "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Student session not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
                     "timestamp"
                   ]
                 }
@@ -3419,29 +4423,30 @@
                           "const": "Upload Content"
                         },
                         "content": {
+                          "type": "string"
+                        },
+                        "superadmin_restriction": {
                           "anyOf": [
                             {
-                              "type": "object"
+                              "type": "string"
                             },
                             {
-                              "type": "array",
-                              "items": {
-                                "type": "object"
-                              }
-                            },
-                            {
-                              "type": "null"
+                              "type": "string",
+                              "enum": [
+                                "enabled"
+                              ]
                             }
                           ]
                         },
-                        "superadmin_restriction": {
+                        "is_valid": {
                           "type": "boolean"
                         }
                       },
                       "required": [
                         "title",
                         "content",
-                        "superadmin_restriction"
+                        "superadmin_restriction",
+                        "is_valid"
                       ]
                     },
                     "message": {
@@ -3814,17 +4819,7 @@
                       "type": "object",
                       "properties": {
                         "examSchedule": {
-                          "anyOf": [
-                            {
-                              "type": "object"
-                            },
-                            {
-                              "type": "array",
-                              "items": {
-                                "type": "object"
-                              }
-                            }
-                          ]
+                          "type": "string"
                         }
                       },
                       "required": [
@@ -4241,6 +5236,464 @@
           },
           "422": {
             "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      }
+    },
+    "/homework/dailyassignment": {
+      "get": {
+        "operationId": "homework.dailyassignment",
+        "tags": [
+          "Homework"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "dailyassignmentlist": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "dailyassignmentlist"
+                      ]
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Student session not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/homework/createdailyassignment": {
+      "post": {
+        "operationId": "homework.createdailyassignment",
+        "tags": [
+          "Homework"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/DailyAssignmentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "null"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Record Saved Successfully"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Student session not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      }
+    },
+    "/homework/updatedailyassignment": {
+      "post": {
+        "operationId": "homework.updatedailyassignment",
+        "tags": [
+          "Homework"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/DailyAssignmentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "null"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Record Updated Successfully"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Assignment not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Student session not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      }
+    },
+    "/homework/deletedailyassignment/{id}": {
+      "delete": {
+        "operationId": "homework.deletedailyassignment",
+        "tags": [
+          "Homework"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "null"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Record Deleted Successfully"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Assignment not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/homework/dailyassigmnetdownload/{id}": {
+      "get": {
+        "operationId": "homework.dailyassigmnetdownload",
+        "tags": [
+          "Homework"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "required": true,
+                "schema": {
+                  "type": "string"
+                },
+                "example": "attachment"
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "File not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -4956,17 +6409,7 @@
                           ]
                         },
                         "examList": {
-                          "anyOf": [
-                            {
-                              "type": "object"
-                            },
-                            {
-                              "type": "array",
-                              "items": {
-                                "type": "object"
-                              }
-                            }
-                          ]
+                          "type": "object"
                         }
                       },
                       "required": [
@@ -4991,7 +6434,7 @@
               }
             }
           },
-          "400": {
+          "404": {
             "description": "",
             "content": {
               "application/json": {
@@ -5041,7 +6484,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           }
         ],
@@ -5061,33 +6504,64 @@
                       "type": "object",
                       "properties": {
                         "result": {
-                          "anyOf": [
-                            {
-                              "type": "object"
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
                             },
-                            {
-                              "type": "array",
-                              "items": {
-                                "type": "object"
-                              }
+                            "title": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
                             },
-                            {
-                              "type": "null"
+                            "is_quiz": {
+                              "type": "integer"
+                            },
+                            "is_attempted": {
+                              "type": "integer"
+                            },
+                            "publish_result": {
+                              "type": "integer",
+                              "enum": [
+                                1,
+                                0
+                              ]
+                            },
+                            "rank": {
+                              "type": "integer"
+                            },
+                            "student": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "questions": {
+                              "type": "string"
+                            },
+                            "": {
+                              "type": "string"
                             }
+                          },
+                          "required": [
+                            "id",
+                            "title",
+                            "is_quiz",
+                            "is_attempted",
+                            "publish_result",
+                            "rank",
+                            "student",
+                            "questions",
+                            null
                           ]
                         },
                         "questions": {
-                          "anyOf": [
-                            {
-                              "type": "object"
-                            },
-                            {
-                              "type": "array",
-                              "items": {
-                                "type": "object"
-                              }
-                            }
-                          ]
+                          "type": "string",
+                          "description": "Keep legacy `questions` key but without answer-key leakage."
                         }
                       },
                       "required": [
@@ -5125,7 +6599,7 @@
                     },
                     "message": {
                       "type": "string",
-                      "const": "Exam not found"
+                      "const": "Student session not found"
                     },
                     "errors": {
                       "type": "null"
@@ -5150,6 +6624,111 @@
         }
       }
     },
+    "/onlineexam/startexam": {
+      "post": {
+        "operationId": "onlineExam.startexam",
+        "tags": [
+          "OnlineExam"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/StartOnlineExamRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "exam_id": {
+                          "type": "integer"
+                        },
+                        "started": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "exam_id",
+                        "started"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Exam started successfully"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Student session not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          },
+          "403": {
+            "$ref": "#/components/responses/AuthorizationException"
+          }
+        }
+      }
+    },
     "/onlineexam/submit": {
       "post": {
         "operationId": "onlineExam.submit",
@@ -5161,19 +6740,7 @@
           "content": {
             "multipart/form-data": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "onlineexam_id": {
-                    "type": "string"
-                  },
-                  "answers": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "onlineexam_id",
-                  "answers"
-                ]
+                "$ref": "#/components/schemas/SubmitOnlineExamRequest"
               }
             }
           }
@@ -5194,7 +6761,26 @@
                       "type": "object",
                       "properties": {
                         "result": {
-                          "type": "object"
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "exam_id": {
+                                  "type": "integer"
+                                },
+                                "submitted": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "exam_id",
+                                "submitted"
+                              ]
+                            }
+                          ]
                         }
                       },
                       "required": [
@@ -5219,11 +6805,46 @@
               }
             }
           },
-          "422": {
-            "$ref": "#/components/responses/ValidationException"
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Student session not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
           },
           "401": {
             "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          },
+          "403": {
+            "$ref": "#/components/responses/AuthorizationException"
           }
         }
       }
@@ -5670,6 +7291,154 @@
         }
       }
     },
+    "/syllabus/get_weekdates": {
+      "post": {
+        "operationId": "syllabus.getWeekdates",
+        "tags": [
+          "Syllabus"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "this_week_start": {
+                          "type": "string"
+                        },
+                        "this_week_end": {
+                          "type": "string"
+                        },
+                        "prev_week_start": {
+                          "type": "string"
+                        },
+                        "next_week_start": {
+                          "type": "string"
+                        },
+                        "timetable": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "syllabus_by_date": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "this_week_start",
+                        "this_week_end",
+                        "prev_week_start",
+                        "next_week_start",
+                        "timetable",
+                        "syllabus_by_date"
+                      ]
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Date is required"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Student session not found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
     "/syllabus/status": {
       "get": {
         "operationId": "syllabus.status",
@@ -5988,23 +7757,21 @@
                           "additionalItems": false
                         },
                         "user_ratedstafflist": {
-                          "anyOf": [
-                            {
-                              "type": "object"
-                            },
-                            {
-                              "type": "array",
-                              "items": {
-                                "type": "object"
-                              }
-                            }
-                          ]
+                          "type": "object",
+                          "additionalProperties": {}
                         },
                         "reviews": {
                           "type": "string"
                         },
                         "comment": {
                           "type": "string"
+                        },
+                        "avg_rate": {
+                          "type": "string"
+                        },
+                        "rate_canview": {
+                          "type": "integer",
+                          "const": 1
                         }
                       },
                       "required": [
@@ -6018,7 +7785,9 @@
                         "genderList",
                         "user_ratedstafflist",
                         "reviews",
-                        "comment"
+                        "comment",
+                        "avg_rate",
+                        "rate_canview"
                       ]
                     },
                     "message": {
@@ -7119,7 +8888,7 @@
                           "type": "number"
                         },
                         "bookList": {
-                          "type": "boolean"
+                          "type": "string"
                         },
                         "homeworklist": {
                           "type": "string"
@@ -7128,7 +8897,52 @@
                           "type": "string"
                         },
                         "subjects_data": {
-                          "type": "string"
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "lebel": {
+                                "type": "string"
+                              },
+                              "complete": {
+                                "type": "number"
+                              },
+                              "incomplete": {
+                                "type": "number"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "total": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "integer",
+                                    "enum": [
+                                      0
+                                    ]
+                                  }
+                                ]
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "graph_id": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "lebel",
+                              "complete",
+                              "incomplete",
+                              "id",
+                              "total",
+                              "name",
+                              "graph_id"
+                            ]
+                          }
                         },
                         "timetable": {
                           "type": "string"
@@ -7181,6 +8995,32 @@
                                 "string",
                                 "null"
                               ]
+                            },
+                            "image": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "string",
+                                  "enum": [
+                                    ""
+                                  ]
+                                }
+                              ]
+                            },
+                            "gender": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "string",
+                                  "enum": [
+                                    ""
+                                  ]
+                                }
+                              ]
                             }
                           },
                           "required": [
@@ -7189,14 +9029,25 @@
                             "role",
                             "student_id",
                             "class",
-                            "section"
+                            "section",
+                            "image",
+                            "gender"
                           ]
                         },
                         "low_attendance_limit": {
                           "type": "integer"
                         },
+                        "teachers": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
                         "teacherlist": {
-                          "type": "string"
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
                         }
                       },
                       "required": [
@@ -7210,6 +9061,7 @@
                         "studentsession_username",
                         "student_data",
                         "low_attendance_limit",
+                        "teachers",
                         "teacherlist"
                       ]
                     },
@@ -7322,6 +9174,22 @@
                         "sch_setting": {
                           "$ref": "#/components/schemas/Setting"
                         },
+                        "superadmin_restriction": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "integer",
+                              "enum": [
+                                0
+                              ]
+                            }
+                          ]
+                        },
+                        "marks_division": {
+                          "type": "string"
+                        },
                         "student": {
                           "type": "object",
                           "properties": {
@@ -7427,6 +9295,9 @@
                             },
                             "section_id": {
                               "type": "string"
+                            },
+                            "total_points": {
+                              "type": "integer"
                             }
                           },
                           "required": [
@@ -7458,17 +9329,221 @@
                             "section",
                             "student_session_id",
                             "class_id",
-                            "section_id"
+                            "section_id",
+                            "total_points"
                           ]
                         },
                         "role": {
+                          "type": "string"
+                        },
+                        "student_due_fee": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "student_discount_fee": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "code": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "status": {
+                                "type": "string"
+                              },
+                              "payment_id": {
+                                "type": "string"
+                              },
+                              "student_fees_discount_description": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "type": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "amount": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "percentage": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "code",
+                              "status",
+                              "payment_id",
+                              "student_fees_discount_description",
+                              "type",
+                              "amount",
+                              "percentage"
+                            ]
+                          }
+                        },
+                        "transport_fees": {
+                          "anyOf": [
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              },
+                              "minItems": 0,
+                              "maxItems": 0,
+                              "additionalItems": false
+                            }
+                          ]
+                        },
+                        "timeline_list": {
+                          "type": "string"
+                        },
+                        "student_doc": {
+                          "type": "string"
+                        },
+                        "student_doc_id": {
+                          "type": "string"
+                        },
+                        "category_list": {
+                          "type": "string"
+                        },
+                        "gradeList": {
+                          "type": "string"
+                        },
+                        "examSchedule": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "minItems": 0,
+                          "maxItems": 0,
+                          "additionalItems": false
+                        },
+                        "exam_result": {
+                          "type": "string"
+                        },
+                        "exam_grade": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "exam_key": {
+                                "type": "string"
+                              },
+                              "exm_type_value": {
+                                "type": "string"
+                              },
+                              "exam_grade_values": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "exam_key",
+                              "exm_type_value",
+                              "exam_grade_values"
+                            ]
+                          }
+                        },
+                        "countAttendance": {
+                          "type": "string"
+                        },
+                        "resultlist": {
+                          "type": "string"
+                        },
+                        "monthlist": {
+                          "type": "string"
+                        },
+                        "attendencetypeslist": {
+                          "type": "string"
+                        },
+                        "session_year_start": {
+                          "type": "string"
+                        },
+                        "session_year_end": {
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        },
+                        "start_year": {
+                          "anyOf": [
+                            {},
+                            {
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "Next_year": {
+                          "anyOf": [
+                            {},
+                            {
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        "student_timeline": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "integer",
+                              "enum": [
+                                0
+                              ]
+                            }
+                          ]
+                        },
+                        "unread_notifications": {
                           "type": "string"
                         }
                       },
                       "required": [
                         "sch_setting",
+                        "superadmin_restriction",
+                        "marks_division",
                         "student",
-                        "role"
+                        "role",
+                        "student_due_fee",
+                        "student_discount_fee",
+                        "transport_fees",
+                        "timeline_list",
+                        "student_doc",
+                        "student_doc_id",
+                        "category_list",
+                        "gradeList",
+                        "examSchedule",
+                        "exam_result",
+                        "exam_grade",
+                        "countAttendance",
+                        "resultlist",
+                        "monthlist",
+                        "attendencetypeslist",
+                        "session_year_start",
+                        "session_year_end",
+                        "start_year",
+                        "Next_year",
+                        "student_timeline",
+                        "unread_notifications"
                       ]
                     },
                     "message": {
@@ -7602,8 +9677,86 @@
                     "data": {
                       "type": "object",
                       "properties": {
+                        "categorylist": {
+                          "type": "string"
+                        },
                         "sch_setting": {
                           "$ref": "#/components/schemas/Setting"
+                        },
+                        "adm_auto_insert": {
+                          "anyOf": [
+                            {
+                              "type": "integer"
+                            },
+                            {
+                              "type": "boolean"
+                            }
+                          ]
+                        },
+                        "paymentoption": {
+                          "type": "boolean"
+                        },
+                        "payment_method": {
+                          "type": "boolean"
+                        },
+                        "student_discount_fee": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "code": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "status": {
+                                "type": "string"
+                              },
+                              "payment_id": {
+                                "type": "string"
+                              },
+                              "student_fees_discount_description": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "type": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "amount": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "percentage": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "code",
+                              "status",
+                              "payment_id",
+                              "student_fees_discount_description",
+                              "type",
+                              "amount",
+                              "percentage"
+                            ]
+                          }
+                        },
+                        "student_due_fee": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
                         },
                         "student": {
                           "type": "object",
@@ -7611,10 +9764,43 @@
                             "id": {
                               "type": "string"
                             },
+                            "admission_no": {
+                              "type": "string"
+                            },
+                            "roll_no": {
+                              "type": "string"
+                            },
                             "firstname": {
                               "type": "string"
                             },
+                            "middlename": {
+                              "type": "string"
+                            },
                             "lastname": {
+                              "type": "string"
+                            },
+                            "image": {
+                              "type": "string"
+                            },
+                            "mobileno": {
+                              "type": "string"
+                            },
+                            "category_id": {
+                              "type": "string"
+                            },
+                            "rte": {
+                              "type": "string"
+                            },
+                            "father_name": {
+                              "type": "string"
+                            },
+                            "guardian_phone": {
+                              "type": "string"
+                            },
+                            "guardian_email": {
+                              "type": "string"
+                            },
+                            "parent_app_key": {
                               "type": "string"
                             },
                             "class": {
@@ -7635,21 +9821,58 @@
                           },
                           "required": [
                             "id",
+                            "admission_no",
+                            "roll_no",
                             "firstname",
+                            "middlename",
                             "lastname",
+                            "image",
+                            "mobileno",
+                            "category_id",
+                            "rte",
+                            "father_name",
+                            "guardian_phone",
+                            "guardian_email",
+                            "parent_app_key",
                             "class",
                             "section",
                             "student_session_id"
                           ]
                         },
-                        "payment_method": {
+                        "transport_fees": {
+                          "anyOf": [
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              },
+                              "minItems": 0,
+                              "maxItems": 0,
+                              "additionalItems": false
+                            }
+                          ]
+                        },
+                        "student_processing_fee": {
                           "type": "boolean"
                         }
                       },
                       "required": [
+                        "categorylist",
                         "sch_setting",
+                        "adm_auto_insert",
+                        "paymentoption",
+                        "payment_method",
+                        "student_discount_fee",
+                        "student_due_fee",
                         "student",
-                        "payment_method"
+                        "transport_fees",
+                        "student_processing_fee"
                       ]
                     },
                     "message": {
@@ -7758,6 +9981,9 @@
                     "data": {
                       "type": "object",
                       "properties": {
+                        "categorylist": {
+                          "type": "string"
+                        },
                         "sch_setting": {
                           "$ref": "#/components/schemas/Setting"
                         },
@@ -7771,16 +9997,114 @@
                             }
                           ]
                         },
+                        "paymentoption": {
+                          "type": "boolean"
+                        },
+                        "payment_method": {
+                          "type": "boolean"
+                        },
+                        "student_discount_fee": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "code": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "status": {
+                                "type": "string"
+                              },
+                              "payment_id": {
+                                "type": "string"
+                              },
+                              "student_fees_discount_description": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "type": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "amount": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "percentage": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "code",
+                              "status",
+                              "payment_id",
+                              "student_fees_discount_description",
+                              "type",
+                              "amount",
+                              "percentage"
+                            ]
+                          }
+                        },
+                        "student_due_fee": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
                         "student": {
                           "type": "object",
                           "properties": {
                             "id": {
                               "type": "string"
                             },
+                            "admission_no": {
+                              "type": "string"
+                            },
+                            "roll_no": {
+                              "type": "string"
+                            },
                             "firstname": {
                               "type": "string"
                             },
+                            "middlename": {
+                              "type": "string"
+                            },
                             "lastname": {
+                              "type": "string"
+                            },
+                            "image": {
+                              "type": "string"
+                            },
+                            "mobileno": {
+                              "type": "string"
+                            },
+                            "category_id": {
+                              "type": "string"
+                            },
+                            "rte": {
+                              "type": "string"
+                            },
+                            "father_name": {
+                              "type": "string"
+                            },
+                            "guardian_phone": {
+                              "type": "string"
+                            },
+                            "guardian_email": {
+                              "type": "string"
+                            },
+                            "parent_app_key": {
                               "type": "string"
                             },
                             "class": {
@@ -7797,46 +10121,62 @@
                             },
                             "student_session_id": {
                               "type": "string"
-                            },
-                            "class_id": {
-                              "type": "string"
-                            },
-                            "section_id": {
-                              "type": "string"
                             }
                           },
                           "required": [
                             "id",
+                            "admission_no",
+                            "roll_no",
                             "firstname",
+                            "middlename",
                             "lastname",
+                            "image",
+                            "mobileno",
+                            "category_id",
+                            "rte",
+                            "father_name",
+                            "guardian_phone",
+                            "guardian_email",
+                            "parent_app_key",
                             "class",
                             "section",
-                            "student_session_id",
-                            "class_id",
-                            "section_id"
+                            "student_session_id"
                           ]
                         },
-                        "payment_method": {
-                          "type": "boolean"
-                        },
-                        "student_due_fee": {
-                          "type": "string"
-                        },
                         "transport_fees": {
-                          "type": "string"
+                          "anyOf": [
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              },
+                              "minItems": 0,
+                              "maxItems": 0,
+                              "additionalItems": false
+                            }
+                          ]
                         },
-                        "student_discount_fee": {
-                          "type": "string"
+                        "student_processing_fee": {
+                          "type": "boolean"
                         }
                       },
                       "required": [
+                        "categorylist",
                         "sch_setting",
                         "adm_auto_insert",
-                        "student",
+                        "paymentoption",
                         "payment_method",
+                        "student_discount_fee",
                         "student_due_fee",
+                        "student",
                         "transport_fees",
-                        "student_discount_fee"
+                        "student_processing_fee"
                       ]
                     },
                     "message": {
@@ -8488,6 +10828,45 @@
         ],
         "title": "AdmissionSubmitRequest"
       },
+      "ApplyLeaveRequest": {
+        "type": "object",
+        "properties": {
+          "apply_date": {
+            "type": "string"
+          },
+          "from_date": {
+            "type": "string"
+          },
+          "to_date": {
+            "type": "string"
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 1000
+          },
+          "leave_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "docs": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "apply_date",
+          "from_date",
+          "to_date"
+        ],
+        "title": "ApplyLeaveRequest"
+      },
       "CalendarEvent": {
         "type": "object",
         "properties": {
@@ -8567,6 +10946,43 @@
           "new_pass_confirmation"
         ],
         "title": "ChangePasswordRequest"
+      },
+      "DailyAssignmentRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "subject": {
+            "type": "integer"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "file": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "binary",
+            "contentMediaType": "application/octet-stream"
+          },
+          "assigment_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "title",
+          "subject"
+        ],
+        "title": "DailyAssignmentRequest"
       },
       "HomeworkRequest": {
         "type": "object",
@@ -8683,24 +11099,6 @@
           "created_at"
         ],
         "title": "HostelRoom"
-      },
-      "LoginRequest": {
-        "type": "object",
-        "properties": {
-          "username": {
-            "type": "string",
-            "maxLength": 50
-          },
-          "password": {
-            "type": "string",
-            "maxLength": 50
-          }
-        },
-        "required": [
-          "username",
-          "password"
-        ],
-        "title": "LoginRequest"
       },
       "Setting": {
         "type": "object",
@@ -9394,6 +11792,60 @@
         ],
         "title": "Setting"
       },
+      "StartOnlineExamRequest": {
+        "type": "object",
+        "properties": {
+          "onlineexam_id": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "onlineexam_id"
+        ],
+        "title": "StartOnlineExamRequest"
+      },
+      "SubmitOnlineExamRequest": {
+        "type": "object",
+        "properties": {
+          "onlineexam_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "answers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "question_id": {
+                  "type": "string"
+                },
+                "answer": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "select_option": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "question_id"
+              ]
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "onlineexam_id",
+          "answers"
+        ],
+        "title": "SubmitOnlineExamRequest"
+      },
       "SyllabusMessageRequest": {
         "type": "object",
         "properties": {
@@ -9412,6 +11864,25 @@
       }
     },
     "responses": {
+      "AuthenticationException": {
+        "description": "Unauthenticated",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "Error overview."
+                }
+              },
+              "required": [
+                "message"
+              ]
+            }
+          }
+        }
+      },
       "ValidationException": {
         "description": "Validation error",
         "content": {
@@ -9442,8 +11913,8 @@
           }
         }
       },
-      "AuthenticationException": {
-        "description": "Unauthenticated",
+      "AuthorizationException": {
+        "description": "Authorization error",
         "content": {
           "application/json": {
             "schema": {

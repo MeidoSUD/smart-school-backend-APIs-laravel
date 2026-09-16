@@ -54,6 +54,7 @@ class Staff extends Model
         'other_document_name',
         'other_document_file',
         'user_id',
+        'password',
         'is_active',
         'account_title',
         'bank_name',
