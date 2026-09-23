@@ -35,6 +35,30 @@ final class OnlineExamService
             ->get();
     }
 
+    public function getClosedExamsForSession(StudentSession $session): Collection
+    {
+        if (Schema::hasTable('onlineexam')) {
+            return DB::table('onlineexam')
+                ->join('onlineexam_students', 'onlineexam_students.onlineexam_id', '=', 'onlineexam.id')
+                ->where('onlineexam_students.student_session_id', $session->id)
+                ->where('onlineexam.is_active', 1)
+                ->where('onlineexam.exam_to', '<', now())
+                ->select([
+                    'onlineexam.*',
+                    'onlineexam_students.id as onlineexam_student_id',
+                    'onlineexam_students.is_attempted',
+                    'onlineexam_students.rank',
+                ])
+                ->get();
+        }
+
+        return OnlineExam::query()
+            ->active()
+            ->forClassSection((int) $session->class_id, (int) $session->section_id)
+            ->where('exam_to', '<', now())
+            ->get();
+    }
+
     /**
      * @return array{exam: object, student: object|null, onlineExamStudent: object|null, questions: Collection, stats: array, publishResult: bool}
      */

@@ -17,6 +17,7 @@ use Modules\Academic\Http\Resources\OnlineExamQuestionResource;
 use Modules\Academic\Services\OnlineExamService;
 use Modules\Core\Entities\Setting;
 use Modules\Core\Http\Controllers\Api\Controller;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 final class OnlineExamController extends Controller
 {
@@ -39,6 +40,27 @@ final class OnlineExamController extends Controller
             'student' => Student::find($session->student_id),
             'examList' => $exams,
         ]);
+    }
+
+    public function closed(Request $request): JsonResponse
+    {
+        $session = $this->getStudentSession($request->user());
+
+        if (! $session instanceof StudentSession) {
+            return $this->errorResponse('Student session not found', null, 404);
+        }
+
+        $exams = $this->exams->getClosedExamsForSession($session);
+
+        return $this->successResponse([
+            'student' => Student::find($session->student_id),
+            'examList' => $exams,
+        ]);
+    }
+
+    public function downloadattachment(Request $request, $doc): JsonResponse|BinaryFileResponse
+    {
+        return $this->sendStoredFile($doc, 'uploads/onlinexam_images');
     }
 
     public function exam_detail(Request $request, int $id): JsonResponse

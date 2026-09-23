@@ -7,6 +7,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller as BaseController;
 use Modules\Core\Services\ApiLogger;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class Controller extends BaseController
 {
@@ -93,16 +94,43 @@ class Controller extends BaseController
         return 'unknown';
     }
 
-    protected function logRequest($data = null)
+protected function logRequest($data = null)
     {
         if ($this->controllerName) {
             $input = request()->except(['password', 'token']);
-            
+
             ApiLogger::logRequest(
                 $this->controllerName,
                 $this->getCurrentMethod(),
                 $input
             );
         }
+    }
+
+    /**
+     * Serve a stored upload as a file download. Checks the private storage
+     * disk first (student-uploaded files) then falls back to public/uploads
+     * (staff/school-uploaded files).
+     */
+    protected function sendStoredFile(?string $filename, string ...$directories): BinaryFileResponse|JsonResponse
+    {
+        if (! $filename) {
+            return $this->errorResponse('File not found', null, 404);
+        }
+
+        foreach ($directories as $dir) {
+            $candidates = [
+                storage_path('app/' . trim($dir, '/') . '/' . $filename),
+                public_path(trim($dir, '/') . '/' . $filename),
+            ];
+
+            foreach ($candidates as $path) {
+                if (file_exists($path) && is_file($path)) {
+                    return response()->download($path, $filename);
+                }
+            }
+        }
+
+        return $this->errorResponse('File not found', null, 404);
     }
 }

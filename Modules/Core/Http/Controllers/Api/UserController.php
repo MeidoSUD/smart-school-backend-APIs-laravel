@@ -11,6 +11,7 @@ use Modules\Academic\Entities\HomeworkEvaluation;
 use Modules\Academic\Entities\SubmitAssignment;
 use Modules\Academic\Entities\Syllabus;
 use Modules\Academic\Entities\ClassTimetable;
+use Modules\Academic\Entities\StudentDoc;
 use Modules\Core\Entities\Category;
 use Modules\Core\Services\SchoolSettingsService;
 use Modules\Core\Services\StudentSessionService;
@@ -25,6 +26,7 @@ use Modules\Staff\Entities\Staff;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class UserController extends \Modules\Core\Http\Controllers\Api\Controller
 {
@@ -800,6 +802,158 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
             'transport_fees' => $transport_fees,
             'student_discount_fee' => $student_discount_fee,
         ];
+    }
+
+    public function documents(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $studentId = $this->getStudentId($user);
+
+        if (! $studentId) {
+            return $this->errorResponse('Student not found', null, 404);
+        }
+
+        $documents = StudentDoc::where('student_id', $studentId)
+            ->orderByDesc('id')
+            ->get();
+
+        return $this->successResponse(['documents' => $documents]);
+    }
+
+    public function adddoc(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $studentId = $this->getStudentId($user);
+
+        if (! $studentId) {
+            return $this->errorResponse('Student not found', null, 404);
+        }
+
+        $validated = $request->validate([
+            'first_title' => 'required|string|max:255',
+            'first_doc' => 'required|file',
+        ]);
+
+        $file = $request->file('first_doc');
+        $filename = time() . '_' . bin2hex(random_bytes(12)) . '.' . $file->getClientOriginalExtension();
+        $file->storeAs('uploads/student_documents/' . $studentId, $filename, 'local');
+
+        $document = StudentDoc::create([
+            'student_id' => $studentId,
+            'title' => $validated['first_title'],
+            'doc' => $filename,
+        ]);
+
+        return $this->successResponse(['document' => $document], 'Document uploaded successfully');
+    }
+
+    public function downloaddoc(Request $request, $id): JsonResponse|BinaryFileResponse
+    {
+        $user = $request->user();
+        $studentId = $this->getStudentId($user);
+
+        $document = StudentDoc::where('id', $id)
+            ->where('student_id', $studentId)
+            ->first();
+
+        if (! $document) {
+            return $this->errorResponse('Document not found', null, 404);
+        }
+
+        return $this->sendStoredFile($document->doc, 'uploads/student_documents/' . $studentId);
+    }
+
+    public function changeusername(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'current_username' => 'required|string',
+            'new_username' => 'required|string|max:191',
+            'confirm_username' => 'required|string|same:new_username',
+        ]);
+
+        if ($user->username !== $validated['current_username']) {
+            return $this->errorResponse('Invalid current username');
+        }
+
+        $exists = DB::table('users')
+            ->where('username', $validated['new_username'])
+            ->where('id', '!=', $user->id)
+            ->exists();
+
+        if ($exists) {
+            return $this->errorResponse('Username already exists, please choose another');
+        }
+
+        DB::table('users')->where('id', $user->id)->update(['username' => $validated['new_username']]);
+
+        return $this->successResponse(null, 'Username changed successfully');
+    }
+
+    public function language(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $langId = (int) $request->input('lang_id');
+
+        if (! $langId) {
+            return $this->errorResponse('lang_id is required');
+        }
+
+        $language = DB::table('languages')->where('id', $langId)->first();
+
+        if (! $language) {
+            return $this->errorResponse('Invalid language');
+        }
+
+        DB::table('users')->where('id', $user->id)->update(['lang_id' => $langId]);
+
+        return $this->successResponse([
+            'lang_id' => $langId,
+            'language' => $language->language,
+            'is_rtl' => (int) $language->is_rtl,
+        ], 'Language changed successfully');
+    }
+
+    public function currency(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $currencyId = (int) $request->input('currency_id');
+
+        if (! $currencyId) {
+            return $this->errorResponse('currency_id is required');
+        }
+
+        $currency = DB::table('currencies')->where('id', $currencyId)->first();
+
+        if (! $currency) {
+            return $this->errorResponse('Invalid currency');
+        }
+
+        DB::table('users')->where('id', $user->id)->update(['currency_id' => $currencyId]);
+
+        return $this->successResponse([
+            'currency_id' => $currencyId,
+            'currency' => $currency->short_name ?? null,
+            'symbol' => $currency->symbol ?? null,
+        ], 'Currency changed successfully');
+    }
+
+    private function getStudentId($user): ?int
+    {
+        if ($user->role === 'student') {
+            return isset($user->user_id) ? (int) $user->user_id : null;
+        }
+
+        if ($user->role === 'parent') {
+            $student = Student::where('parent_id', $user->id)->first();
+
+            return $student ? (int) $student->id : null;
+        }
+
+        return null;
     }
 
 

@@ -23,6 +23,14 @@ Route::prefix('api')->group(function () {
             Route::get('/fees', [UserController::class, 'fees']);
             Route::get('/getfees', [UserController::class, 'getfees']);
 
+            Route::get('/documents', [UserController::class, 'documents']);
+            Route::post('/documents', [UserController::class, 'adddoc']);
+            Route::get('/documents/download/{id}', [UserController::class, 'downloaddoc']);
+
+            Route::post('/changeusername', [UserController::class, 'changeusername']);
+            Route::post('/language', [UserController::class, 'language']);
+            Route::post('/currency', [UserController::class, 'currency']);
+
             Route::get('/apply_leave', [ApplyLeaveController::class, 'index']);
             Route::match(['get', 'post'], '/apply_leave/get_details/{id}', [ApplyLeaveController::class, 'get_details']);
             Route::get('/apply_leave/download/{id}', [ApplyLeaveController::class, 'download']);

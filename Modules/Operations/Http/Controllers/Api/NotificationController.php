@@ -11,6 +11,7 @@ use Modules\Core\Entities\Setting;
 use Dedoc\Scramble\Attributes\BodyParameter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * Converted from CodeIgniter: codelgiterControllers/user/Notification.php
@@ -86,7 +87,7 @@ class NotificationController extends \Modules\Core\Http\Controllers\Api\Controll
 
 
 
-    public function download($id, Request $request): JsonResponse
+    public function download($id, Request $request): JsonResponse|BinaryFileResponse
     {
         $user = $request->user();
 
@@ -106,7 +107,7 @@ class NotificationController extends \Modules\Core\Http\Controllers\Api\Controll
             return $this->errorResponse('Notification not found', null, 404);
         }
 
-        return $this->successResponse(['attachment' => $notification->attachment]);
+        return $this->sendStoredFile($notification->attachment, 'uploads/notice_board_images');
     }
 
 

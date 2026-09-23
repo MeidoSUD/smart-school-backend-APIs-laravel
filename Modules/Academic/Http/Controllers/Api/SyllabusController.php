@@ -14,6 +14,7 @@ use Modules\Academic\Http\Requests\SyllabusMessageRequest;
 use Modules\Academic\Services\SyllabusService;
 use Modules\Core\Entities\Setting;
 use Modules\Core\Http\Controllers\Api\Controller;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SyllabusController extends Controller
 {
@@ -156,7 +157,7 @@ class SyllabusController extends Controller
         ]);
     }
 
-    public function download($id): JsonResponse
+    public function download(Request $request, $id): JsonResponse|BinaryFileResponse
     {
         $result = Syllabus::find($id);
 
@@ -164,7 +165,100 @@ class SyllabusController extends Controller
             return $this->errorResponse('Syllabus not found', null, 404);
         }
 
-        return $this->successResponse(['attachment' => $result->attachment]);
+        return $this->sendStoredFile($result->attachment, 'uploads/syllabus_attachment');
+    }
+
+    public function lactureVideoDownload(Request $request, $id): JsonResponse|BinaryFileResponse
+    {
+        $result = Syllabus::find($id);
+
+        if (! $result) {
+            return $this->errorResponse('Syllabus not found', null, 404);
+        }
+
+        return $this->sendStoredFile($result->lacture_video, 'uploads/syllabus_attachment/lacture_video');
+    }
+
+    public function subjectSyllabus(Request $request, $id = null): JsonResponse
+    {
+        $subjectSyllabusId = $id ?? $request->input('subject_syllabus_id');
+
+        if (! $subjectSyllabusId) {
+            return $this->errorResponse('subject_syllabus_id is required');
+        }
+
+        $result = $this->getSubjectSyllabusDetail($subjectSyllabusId);
+
+        if (! $result) {
+            return $this->errorResponse('Syllabus not found', null, 404);
+        }
+
+        $messageList = SyllabusMessage::where('subject_syllabus_id', $subjectSyllabusId)->get();
+
+        return $this->successResponse([
+            'subject_syllabus_id' => $subjectSyllabusId,
+            'result' => $result,
+            'messagelist' => $messageList,
+        ]);
+    }
+
+    public function checkSubjectSyllabus(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'subject_group_subject_id' => 'required',
+            'date' => 'required',
+            'time_from' => 'required',
+            'time_to' => 'required',
+            'subject_group_class_section_id' => 'required',
+        ]);
+
+        $record = DB::table('subject_syllabus')
+            ->join('topic', 'topic.id', '=', 'subject_syllabus.topic_id')
+            ->join('lesson', 'lesson.id', '=', 'topic.lesson_id')
+            ->where('lesson.subject_group_subject_id', $validated['subject_group_subject_id'])
+            ->where('lesson.subject_group_class_sections_id', $validated['subject_group_class_section_id'])
+            ->where('subject_syllabus.date', $validated['date'])
+            ->where('subject_syllabus.time_from', $validated['time_from'])
+            ->where('subject_syllabus.time_to', $validated['time_to'])
+            ->first();
+
+        if (! $record) {
+            return $this->errorResponse('Syllabus not found', null, 404);
+        }
+
+        $result = $this->getSubjectSyllabusDetail($record->id);
+
+        return $this->successResponse([
+            'subject_syllabus_id' => $record->id,
+            'result' => $result,
+        ]);
+    }
+
+    private function getSubjectSyllabusDetail($subjectSyllabusId): ?object
+    {
+        return DB::table('subject_syllabus')
+            ->join('topic', 'topic.id', '=', 'subject_syllabus.topic_id')
+            ->join('lesson', 'lesson.id', '=', 'topic.lesson_id')
+            ->join('subject_group_subjects', 'subject_group_subjects.id', '=', 'lesson.subject_group_subject_id')
+            ->join('subject_groups', 'subject_groups.id', '=', 'subject_group_subjects.subject_group_id')
+            ->join('subjects', 'subjects.id', '=', 'subject_group_subjects.subject_id')
+            ->join('subject_group_class_sections', 'subject_group_class_sections.id', '=', 'lesson.subject_group_class_sections_id')
+            ->join('class_sections', 'class_sections.id', '=', 'subject_group_class_sections.class_section_id')
+            ->join('sections', 'sections.id', '=', 'class_sections.section_id')
+            ->join('classes', 'classes.id', '=', 'class_sections.class_id')
+            ->where('subject_syllabus.id', $subjectSyllabusId)
+            ->select(
+                'subject_syllabus.*',
+                'subject_groups.name as sgname',
+                'subjects.name as subname',
+                'subjects.code as scode',
+                'sections.section as sname',
+                'classes.class as cname',
+                'lesson.name as lessonname',
+                'topic.name as topic_name',
+                'topic.status as topic_status'
+            )
+            ->first();
     }
 
     public function addmessage(SyllabusMessageRequest $request): JsonResponse
@@ -187,11 +281,36 @@ class SyllabusController extends Controller
 
     public function getmessage(Request $request): JsonResponse
     {
-        $subjectSyllabusId = $request->syllabus_id;
+        $subjectSyllabusId = $request->input('subject_syllabus_id') ?? $request->input('syllabus_id');
 
         $messageList = SyllabusMessage::where('subject_syllabus_id', $subjectSyllabusId)->get();
 
         return $this->successResponse(['messagelist' => $messageList]);
+    }
+
+    public function deletemessage(Request $request): JsonResponse
+    {
+        $fourmId = $request->input('fourm_id') ?? $request->input('id');
+
+        if (! $fourmId) {
+            return $this->errorResponse('fourm_id is required');
+        }
+
+        $user = $request->user();
+        $studentId = $this->getStudentId($user);
+
+        $message = SyllabusMessage::where('id', $fourmId)
+            ->where('type', 'student')
+            ->where('student_id', $studentId)
+            ->first();
+
+        if (! $message) {
+            return $this->errorResponse('Message not found', null, 404);
+        }
+
+        $message->delete();
+
+        return $this->successResponse(null, 'Message deleted successfully');
     }
 
     private function getStudentSession($user)

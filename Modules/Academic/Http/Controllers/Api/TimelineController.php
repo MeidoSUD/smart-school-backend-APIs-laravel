@@ -7,12 +7,30 @@ use Modules\Academic\Entities\Student;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class TimelineController extends \Modules\Core\Http\Controllers\Api\Controller
 {
     public function __construct()
     {
         $this->setControllerName('TimelineController');
+    }
+
+    public function list(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $studentId = $this->getStudentId($user);
+
+        if (!$studentId) {
+            return $this->errorResponse('Unauthorized', null, 401);
+        }
+
+        $timeline = StudentTimeline::where('student_id', $studentId)
+            ->where('status', 'yes')
+            ->orderByDesc('timeline_date')
+            ->get();
+
+        return $this->successResponse(['timelinelist' => $timeline]);
     }
 
     public function add(Request $request): JsonResponse
@@ -55,16 +73,18 @@ class TimelineController extends \Modules\Core\Http\Controllers\Api\Controller
         return $this->successResponse($timeline, 'Timeline added successfully');
     }
 
-    public function getstudentsingletimeline(Request $request): JsonResponse
+    public function getstudentsingletimeline(Request $request, $id = null): JsonResponse
     {
+        $id = $id ?? $request->id;
+
         $validated = $request->validate([
-            'id' => 'required|integer|exists:student_timelines,id',
+            'id' => 'integer|exists:student_timeline,id',
         ]);
 
         $user = $request->user();
         $studentId = $this->getStudentId($user);
 
-        $singletimelinelist = StudentTimeline::where('id', $request->id)
+        $singletimelinelist = StudentTimeline::where('id', $id)
             ->where('student_id', $studentId)
             ->first();
 
@@ -75,15 +95,16 @@ class TimelineController extends \Modules\Core\Http\Controllers\Api\Controller
         return $this->successResponse(['singletimelinelist' => $singletimelinelist]);
     }
 
-    public function edit(Request $request): JsonResponse
+    public function edit(Request $request, $id = null): JsonResponse
     {
+        $id = $id ?? $request->id;
+
         $validated = $request->validate([
-            'id' => 'required',
             'timeline_title' => 'required|string|max:255',
             'timeline_date' => 'required',
         ]);
 
-        $timeline = StudentTimeline::find($request->id);
+        $timeline = StudentTimeline::find($id);
 
         if (!$timeline) {
             return $this->errorResponse('Timeline not found', null, 404);
@@ -106,27 +127,38 @@ class TimelineController extends \Modules\Core\Http\Controllers\Api\Controller
         return $this->successResponse(null, 'Timeline updated successfully');
     }
 
-    public function download($id): JsonResponse
+    public function download(Request $request, $id): JsonResponse|BinaryFileResponse
     {
         $timelinelist = StudentTimeline::find($id);
 
-        if (!$timelinelist) {
+        if (! $timelinelist) {
             return $this->errorResponse('Timeline not found', null, 404);
         }
 
-        return $this->successResponse(['document' => $timelinelist->document]);
+        $user = $request->user();
+        $studentId = $this->getStudentId($user);
+
+        if (! $studentId || (int) $timelinelist->student_id !== (int) $studentId) {
+            return $this->errorResponse('Unauthorized', null, 403);
+        }
+
+        return $this->sendStoredFile($timelinelist->document, 'uploads/student_timeline');
     }
 
-    public function delete_timeline(Request $request): JsonResponse
+    public function delete_timeline(Request $request, $id = null): JsonResponse
     {
-        $id = $request->post('id');
+        $id = $id ?? $request->post('id');
 
         $timeline = StudentTimeline::find($id);
 
         if ($timeline && $timeline->document) {
-            $filePath = public_path('uploads/student_timeline/' . $timeline->document);
-            if (file_exists($filePath)) {
-                unlink($filePath);
+            foreach ([
+                storage_path('app/uploads/student_timeline/' . $timeline->document),
+                public_path('uploads/student_timeline/' . $timeline->document),
+            ] as $filePath) {
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
             }
         }
 

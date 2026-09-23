@@ -15,6 +15,7 @@ use Modules\Staff\Entities\Staff;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use DB;
 
 class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
@@ -192,15 +193,33 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
         return $this->successResponse($data);
     }
 
-    public function download($id): JsonResponse
+    public function download(Request $request, $id): JsonResponse|BinaryFileResponse
     {
         $homework = Homework::find($id);
 
-        if (!$homework) {
+        if (! $homework) {
             return $this->errorResponse('Homework not found', null, 404);
         }
 
-        return $this->successResponse(['document' => $homework->document]);
+        return $this->sendStoredFile($homework->document, 'uploads/homework/document', 'uploads/homework');
+    }
+
+    public function assigmnetDownload(Request $request, $id): JsonResponse|BinaryFileResponse
+    {
+        $assignment = SubmitAssignment::find($id);
+
+        if (! $assignment) {
+            return $this->errorResponse('Assignment not found', null, 404);
+        }
+
+        $user = $request->user();
+        $studentId = $this->studentSessionService->getStudentId($user);
+
+        if (! $studentId || (int) $assignment->student_id !== (int) $studentId) {
+            return $this->errorResponse('Unauthorized', null, 403);
+        }
+
+        return $this->sendStoredFile($assignment->docs, 'uploads/homework/assignment');
     }
 
     public function dailyassignment(Request $request): JsonResponse
@@ -230,6 +249,30 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
         ];
 
         return $this->successResponse($data);
+    }
+
+    public function getsingledailyassignment($id, Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $studentSession = $this->studentSessionService->getStudentSession($user);
+
+        if (!$studentSession) {
+            return $this->errorResponse('Student session not found');
+        }
+
+        $assignment = DB::table('daily_assignment')
+            ->select('daily_assignment.*', 'subjects.name as subject_name', 'subjects.code as subject_code')
+            ->leftJoin('subject_group_subjects', 'subject_group_subjects.id', '=', 'daily_assignment.subject_group_subject_id')
+            ->join('subjects', 'subjects.id', '=', 'subject_group_subjects.subject_id')
+            ->where('daily_assignment.id', $id)
+            ->where('daily_assignment.student_session_id', $studentSession->id)
+            ->first();
+
+        if (!$assignment) {
+            return $this->errorResponse('Assignment not found', null, 404);
+        }
+
+        return $this->successResponse(['singleassignmentlist' => $assignment]);
     }
 
     public function createdailyassignment(DailyAssignmentRequest $request): JsonResponse
