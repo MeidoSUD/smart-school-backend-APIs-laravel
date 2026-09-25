@@ -17,11 +17,16 @@ use Modules\Academic\Http\Controllers\Api\TimetableController;
 Route::middleware('auth:sanctum')->prefix('api')->group(function () {
     Route::get('/attendence', [AttendenceController::class, 'index']);
     Route::get('/attendence/getAttendence', [AttendenceController::class, 'getAttendence']);
+    Route::get('/attendence/getevents', [AttendenceController::class, 'getevents']);
     Route::post('/attendence/getdaysubattendence', [AttendenceController::class, 'getdaysubattendence']);
 
+    // G-1.4/1.5/1.6: must precede /exam/{id} or the wildcard swallows them.
+    Route::get('/exam/getByFeecategory', [ExamController::class, 'getByFeecategory']);
+    Route::match(['get', 'post'], '/exam/examSearch', [ExamController::class, 'examSearch']);
+    Route::post('/exam/getStudentCategoryFee', [ExamController::class, 'getStudentCategoryFee']);
     Route::get('/exam', [ExamController::class, 'index']);
-    Route::get('/exam/{id}', [ExamController::class, 'view']);
     Route::post('/exam/examresult', [ExamController::class, 'examresult']);
+    Route::get('/exam/{id}', [ExamController::class, 'view']);
     Route::get('/examschedule', [ExamScheduleController::class, 'index']);
     Route::post('/examschedule/getexamscheduledetail', [ExamScheduleController::class, 'getexamscheduledetail']);
 
@@ -39,6 +44,8 @@ Route::middleware('auth:sanctum')->prefix('api')->group(function () {
     Route::get('/homework/dailyassigmnetdownload/{id}', [HomeworkController::class, 'dailyassigmnetdownload']);
 
     Route::get('/mark/marklist', [MarkController::class, 'marklist']);
+    Route::get('/mark', [MarkController::class, 'index']);
+    Route::get('/mark/{id}', [MarkController::class, 'view']);
 
     Route::get('/onlineexam', [OnlineExamController::class, 'index']);
     Route::get('/onlineexam/closed', [OnlineExamController::class, 'closed']);
@@ -70,6 +77,8 @@ Route::middleware('auth:sanctum')->prefix('api')->group(function () {
     Route::put('/timeline/{id}', [TimelineController::class, 'edit']);
     Route::delete('/timeline/{id}', [TimelineController::class, 'delete_timeline']);
     Route::get('/timeline/download/{id}', [TimelineController::class, 'download']);
+    // G-4.8 alias: CI api/user/User.php timeline_download($timeline_id,$doc)
+    Route::get('/user/timeline_download/{id}/{doc?}', [TimelineController::class, 'download']);
     Route::get('/timetable', [TimetableController::class, 'index']);
     Route::post('/timetable', [TimetableController::class, 'store']);
     Route::put('/timetable/{id}', [TimetableController::class, 'update']);

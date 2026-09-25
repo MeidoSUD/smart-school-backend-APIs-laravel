@@ -8,6 +8,7 @@ use Modules\Academic\Entities\Student;
 use Modules\Core\Entities\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * Converted from CodeIgniter: codelgiterControllers/user/Visitors.php
@@ -41,7 +42,7 @@ class VisitorController extends \Modules\Core\Http\Controllers\Api\Controller
 
 
 
-    public function download($id): JsonResponse
+    public function download($id): JsonResponse|BinaryFileResponse
     {
         $visitorlist = Visitor::find($id);
         
@@ -51,7 +52,7 @@ class VisitorController extends \Modules\Core\Http\Controllers\Api\Controller
 
 
         
-        return $this->successResponse(['image' => $visitorlist->image]);
+        return $this->sendStoredFile($visitorlist->image, 'uploads/front_office/visitors');
         }
 
 

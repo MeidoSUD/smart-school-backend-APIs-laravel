@@ -65,4 +65,6 @@ Route::middleware('auth:sanctum')->prefix('api')->group(function () {
     Route::get('/video_tutorial/{id}', [VideoTutorialController::class, 'view']);
     
     Route::get('/visitors', [VisitorController::class, 'index']);
+    // G-4.4: CI api/user/Visitors.php download($id) streams file
+    Route::get('/visitors/download/{id}', [VisitorController::class, 'download']);
 });

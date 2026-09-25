@@ -12,5 +12,10 @@ class ExamGroupStudent extends Model
 
     protected $fillable = ['exam_group_id', 'student_id', 'student_session_id', 'is_active'];
 
+    public function examGroup()
+    {
+        return $this->belongsTo(ExamGroup::class, 'exam_group_id');
+    }
+
 
 }

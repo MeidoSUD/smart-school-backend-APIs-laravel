@@ -7,9 +7,14 @@ use Modules\Academic\Entities\ExamSchedule;
 use Modules\Academic\Entities\ExamGroupStudent;
 use Modules\Academic\Entities\StudentSession;
 use Modules\Academic\Entities\Student;
+use Modules\Academic\Entities\MarksDivision;
+use Modules\Academic\Entities\Grade;
+use Modules\Finance\Entities\FeeType;
+use Modules\Finance\Entities\FeeMaster;
 use Modules\Core\Entities\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ExamController extends \Modules\Core\Http\Controllers\Api\Controller
 {
@@ -55,25 +60,49 @@ class ExamController extends \Modules\Core\Http\Controllers\Api\Controller
 
     public function getByFeecategory(Request $request): JsonResponse
     {
+        // CI source: api/user/Exam.php getByFeecategory uses feetype by feecategory_id.
+        // CI Feetype_model has no getTypeByFeecategory; intended table is `feetype`.
         $feecategoryId = $request->get('feecategory_id');
 
-        $data = Exam::where('sesion_id', $feecategoryId)->get();
+        $data = FeeType::where('feecategory_id', $feecategoryId)
+            ->orderBy('id')
+            ->get();
 
         return $this->successResponse($data);
     }
 
     public function getStudentCategoryFee(Request $request): JsonResponse
     {
-        $type = $request->post('type');
-        $classId = $request->post('class_id');
+        // CI source: api/user/Exam.php getStudentCategoryFee uses
+        // Feemaster_model::getTypeByFeecategory($type, $class_id) which queries
+        // feemasters JOIN classes JOIN feetype scoped to current session.
+        // CI api_success() ignores the 3rd arg, so return data only (G-4.1 fix:
+        // never pass 'fail'/'success' string as int status code).
+        $type = $request->post('type', $request->get('type'));
+        $classId = $request->post('class_id', $request->get('class_id'));
 
-        $data = Exam::where('sesion_id', $type)
-            ->where('class_id', $classId)
-            ->get();
+        $setting = Setting::where('is_active', 'yes')->first();
+        $sessionId = $setting ? $setting->session_id : null;
 
-        $status = $data->isEmpty() ? 'fail' : 'success';
+        $query = DB::table('feemasters')
+            ->join('classes', 'feemasters.class_id', '=', 'classes.id')
+            ->join('feetype', 'feemasters.feetype_id', '=', 'feetype.id')
+            ->select(
+                'feemasters.id',
+                'feemasters.session_id',
+                'feemasters.amount',
+                'feemasters.description',
+                'classes.class',
+                'feetype.type'
+            )
+            ->where('feemasters.class_id', $classId)
+            ->where('feemasters.feetype_id', $type)
+            ->when($sessionId, fn($q) => $q->where('feemasters.session_id', $sessionId))
+            ->orderBy('feemasters.id');
 
-        return $this->successResponse($data, null, $status);
+        $data = $query->first();
+
+        return $this->successResponse($data);
     }
 
     public function examSearch(Request $request): JsonResponse
@@ -102,6 +131,8 @@ class ExamController extends \Modules\Core\Http\Controllers\Api\Controller
 
     public function examresult(Request $request): JsonResponse
     {
+        // CI source: api/user/Exam.php examresult returns marks_division,
+        // exam_result (searchStudentExams) and exam_grade (getGradeDetails).
         $user = $request->user();
         $studentSession = $this->getStudentSession($user);
 
@@ -113,11 +144,32 @@ class ExamController extends \Modules\Core\Http\Controllers\Api\Controller
             ->with('examGroup')
             ->get();
 
+        $marksDivision = MarksDivision::orderBy('id')->get();
+
         $data = [
+            'marks_division' => $marksDivision,
             'exam_result' => $examResult,
+            'exam_grade' => $this->getGradeDetails(),
         ];
 
         return $this->successResponse($data);
+    }
+
+    private function getGradeDetails(): array
+    {
+        // Mirrors Grade_model::getGradeDetails(): group grades by exam_type.
+        $types = Grade::select('exam_type')->distinct()->orderBy('exam_type')->pluck('exam_type');
+
+        $details = [];
+        foreach ($types as $examType) {
+            $details[] = [
+                'exam_key' => $examType,
+                'exm_type_value' => $examType,
+                'exam_grade_values' => Grade::where('exam_type', $examType)->orderBy('id')->get(),
+            ];
+        }
+
+        return $details;
     }
 
     private function getStudentSession($user)

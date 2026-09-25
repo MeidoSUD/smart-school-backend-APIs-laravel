@@ -2679,6 +2679,513 @@
         }
       }
     },
+    "/behaviour": {
+      "get": {
+        "operationId": "behaviour.index",
+        "tags": [
+          "Behaviour"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "incidents": {
+                          "type": "string"
+                        },
+                        "total_points": {
+                          "type": "integer"
+                        },
+                        "behavioursetting": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "comment_option": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "comment_option"
+                          ]
+                        },
+                        "role": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "incidents",
+                        "total_points",
+                        "behavioursetting",
+                        "role"
+                      ]
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Student not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/behaviour/addmessage": {
+      "post": {
+        "operationId": "behaviour.addmessage",
+        "tags": [
+          "Behaviour"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "student_incident_id": {
+                    "type": "integer"
+                  },
+                  "comment": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "student_incident_id",
+                  "comment"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "comment": {
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "comment"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Comment added successfully"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Incident not found for this student"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Student not found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/behaviour/getmessage": {
+      "post": {
+        "operationId": "behaviour.getmessage",
+        "tags": [
+          "Behaviour"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "student_incident_id": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "messagelist": {
+                          "type": "string"
+                        },
+                        "student_incident_id": {
+                          "type": "integer"
+                        },
+                        "role": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "messagelist",
+                        "student_incident_id",
+                        "role"
+                      ]
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Incident not found for this student"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "student_incident_id is required"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/behaviour/delete_comment": {
+      "post": {
+        "operationId": "behaviour.deleteComment",
+        "tags": [
+          "Behaviour"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "null"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Comment deleted successfully"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Comment not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "id is required"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
     "/book": {
       "get": {
         "operationId": "book.index",
@@ -3653,6 +4160,480 @@
           },
           "422": {
             "$ref": "#/components/responses/ValidationException"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/chat/chatUpdate": {
+      "post": {
+        "operationId": "chat.chatUpdate",
+        "tags": [
+          "Chat"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "chat_connection_id": {
+                    "type": "integer",
+                    "description": "Chat connection ID",
+                    "example": 1
+                  },
+                  "last_chat_id": {
+                    "type": "integer",
+                    "description": "ID of the last received chat message to fetch newer ones",
+                    "example": 0
+                  }
+                },
+                "required": [
+                  "chat_connection_id",
+                  "last_chat_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "updated_chat": {
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            }
+                          ]
+                        },
+                        "last_chat_id": {
+                          "type": "string"
+                        },
+                        "user_last_chat": {
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "updated_chat",
+                        "last_chat_id",
+                        "user_last_chat"
+                      ]
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/chat/searchuser": {
+      "post": {
+        "operationId": "chat.searchuser",
+        "tags": [
+          "Chat"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "keyword": {
+                    "type": "string",
+                    "description": "Search keyword for users (name or employee/admission number)",
+                    "example": "John"
+                  }
+                },
+                "required": [
+                  "keyword"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "userList": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "userList"
+                      ]
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "keyword is required"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/chat/mynewuser": {
+      "post": {
+        "operationId": "chat.mynewuser",
+        "tags": [
+          "Chat"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "users": {
+                    "type": "array",
+                    "description": "List of user IDs the client already knows (JSON array)",
+                    "items": {}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "new_user_list": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "new_user_list"
+                      ]
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/chat/adduser": {
+      "post": {
+        "operationId": "chat.adduser",
+        "tags": [
+          "Chat"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "user_id": {
+                    "type": "integer",
+                    "description": "ID of the user to add (student or staff ID)",
+                    "example": 5
+                  },
+                  "user_type": {
+                    "type": "string",
+                    "description": "User type of the contact: Student or Staff",
+                    "example": "Staff"
+                  }
+                },
+                "required": [
+                  "user_id",
+                  "user_type"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "new_user": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "user_type": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "string",
+                                  "enum": [
+                                    ""
+                                  ]
+                                }
+                              ]
+                            },
+                            "image": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "gender": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "user_type",
+                            "name",
+                            "image",
+                            "gender"
+                          ]
+                        },
+                        "chat_connection_id": {
+                          "type": "string"
+                        },
+                        "chat_to_user": {
+                          "type": "string"
+                        },
+                        "user_last_chat": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "new_user",
+                        "chat_connection_id",
+                        "chat_to_user",
+                        "user_last_chat"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "User added successfully"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/chat/mychatnotification": {
+      "get": {
+        "operationId": "chat.mychatnotification",
+        "tags": [
+          "Chat"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "notifications": {
+                          "type": "string"
+                        },
+                        "count": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "notifications",
+                        "count"
+                      ]
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
           },
           "401": {
             "$ref": "#/components/responses/AuthenticationException"
@@ -4881,6 +5862,78 @@
         }
       }
     },
+    "/examschedule/getexamscheduledetail": {
+      "post": {
+        "operationId": "examSchedule.getexamscheduledetail",
+        "tags": [
+          "ExamSchedule"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "exam_id": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "subject_list": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "minItems": 0,
+                          "maxItems": 0,
+                          "additionalItems": false
+                        }
+                      },
+                      "required": [
+                        "subject_list"
+                      ]
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
     "/homework": {
       "get": {
         "operationId": "homework.index",
@@ -5240,6 +6293,246 @@
         }
       }
     },
+    "/homework/download/{id}": {
+      "get": {
+        "operationId": "homework.download",
+        "tags": [
+          "Homework"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "File not found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Homework not found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "required": true,
+                "schema": {
+                  "type": "string"
+                },
+                "example": "attachment"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/homework/assigmnetDownload/{id}": {
+      "get": {
+        "operationId": "homework.assigmnetDownload",
+        "tags": [
+          "Homework"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "File not found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Assignment not found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "required": true,
+                "schema": {
+                  "type": "string"
+                },
+                "example": "attachment"
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Unauthorized"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
     "/homework/dailyassignment": {
       "get": {
         "operationId": "homework.dailyassignment",
@@ -5280,6 +6573,132 @@
                     "status",
                     "data",
                     "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Student session not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/homework/getsingle_dailyassignment/{id}": {
+      "get": {
+        "operationId": "homework.getsingledailyassignment",
+        "tags": [
+          "Homework"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "singleassignmentlist": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "singleassignmentlist"
+                      ]
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Assignment not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
                     "timestamp"
                   ]
                 }
@@ -6149,6 +7568,323 @@
         }
       }
     },
+    "/notification/read": {
+      "post": {
+        "operationId": "notification.read",
+        "tags": [
+          "Notification"
+        ],
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Invalid notification ID"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Unable to mark notification as read"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "null"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Notification marked as read"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/notification/download/{id}": {
+      "get": {
+        "operationId": "notification.download",
+        "tags": [
+          "Notification"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "File not found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Notification not found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "required": true,
+                "schema": {
+                  "type": "string"
+                },
+                "example": "attachment"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/notification/{id}": {
+      "get": {
+        "operationId": "notification.notification",
+        "tags": [
+          "Notification"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "notificationlist": {
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "notificationlist"
+                      ]
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Notification not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
     "/offlinepayment": {
       "get": {
         "operationId": "offlinePayment.index",
@@ -6374,6 +8110,107 @@
     "/onlineexam": {
       "get": {
         "operationId": "onlineExam.index",
+        "tags": [
+          "OnlineExam"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "student": {
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "examList": {
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "student",
+                        "examList"
+                      ]
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Student session not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/onlineexam/closed": {
+      "get": {
+        "operationId": "onlineExam.closed",
         "tags": [
           "OnlineExam"
         ],
@@ -6845,6 +8682,81 @@
           },
           "403": {
             "$ref": "#/components/responses/AuthorizationException"
+          }
+        }
+      }
+    },
+    "/onlineexam/downloadattachment/{doc}": {
+      "get": {
+        "operationId": "onlineExam.downloadattachment",
+        "tags": [
+          "OnlineExam"
+        ],
+        "parameters": [
+          {
+            "name": "doc",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "File not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "required": true,
+                "schema": {
+                  "type": "string"
+                },
+                "example": "attachment"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -7558,6 +9470,204 @@
           }
         ],
         "responses": {
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "File not found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Syllabus not found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "required": true,
+                "schema": {
+                  "type": "string"
+                },
+                "example": "attachment"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/syllabus/lacture_video_download/{id}": {
+      "get": {
+        "operationId": "syllabus.lactureVideoDownload",
+        "tags": [
+          "Syllabus"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "File not found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Syllabus not found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "required": true,
+                "schema": {
+                  "type": "string"
+                },
+                "example": "attachment"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/syllabus/get_subject_syllabus": {
+      "post": {
+        "operationId": "modules.academic.syllabus.subjectSyllabus_0",
+        "tags": [
+          "Syllabus"
+        ],
+        "responses": {
           "200": {
             "description": "",
             "content": {
@@ -7572,12 +9682,38 @@
                     "data": {
                       "type": "object",
                       "properties": {
-                        "attachment": {
-                          "type": "string"
+                        "subject_syllabus_id": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {}
+                          ]
+                        },
+                        "result": {
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        },
+                        "messagelist": {
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            }
+                          ]
                         }
                       },
                       "required": [
-                        "attachment"
+                        "subject_syllabus_id",
+                        "result",
+                        "messagelist"
                       ]
                     },
                     "message": {
@@ -7628,6 +9764,319 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "subject_syllabus_id is required"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/syllabus/get_subject_syllabus/{id}": {
+      "get": {
+        "operationId": "modules.academic.syllabus.subjectSyllabus_0",
+        "tags": [
+          "Syllabus"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "subject_syllabus_id": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {}
+                          ]
+                        },
+                        "result": {
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        },
+                        "messagelist": {
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "subject_syllabus_id",
+                        "result",
+                        "messagelist"
+                      ]
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Syllabus not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "subject_syllabus_id is required"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/syllabus/check_subject_syllabus": {
+      "post": {
+        "operationId": "syllabus.checkSubjectSyllabus",
+        "tags": [
+          "Syllabus"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "subject_group_subject_id": {
+                    "type": "string"
+                  },
+                  "date": {
+                    "type": "string"
+                  },
+                  "time_from": {
+                    "type": "string"
+                  },
+                  "time_to": {
+                    "type": "string"
+                  },
+                  "subject_group_class_section_id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "subject_group_subject_id",
+                  "date",
+                  "time_from",
+                  "time_to",
+                  "subject_group_class_section_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "subject_syllabus_id": {
+                          "type": "string"
+                        },
+                        "result": {
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "subject_syllabus_id",
+                        "result"
+                      ]
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Syllabus not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
           },
           "401": {
             "$ref": "#/components/responses/AuthenticationException"
@@ -7689,6 +10138,177 @@
           },
           "422": {
             "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      }
+    },
+    "/syllabus/getmessage": {
+      "post": {
+        "operationId": "syllabus.getmessage",
+        "tags": [
+          "Syllabus"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "messagelist": {
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "messagelist"
+                      ]
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/syllabus/deletemessage": {
+      "post": {
+        "operationId": "syllabus.deletemessage",
+        "tags": [
+          "Syllabus"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "null"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Message deleted successfully"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Message not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "fourm_id is required"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
           }
         }
       }
@@ -7921,9 +10541,69 @@
         }
       }
     },
-    "/timeline/add": {
+    "/timeline": {
+      "get": {
+        "operationId": "timeline.list",
+        "tags": [
+          "Timeline"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "timelinelist": {
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "timelinelist"
+                      ]
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      },
       "post": {
-        "operationId": "timeline.add",
+        "operationId": "modules.academic.timeline.add_1",
         "tags": [
           "Timeline"
         ],
@@ -8053,6 +10733,662 @@
           },
           "422": {
             "$ref": "#/components/responses/ValidationException"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/timeline/add": {
+      "post": {
+        "operationId": "modules.academic.timeline.add_0",
+        "tags": [
+          "Timeline"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "timeline_title": {
+                    "type": "string",
+                    "maxLength": 255
+                  },
+                  "timeline_date": {
+                    "type": "string"
+                  },
+                  "student_id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "timeline_title",
+                  "timeline_date",
+                  "student_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Timeline added successfully"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "You can only add timeline for yourself"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Unauthorized"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/timeline/getstudentsingletimeline": {
+      "get": {
+        "operationId": "modules.academic.timeline.getstudentsingletimeline_0",
+        "tags": [
+          "Timeline"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "singletimelinelist": {
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "singletimelinelist"
+                      ]
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Timeline not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/timeline/{id}": {
+      "get": {
+        "operationId": "modules.academic.timeline.getstudentsingletimeline_0",
+        "tags": [
+          "Timeline"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": null
+            }
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "singletimelinelist": {
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "singletimelinelist"
+                      ]
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Timeline not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      },
+      "put": {
+        "operationId": "timeline.edit",
+        "tags": [
+          "Timeline"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": null
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "timeline_title": {
+                    "type": "string",
+                    "maxLength": 255
+                  },
+                  "timeline_date": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "timeline_title",
+                  "timeline_date"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "null"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Timeline updated successfully"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Timeline not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "timeline.deleteTimeline",
+        "tags": [
+          "Timeline"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "null"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Timeline deleted successfully"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/timeline/download/{id}": {
+      "get": {
+        "operationId": "timeline.download",
+        "tags": [
+          "Timeline"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "File not found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Timeline not found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "required": true,
+                "schema": {
+                  "type": "string"
+                },
+                "example": "attachment"
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Unauthorized"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
           },
           "401": {
             "$ref": "#/components/responses/AuthenticationException"
@@ -10241,6 +13577,701 @@
                         "errors": {
                           "type": "integer",
                           "const": 401
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/user/documents": {
+      "get": {
+        "operationId": "user.documents",
+        "tags": [
+          "User"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "documents": {
+                          "anyOf": [
+                            {
+                              "type": "object"
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "documents"
+                      ]
+                    },
+                    "message": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Student not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      },
+      "post": {
+        "operationId": "user.adddoc",
+        "tags": [
+          "User"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "first_title": {
+                    "type": "string",
+                    "maxLength": 255
+                  },
+                  "first_doc": {
+                    "type": "string",
+                    "format": "binary",
+                    "contentMediaType": "application/octet-stream"
+                  }
+                },
+                "required": [
+                  "first_title",
+                  "first_doc"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "document": {
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "document"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Document uploaded successfully"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "error"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Student not found"
+                    },
+                    "errors": {
+                      "type": "null"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "errors",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/user/documents/download/{id}": {
+      "get": {
+        "operationId": "user.downloaddoc",
+        "tags": [
+          "User"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "File not found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Document not found"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "required": true,
+                "schema": {
+                  "type": "string"
+                },
+                "example": "attachment"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/user/changeusername": {
+      "post": {
+        "operationId": "user.changeusername",
+        "tags": [
+          "User"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "current_username": {
+                    "type": "string"
+                  },
+                  "new_username": {
+                    "type": "string",
+                    "maxLength": 191
+                  },
+                  "confirm_username": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "current_username",
+                  "new_username",
+                  "confirm_username"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "null"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Username changed successfully"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Username already exists, please choose another"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Invalid current username"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/user/language": {
+      "post": {
+        "operationId": "user.language",
+        "tags": [
+          "User"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "lang_id": {
+                          "type": "integer"
+                        },
+                        "language": {
+                          "type": "string"
+                        },
+                        "is_rtl": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "lang_id",
+                        "language",
+                        "is_rtl"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Language changed successfully"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Invalid language"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "lang_id is required"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/user/currency": {
+      "post": {
+        "operationId": "user.currency",
+        "tags": [
+          "User"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "currency_id": {
+                          "type": "integer"
+                        },
+                        "currency": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "symbol": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "currency_id",
+                        "currency",
+                        "symbol"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Currency changed successfully"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data",
+                    "message",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Invalid currency"
+                        },
+                        "errors": {
+                          "type": "null"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "message",
+                        "errors",
+                        "timestamp"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "error"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "currency_id is required"
+                        },
+                        "errors": {
+                          "type": "null"
                         },
                         "timestamp": {
                           "type": "string"
