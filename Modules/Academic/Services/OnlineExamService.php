@@ -70,7 +70,9 @@ final class OnlineExamService
     }
 
     /**
-     * @return array{exam: object, student: object|null, onlineExamStudent: object|null, questions: Collection, stats: array, publishResult: bool}
+     * Mirrors CI user/Onlineexam::view() data contract.
+     *
+     * @return array{exam: object, student: object|null, onlineExamStudent: object|null, questions: Collection, stats: array, publishResult: bool, canStart: bool, startBlockedReason: string|null, rankDisplay: string|int, fileConstraints: array, questionOpt: array, questionTrueFalse: array}
      */
     public function getExamDetail(int $examId, StudentSession $session): array
     {
@@ -116,6 +118,53 @@ final class OnlineExamService
         $stats = $this->computeStats($questions, (int) ($exam->is_neg_marking ?? 0));
         $publishResult = $this->resolvePublishResult($exam, (int) ($onlineExamStudent->is_attempted ?? 0));
 
+        // CI view.php line 401: Start visible only when
+        // !is_attempted && is_active && !publish_result && now in [exam_from, exam_to].
+        // When onlineExamStudent is null => CI shows exam_meassage_student.
+        $canStart = false;
+        $startBlockedReason = null;
+        if (! $onlineExamStudent) {
+            $startBlockedReason = 'exam_meassage_student';
+        } else {
+            $now = Carbon::now();
+            $from = ! empty($exam->exam_from) ? Carbon::parse($exam->exam_from) : null;
+            $to = ! empty($exam->exam_to) ? Carbon::parse($exam->exam_to) : null;
+            $inWindow = (! $from || $now->gte($from)) && (! $to || $now->lte($to));
+            if ((int) ($onlineExamStudent->is_attempted ?? 0) === 1) {
+                $startBlockedReason = $publishResult ? 'result_published' : 'you_have_submitted_the_exam';
+            } elseif ($publishResult) {
+                $startBlockedReason = 'result_published';
+            } elseif (! $inWindow) {
+                $startBlockedReason = 'exam_window_closed';
+            } elseif (! (int) ($exam->is_active ?? 0)) {
+                $startBlockedReason = 'exam_inactive';
+            } else {
+                $canStart = true;
+            }
+        }
+
+        // CI view.php lines 211-224: rank shown only if !is_quiz && is_rank_generated && publish.
+        $rankDisplay = 'awaited';
+        if (! (int) ($exam->is_quiz ?? 0) && (int) ($exam->is_rank_generated ?? 0) === 1 && $publishResult) {
+            $rankDisplay = (int) ($onlineExamStudent->rank ?? 0);
+        }
+
+        // CI view.php lines 53-56: filetype_model constraints for descriptive upload.
+        $fileConstraints = ['allowed_extension' => [], 'allowed_mime_type' => [], 'allowed_upload_size' => null];
+        try {
+            if (Schema::hasTable('filetypes')) {
+                $ft = DB::table('filetypes')->first();
+                if ($ft) {
+                    $fileConstraints = [
+                        'allowed_extension' => array_values(array_filter(array_map(fn ($v) => strtolower(trim((string) $v)), explode(',', (string) ($ft->file_extension ?? ''))))),
+                        'allowed_mime_type' => array_values(array_filter(array_map(fn ($v) => strtolower(trim((string) $v)), explode(',', (string) ($ft->file_mime ?? ''))))),
+                        'allowed_upload_size' => $ft->file_size ?? null,
+                    ];
+                }
+            }
+        } catch (\Throwable) {
+        }
+
         return [
             'exam' => $exam,
             'student' => $student,
@@ -123,6 +172,13 @@ final class OnlineExamService
             'questions' => $questions,
             'stats' => $stats,
             'publishResult' => $publishResult,
+            'canStart' => $canStart,
+            'startBlockedReason' => $startBlockedReason,
+            'rankDisplay' => $rankDisplay,
+            'fileConstraints' => $fileConstraints,
+            // CI Customlib::getQuesOption() + mailsms question_true_false.
+            'questionOpt' => ['opt_a' => 'A', 'opt_b' => 'B', 'opt_c' => 'C', 'opt_d' => 'D', 'opt_e' => 'E'],
+            'questionTrueFalse' => ['true' => 'True', 'false' => 'False'],
         ];
     }
 
@@ -441,6 +497,9 @@ final class OnlineExamService
                     $correct++;
                 }
             } else {
+                // CI view.php lines 72-75: null select_option counts as
+                // not_attempted AND still accumulates neg_marks.
+                $negativeMarks += $qNegMarks;
                 $notAttempted++;
             }
         }
@@ -449,7 +508,8 @@ final class OnlineExamService
             $negativeMarks = 0.0;
         }
 
-        $finalScored = max(0.0, $scoredMarks - $negativeMarks);
+        // CI view.php line 203/206: displays scored-neg directly (no max clamp).
+        $finalScored = $scoredMarks - $negativeMarks;
 
         return [
             'total_questions' => $questions->count(),

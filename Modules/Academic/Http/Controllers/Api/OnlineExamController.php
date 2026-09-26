@@ -83,6 +83,13 @@ final class OnlineExamController extends Controller
             'publishResult' => $detail['publishResult'],
             'is_attempted' => (int) ($onlineExamStudent->is_attempted ?? 0),
             'rank' => (int) ($onlineExamStudent->rank ?? 0),
+            'onlineExamStudent' => $onlineExamStudent,
+            'canStart' => $detail['canStart'] ?? false,
+            'startBlockedReason' => $detail['startBlockedReason'] ?? null,
+            'rankDisplay' => $detail['rankDisplay'] ?? 'awaited',
+            'fileConstraints' => $detail['fileConstraints'] ?? null,
+            'questionOpt' => $detail['questionOpt'] ?? null,
+            'questionTrueFalse' => $detail['questionTrueFalse'] ?? null,
         ]);
 
         return $this->successResponse([
