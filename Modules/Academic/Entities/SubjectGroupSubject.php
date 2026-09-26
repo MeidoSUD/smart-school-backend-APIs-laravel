@@ -13,6 +13,11 @@ class SubjectGroupSubject extends Model
 
     protected $fillable = ['subject_group_id', 'subject_id', 'session_id'];
 
+    public function subject(): BelongsTo
+    {
+        return $this->belongsTo(Subject::class, 'subject_id');
+    }
+
     public function subjectGroup(): BelongsTo
     {
         return $this->belongsTo(SubjectGroup::class, 'subject_group_id');

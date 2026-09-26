@@ -110,7 +110,11 @@ class Syllabus extends Model
             ->where('lesson.subject_group_class_sections_id', $subjectGroupClassSectionId)
             ->where('subject_syllabus.date', $date)
             ->where('subject_syllabus.session_id', $sessionId)
-            ->groupBy('subject_syllabus.id')
+            // NOTE: CI uses group_by(subject_syllabus.id) here, but every join
+            // is many-to-one so rows are already unique per subject_syllabus.
+            // groupBy + select * breaks on MySQL ONLY_FULL_GROUP_BY (1055);
+            // distinct() keeps CI's dedup intent and is strict-mode safe.
+            ->distinct()
             ->select(
                 'subject_syllabus.*',
                 'subject_groups.name as sgname',

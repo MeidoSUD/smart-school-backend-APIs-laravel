@@ -52,8 +52,7 @@ class SyllabusService
 
             $label = $subject->code ? ' (' . $subject->code . ')' : '';
 
-            $lessonSummary = [];
-            $subjectLessons = $lessonsBySubject->get($key, collect());
+            $lessonSummary = [];            $subjectLessons = $lessonsBySubject->get($key, collect());
 
             foreach ($subjectLessons as $lesson) {
                 $lessonTopics = $topicsByLesson->get($lesson->id, collect());
@@ -75,7 +74,8 @@ class SyllabusService
             }
 
             $subjectsData[$subject->subject_group_subjects_id] = [
-                'lebel' => $subject->name . $label,
+                // CI: 'lebel' => $value->name .' '. $lebel where $lebel=' (code)'.
+                'lebel' => $subject->name . ' ' . $label,
                 'complete' => $completePercent,
                 'incomplete' => $incompletePercent,
                 'id' => $subject->subject_group_subjects_id . '_' . $subject->code,

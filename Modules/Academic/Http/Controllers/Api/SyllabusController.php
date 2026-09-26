@@ -26,16 +26,21 @@ class SyllabusController extends Controller
 
     public function index(): JsonResponse
     {
+        // CI: Syllabus::index() — "last {start_week}" relative to today.
+        // $monday = strtotime("last ".$start_weekday);
+        // $monday = date('w',$monday)==date('w') ? $monday+7*86400 : $monday;
         $setting = Setting::first();
         $startWeekday = strtolower($setting->start_week ?? 'monday');
 
-        $monday = Carbon::now()->startOfWeek();
-        $thisWeekStart = $monday->format('Y-m-d');
-        $thisWeekEnd = $monday->copy()->addDays(6)->format('Y-m-d');
+        $monday = strtotime('last ' . $startWeekday);
+        if (date('w', $monday) == date('w')) {
+            $monday += 7 * 86400;
+        }
+        $sunday = strtotime(date('Y-m-d', $monday) . ' +6 days');
 
         $data = [
-            'this_week_start' => $thisWeekStart,
-            'this_week_end' => $thisWeekEnd,
+            'this_week_start' => date('Y-m-d', $monday),
+            'this_week_end' => date('Y-m-d', $sunday),
         ];
 
         return $this->successResponse($data);
@@ -58,10 +63,20 @@ class SyllabusController extends Controller
             return $this->errorResponse('Date is required');
         }
 
-        $dateCarbon = Carbon::parse($date);
-        $prevWeekStart = $dateCarbon->copy()->subWeek()->startOfWeek($startWeekday)->format('Y-m-d');
-        $nextWeekStart = $dateCarbon->copy()->addWeek()->startOfWeek($startWeekday)->format('Y-m-d');
-        $thisWeekEnd = $dateCarbon->copy()->addDays(6)->format('Y-m-d');
+        // CI accepts the school-formatted date (d-m-Y or d/m/Y) via
+        // customlib->dateFormatToYYYYMMDD(); accept Y-m-d as well for API clients.
+        $thisWeekStart = $this->toYYYYMMDD($date);
+        if (! $thisWeekStart) {
+            return $this->errorResponse('Invalid date format');
+        }
+
+        // CI: prev/next = last/next {start_weekday} relative to week start,
+        // end = week start + 6 days.
+        $prevWeekStart = date('Y-m-d', strtotime('last ' . $startWeekday, strtotime($thisWeekStart)));
+        $nextWeekStart = date('Y-m-d', strtotime('next ' . $startWeekday, strtotime($thisWeekStart)));
+        $thisWeekEnd = date('Y-m-d', strtotime($thisWeekStart . ' +6 day'));
+
+        $dateCarbon = Carbon::parse($thisWeekStart);
 
         $studentData = Syllabus::getStudentSyllabus(
             $studentSession->class_id,
@@ -98,7 +113,7 @@ class SyllabusController extends Controller
         }
 
         $data = [
-            'this_week_start' => $dateCarbon->format('Y-m-d'),
+            'this_week_start' => $thisWeekStart,
             'this_week_end' => $thisWeekEnd,
             'prev_week_start' => $prevWeekStart,
             'next_week_start' => $nextWeekStart,
@@ -107,6 +122,33 @@ class SyllabusController extends Controller
         ];
 
         return $this->successResponse($data);
+    }
+
+    /**
+     * Mirror CI customlib->dateFormatToYYYYMMDD(): school format (d-m-Y/d/m/Y)
+     * or plain Y-m-d → Y-m-d. Returns null when unparseable.
+     */
+    private function toYYYYMMDD(string $date): ?string
+    {
+        $date = trim($date);
+        if (preg_match('/^\d{4}-\d{2}-\d{2}/', $date)) {
+            try {
+                return Carbon::parse(substr($date, 0, 10))->format('Y-m-d');
+            } catch (\Throwable) {
+                return null;
+            }
+        }
+        foreach (['d-m-Y', 'd/m/Y', 'm-d-Y', 'Y/m/d'] as $format) {
+            try {
+                $parsed = Carbon::createFromFormat($format, substr($date, 0, 10));
+
+                return $parsed->format('Y-m-d');
+            } catch (\Throwable) {
+                continue;
+            }
+        }
+
+        return null;
     }
 
     private function getDaysName(): array
@@ -181,7 +223,11 @@ class SyllabusController extends Controller
 
     public function subjectSyllabus(Request $request, $id = null): JsonResponse
     {
-        $subjectSyllabusId = $id ?? $request->input('subject_syllabus_id');
+        // CI canonical param is subject_syllabus_id; accept legacy aliases.
+        $subjectSyllabusId = $id
+            ?? $request->input('subject_syllabus_id')
+            ?? $request->input('syllabus_id')
+            ?? $request->input('lesson_plan_id');
 
         if (! $subjectSyllabusId) {
             return $this->errorResponse('subject_syllabus_id is required');
@@ -193,10 +239,10 @@ class SyllabusController extends Controller
             return $this->errorResponse('Syllabus not found', null, 404);
         }
 
-        $messageList = SyllabusMessage::where('subject_syllabus_id', $subjectSyllabusId)->get();
+        $messageList = $this->getEnrichedMessages($subjectSyllabusId);
 
         return $this->successResponse([
-            'subject_syllabus_id' => $subjectSyllabusId,
+            'subject_syllabus_id' => (int) $subjectSyllabusId,
             'result' => $result,
             'messagelist' => $messageList,
         ]);
@@ -236,7 +282,11 @@ class SyllabusController extends Controller
 
     private function getSubjectSyllabusDetail($subjectSyllabusId): ?object
     {
-        return DB::table('subject_syllabus')
+        // CI filters by current session; resolve it the same way getStudentSession() does.
+        $setting = Setting::where('is_active', 'yes')->first();
+        $sessionId = $setting?->session_id;
+
+        $query = DB::table('subject_syllabus')
             ->join('topic', 'topic.id', '=', 'subject_syllabus.topic_id')
             ->join('lesson', 'lesson.id', '=', 'topic.lesson_id')
             ->join('subject_group_subjects', 'subject_group_subjects.id', '=', 'lesson.subject_group_subject_id')
@@ -246,8 +296,12 @@ class SyllabusController extends Controller
             ->join('class_sections', 'class_sections.id', '=', 'subject_group_class_sections.class_section_id')
             ->join('sections', 'sections.id', '=', 'class_sections.section_id')
             ->join('classes', 'classes.id', '=', 'class_sections.class_id')
-            ->where('subject_syllabus.id', $subjectSyllabusId)
-            ->select(
+            ->where('subject_syllabus.id', $subjectSyllabusId);
+        if ($sessionId) {
+            $query->where('subject_syllabus.session_id', $sessionId);
+        }
+
+        return $query->select(
                 'subject_syllabus.*',
                 'subject_groups.name as sgname',
                 'subjects.name as subname',
@@ -266,9 +320,12 @@ class SyllabusController extends Controller
         $user = $request->user();
         $studentId = $this->getStudentId($user);
 
-        DB::transaction(function () use ($request, $studentId) {
+        // Canonical CI field is subject_syllabus_id (aliases normalised in FormRequest).
+        $subjectSyllabusId = $request->subject_syllabus_id;
+
+        DB::transaction(function () use ($subjectSyllabusId, $studentId, $request) {
             SyllabusMessage::create([
-                'subject_syllabus_id' => $request->syllabus_id,
+                'subject_syllabus_id' => $subjectSyllabusId,
                 'type' => 'student',
                 'student_id' => $studentId,
                 'message' => $request->message,
@@ -281,11 +338,48 @@ class SyllabusController extends Controller
 
     public function getmessage(Request $request): JsonResponse
     {
-        $subjectSyllabusId = $request->input('subject_syllabus_id') ?? $request->input('syllabus_id');
+        $subjectSyllabusId = $request->input('subject_syllabus_id')
+            ?? $request->input('syllabus_id')
+            ?? $request->input('lesson_plan_id');
 
-        $messageList = SyllabusMessage::where('subject_syllabus_id', $subjectSyllabusId)->get();
+        if (! $subjectSyllabusId) {
+            return $this->errorResponse('subject_syllabus_id is required');
+        }
 
-        return $this->successResponse(['messagelist' => $messageList]);
+        return $this->successResponse(['messagelist' => $this->getEnrichedMessages($subjectSyllabusId)]);
+    }
+
+    /**
+     * Mirror CI syllabus_model->getstudentmessage(): forum rows joined with
+     * staff + students so clients get display names / images without extra calls.
+     */
+    private function getEnrichedMessages($subjectSyllabusId)
+    {
+        return DB::table('lesson_plan_forum')
+            ->leftJoin('staff', 'staff.id', '=', 'lesson_plan_forum.staff_id')
+            ->leftJoin('students', 'students.id', '=', 'lesson_plan_forum.student_id')
+            ->where('lesson_plan_forum.subject_syllabus_id', $subjectSyllabusId)
+            ->orderByDesc('lesson_plan_forum.id')
+            ->select(
+                'lesson_plan_forum.id as fourm_id',
+                'lesson_plan_forum.message',
+                'lesson_plan_forum.created_date',
+                'lesson_plan_forum.type',
+                'staff.name as staff_name',
+                'staff.surname as staff_surname',
+                'staff.employee_id as staff_employee_id',
+                'staff.image as staff_image',
+                'staff.gender',
+                'students.firstname',
+                'students.middlename',
+                'students.lastname',
+                'students.image as student_image',
+                'students.admission_no',
+                'staff.id as staff_id',
+                'students.id as student_id',
+                'students.gender as students_gender'
+            )
+            ->get();
     }
 
     public function deletemessage(Request $request): JsonResponse

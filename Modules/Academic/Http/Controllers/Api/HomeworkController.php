@@ -36,50 +36,58 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
         }
 
         $studentId = $studentSession->student_id;
+        $studentSessionId = $studentSession->id;
+        $currentSessionId = $studentSession->session_id;
 
         $mapHomework = function ($homework) {
+            // CI: LEFT JOIN homework_evaluation on homework_id + student_session_id
             $evaluation = $homework->homeworkEvaluations->first();
-            $homework->homework_evaluation_id = $evaluation ? $evaluation->id : 0;
+            $homework->homework_evaluation_id = $evaluation ? (int) $evaluation->id : 0;
             $homework->evaluation_marks = $evaluation ? $evaluation->marks : null;
-            $homework->note = $evaluation ? $evaluation->note : '';
-            
+            $homework->note = $evaluation ? ($evaluation->note ?? '') : '';
+
+            // CI Homework::index: status = 'submitted' iff submit_assignment row exists
             $homework->status = $homework->submission_status > 0 ? 'submitted' : '';
 
             $homework->class = $homework->class->class ?? '';
             $homework->section = $homework->section->section ?? '';
-            $homework->subject_name = $homework->subject->name ?? '';
-            $homework->subject_code = $homework->subject->code ?? '';
+            // CI canonical subject resolution via subject_group_subject_id;
+            // fall back to legacy subject_id column (seeded data keeps both).
+            $sgSubject = $homework->subjectGroupSubject;
+            $subjectName = $sgSubject && $sgSubject->subject ? $sgSubject->subject->name : ($homework->subject->name ?? '');
+            $subjectCode = $sgSubject && $sgSubject->subject ? $sgSubject->subject->code : ($homework->subject->code ?? '');
+            $homework->subject_name = $subjectName ?? '';
+            $homework->subject_code = $subjectCode ?? '';
+            $homework->subject_groups_id = $sgSubject ? $sgSubject->subject_group_id : null;
 
-            $homework->makeHidden(['class', 'section', 'subject', 'homeworkEvaluations']);
-            
+            // Relations would override same-named attributes on toArray(),
+            // so detach them first — otherwise Flutter receives full objects.
+            $homework->unsetRelation('class');
+            $homework->unsetRelation('section');
+            $homework->unsetRelation('subject');
+            $homework->unsetRelation('subjectGroupSubject');
+            $homework->makeHidden(['homeworkEvaluations']);
+
             return $homework;
         };
 
-        $homeworklist = Homework::where('class_id', $studentSession->class_id)
-            ->where('section_id', $studentSession->section_id)
-            ->where('submit_date', '>=', now()->toDateString())
-            ->with(['class', 'section', 'subject', 'homeworkEvaluations' => function ($q) use ($studentId) {
-                $q->where('student_id', $studentId);
-            }])
-            ->withCount(['submitAssignments as submission_status' => function ($query) use ($studentId) {
-                $query->where('student_id', $studentId);
-            }])
-            ->orderBy('homework_date', 'desc')
-            ->get()
-            ->map($mapHomework);
+        $baseQuery = function ($submitDateOperator) use ($studentSession, $studentId, $studentSessionId, $currentSessionId) {
+            return Homework::where('class_id', $studentSession->class_id)
+                ->where('section_id', $studentSession->section_id)
+                ->where('session_id', $currentSessionId)
+                ->where('submit_date', $submitDateOperator, now()->toDateString())
+                ->with(['class', 'section', 'subject', 'subjectGroupSubject.subject', 'homeworkEvaluations' => function ($q) use ($studentSessionId) {
+                    $q->where('student_session_id', $studentSessionId);
+                }])
+                ->withCount(['submitAssignments as submission_status' => function ($query) use ($studentId) {
+                    $query->where('student_id', $studentId);
+                }])
+                ->orderBy('homework_date', 'desc');
+        };
 
-        $closedhomeworklist = Homework::where('class_id', $studentSession->class_id)
-            ->where('section_id', $studentSession->section_id)
-            ->where('submit_date', '<', now()->toDateString())
-            ->with(['class', 'section', 'subject', 'homeworkEvaluations' => function ($q) use ($studentId) {
-                $q->where('student_id', $studentId);
-            }])
-            ->withCount(['submitAssignments as submission_status' => function ($query) use ($studentId) {
-                $query->where('student_id', $studentId);
-            }])
-            ->orderBy('homework_date', 'desc')
-            ->get()
-            ->map($mapHomework);
+        $homeworklist = $baseQuery('>=')->get()->map($mapHomework);
+
+        $closedhomeworklist = $baseQuery('<')->get()->map($mapHomework);
 
         $data = [
             'created_by' => '',
@@ -109,20 +117,22 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
             'homework_id' => $homeworkId,
             'student_id' => $studentId,
             'message' => $request->message,
-            'docs' => '',
-            'file_name' => null,
         ];
 
-        DB::transaction(function () use ($request, &$data) {
+        // CI Homework::upload_docs: upsert on (homework_id, student_id);
+        // when no new file is uploaded the previous docs value is preserved.
+        DB::transaction(function () use ($request, &$data, $homeworkId, $studentId) {
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
                 $filename = time() . '_' . bin2hex(random_bytes(16)) . '.' . $file->getClientOriginalExtension();
                 $file->storeAs('uploads/homework/assignment', $filename, 'local');
                 $data['docs'] = $filename;
-                $data['file_name'] = $file->getClientOriginalName();
             }
 
-            SubmitAssignment::create($data);
+            SubmitAssignment::updateOrCreate(
+                ['homework_id' => $homeworkId, 'student_id' => $studentId],
+                $data
+            );
         });
 
         return $this->successResponse(null, 'Homework submitted successfully');
@@ -130,13 +140,14 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
 
     public function homework_detail($id, $status, Request $request): JsonResponse
     {
-        $result = Homework::find($id);
+        $result = Homework::with(['class', 'section', 'subjectGroupSubject.subject', 'subjectGroupSubject.subjectGroup'])->find($id);
 
         if (!$result) {
             return $this->errorResponse('Homework not found', null, 404);
         }
 
         $user = $request->user();
+        $studentSession = $this->studentSessionService->getStudentSession($user);
         $studentId = $this->studentSessionService->getStudentId($user);
 
         $setting = Setting::first();
@@ -145,16 +156,53 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
         $classId = $result->class_id;
         $sectionId = $result->section_id;
 
-        $studentlist = Student::whereHas('studentSessions', function ($q) use ($classId, $sectionId) {
-            $q->where('class_id', $classId)->where('section_id', $sectionId);
-        })->get();
+        // CI Homework_model::getStudents: classmates + their evaluation +
+        // their submitted assignment (assignmentlist per student).
+        $studentlist = DB::table('student_session')
+            ->select(
+                'student_session.*', 'students.firstname', 'students.middlename',
+                'students.lastname', 'students.admission_no',
+                DB::raw('IFNULL(homework_evaluation.id,0) as homework_evaluation_id'),
+                'homework_evaluation.note', 'homework_evaluation.marks'
+            )
+            ->join('students', 'students.id', '=', 'student_session.student_id')
+            ->leftJoin('homework_evaluation', function ($join) use ($id) {
+                $join->on('homework_evaluation.student_session_id', '=', 'student_session.id')
+                    ->where('homework_evaluation.homework_id', '=', $id);
+            })
+            ->where('student_session.class_id', $classId)
+            ->where('student_session.section_id', $sectionId)
+            ->where('student_session.session_id', $result->session_id)
+            ->where('students.is_active', 'yes')
+            ->orderBy('students.id', 'desc')
+            ->get()
+            ->map(function ($row) use ($id) {
+                $row->assignmentlist = DB::table('submit_assignment')
+                    ->select('id as submit_assignment_id', 'docs', 'message', 'student_id')
+                    ->where('homework_id', $id)
+                    ->where('student_id', $row->student_id)
+                    ->get();
+                return $row;
+            });
 
-        $report = HomeworkEvaluation::where('homework_id', $id)
+        // CI Homework_model::getEvaluationReportForStudent: this student's
+        // evaluation row, otherwise an Incomplete stub carrying the date.
+        $reportRow = HomeworkEvaluation::where('homework_id', $id)
             ->where('student_id', $studentId)
             ->first();
+        if ($reportRow) {
+            $report = $reportRow;
+        } else {
+            $firstEval = HomeworkEvaluation::where('homework_id', $id)->first();
+            $report = ['date' => $firstEval ? $firstEval->date : null, 'status' => 'Incomplete'];
+        }
 
-        $homeworkdocs = SubmitAssignment::where('homework_id', $id)
-            ->where('student_id', $studentId)
+        // CI get_homeworkDocByIdStdid: submission + student names.
+        $homeworkdocs = DB::table('submit_assignment')
+            ->select('submit_assignment.*', 'students.firstname', 'students.middlename', 'students.lastname')
+            ->join('students', 'students.id', '=', 'submit_assignment.student_id')
+            ->where('submit_assignment.homework_id', $id)
+            ->where('submit_assignment.student_id', $studentId)
             ->get();
 
         $created_by = '';
@@ -177,9 +225,27 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
             ->count();
         $homeworkStatus = $checkstatus > 0 ? 'submitted' : '';
 
+        // CI Homework_model::getRecord fields used by homework_detail.php:
+        // class / section / subject name+code shown in the summary panel.
+        // unsetRelation first: loaded relations would otherwise override
+        // these same-named scalar attributes during serialization.
+        $sgSubject = $result->subjectGroupSubject;
+        $className = $result->class->class ?? '';
+        $sectionName = $result->section->section ?? '';
+        $subjectName = ($sgSubject && $sgSubject->subject) ? $sgSubject->subject->name : ($result->subject->name ?? '');
+        $subjectCode = ($sgSubject && $sgSubject->subject) ? $sgSubject->subject->code : ($result->subject->code ?? '');
+        $result->unsetRelation('class');
+        $result->unsetRelation('section');
+        $result->unsetRelation('subject');
+        $result->unsetRelation('subjectGroupSubject');
+        $result->setAttribute('class', $className);
+        $result->setAttribute('section', $sectionName);
+        $result->setAttribute('name', $subjectName);
+        $result->setAttribute('code', $subjectCode);
+
         $data = [
-            'homework_status' => $status,
-            'homework_id' => $id,
+            'homework_status' => (int) $status,
+            'homework_id' => (int) $id,
             'title' => 'Homework Evaluation',
             'result' => $result,
             'studentlist' => $studentlist,
@@ -206,14 +272,20 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
 
     public function assigmnetDownload(Request $request, $id): JsonResponse|BinaryFileResponse
     {
-        $assignment = SubmitAssignment::find($id);
-
-        if (! $assignment) {
-            return $this->errorResponse('Assignment not found', null, 404);
-        }
-
         $user = $request->user();
         $studentId = $this->studentSessionService->getStudentId($user);
+
+        // CI Homework::assigmnetDownload($id): $id is the HOMEWORK id; the
+        // student's own submission (homework_id + student_id) is downloaded.
+        // Accept a submit_assignment id as fallback (with ownership check).
+        $assignment = SubmitAssignment::where('homework_id', $id)
+            ->where('student_id', $studentId)
+            ->first()
+            ?? SubmitAssignment::find($id);
+
+        if (! $assignment || empty($assignment->docs)) {
+            return $this->errorResponse('Assignment not found', null, 404);
+        }
 
         if (! $studentId || (int) $assignment->student_id !== (int) $studentId) {
             return $this->errorResponse('Unauthorized', null, 403);
@@ -233,19 +305,44 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
 
         $studentId = $this->studentSessionService->getStudentId($user);
 
-        // Fetching data with joins matching CodeIgniter behavior
+        // CI Homework_model::getdailyassignment: rows for this student_session
+        // OR any row whose student_session belongs to this student.
+        // The OR must be grouped, otherwise the student_session filter leaks.
         $dailyassignmentlist = DB::table('daily_assignment')
             ->select('daily_assignment.*', 'subjects.name as subject_name', 'subjects.code as subject_code')
             ->leftJoin('student_session', 'student_session.id', '=', 'daily_assignment.student_session_id')
             ->leftJoin('subject_group_subjects', 'subject_group_subjects.id', '=', 'daily_assignment.subject_group_subject_id')
-            ->join('subjects', 'subjects.id', '=', 'subject_group_subjects.subject_id')
-            ->where('daily_assignment.student_session_id', $studentSession->id)
-            ->orWhere('student_session.student_id', $studentId)
+            ->leftJoin('subjects', 'subjects.id', '=', 'subject_group_subjects.subject_id')
+            ->where(function ($q) use ($studentSession, $studentId) {
+                $q->where('daily_assignment.student_session_id', $studentSession->id)
+                    ->orWhere('student_session.student_id', $studentId);
+            })
+            // No groupBy: all joins are to-one, and MySQL strict
+            // ONLY_FULL_GROUP_BY rejects `select *, joined.col group by id`.
             ->orderBy('daily_assignment.id', 'desc')
             ->get();
 
         $data = [
             'dailyassignmentlist' => $dailyassignmentlist,
+            // Alias for older Flutter parsing key.
+            'dailyassignment' => $dailyassignmentlist,
+            // CI dailyassignment(): subject dropdown via
+            // Subjectgroup_model::getAllsubjectByClassSection.
+            'subjectlist' => DB::table('subject_group_class_sections')
+                ->select(
+                    'subject_group_subjects.id as subject_group_subject_id',
+                    'subjects.id as subject_id',
+                    'subjects.name as subject_name',
+                    'subjects.code as subject_code'
+                )
+                ->join('class_sections', 'class_sections.id', '=', 'subject_group_class_sections.class_section_id')
+                ->join('subject_groups', 'subject_groups.id', '=', 'subject_group_class_sections.subject_group_id')
+                ->join('subject_group_subjects', 'subject_group_subjects.subject_group_id', '=', 'subject_groups.id')
+                ->join('subjects', 'subjects.id', '=', 'subject_group_subjects.subject_id')
+                ->where('class_sections.class_id', $studentSession->class_id)
+                ->where('class_sections.section_id', $studentSession->section_id)
+                ->where('subject_group_class_sections.session_id', $studentSession->session_id)
+                ->get(),
         ];
 
         return $this->successResponse($data);
@@ -260,19 +357,25 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
             return $this->errorResponse('Student session not found');
         }
 
+        $studentId = $this->studentSessionService->getStudentId($user);
+
         $assignment = DB::table('daily_assignment')
             ->select('daily_assignment.*', 'subjects.name as subject_name', 'subjects.code as subject_code')
+            ->leftJoin('student_session', 'student_session.id', '=', 'daily_assignment.student_session_id')
             ->leftJoin('subject_group_subjects', 'subject_group_subjects.id', '=', 'daily_assignment.subject_group_subject_id')
-            ->join('subjects', 'subjects.id', '=', 'subject_group_subjects.subject_id')
+            ->leftJoin('subjects', 'subjects.id', '=', 'subject_group_subjects.subject_id')
             ->where('daily_assignment.id', $id)
-            ->where('daily_assignment.student_session_id', $studentSession->id)
+            ->where(function ($q) use ($studentSession, $studentId) {
+                $q->where('daily_assignment.student_session_id', $studentSession->id)
+                    ->orWhere('student_session.student_id', $studentId);
+            })
             ->first();
 
         if (!$assignment) {
             return $this->errorResponse('Assignment not found', null, 404);
         }
 
-        return $this->successResponse(['singleassignmentlist' => $assignment]);
+        return $this->successResponse(['dailyassignment' => $assignment, 'singleassignmentlist' => $assignment]);
     }
 
     public function createdailyassignment(DailyAssignmentRequest $request): JsonResponse

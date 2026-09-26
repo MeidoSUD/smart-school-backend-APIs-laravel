@@ -29,6 +29,11 @@ class Homework extends Model
         return $this->belongsTo(Section::class, 'section_id');
     }
 
+    public function subjectGroupSubject(): BelongsTo
+    {
+        return $this->belongsTo(SubjectGroupSubject::class, 'subject_group_subject_id');
+    }
+
     public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class, 'subject_id');
