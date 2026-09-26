@@ -75,10 +75,49 @@
 | Behaviour comments | POST | `/api/behaviour/addmessage` (`{student_incident_id, comment}`) · `/api/behaviour/getmessage` (`{student_incident_id}`) · `/api/behaviour/delete_comment` (`{id}`) | |
 | Student admission (public) | GET/POST | `/api/admission/*` | |
 | Health | GET | `/api/ping` | |
+| Marks (CI `Mark::index`) | GET | `/api/mark` | nested examlist/classlist/feecategorylist/examSchedule |
+| Mark detail (CI `Mark::view`) | GET | `/api/mark/{id}` | |
+| Attendance calendar events (CI `Attendence::getevents`) | GET | `/api/attendence/getevents` | |
+| Fee types by category (CI `Exam::getByFeecategory`) | GET | `/api/exam/getByFeecategory` | `?feecategory_id=` |
+| Category fee (CI `Exam::getStudentCategoryFee`) | POST | `/api/exam/getStudentCategoryFee` | `{type, class_id}` |
+| Exam search (CI `Exam::examSearch`) | GET/POST | `/api/exam/examSearch` | POST `{search, date_from, date_to}` or `{search_text}` |
+| Subjects by class/section | GET/POST | `/api/subject/getSubjctByClassandSection` | `{class_id, section_id}` |
+| Teacher subjects/teachers | POST | `/api/teacher/getSubjctByClassandSection` · `/api/teacher/getSubjectTeachers` | `{class_id, section_id}` |
+| Teacher detail | GET | `/api/teacher/{id}` | |
+| Visitor file | GET | `/api/visitors/download/{id}` | returns file |
+| Chat landing | GET | `/api/chat` | `{title}` |
+| Content index | GET | `/api/content` | `{title, title_list, list, ght, classlist}` |
+| Timeline download alias (CI `user/timeline_download`) | GET | `/api/user/timeline_download/{id}/{doc?}` | same file as `/api/timeline/download/{id}` |
 
 > **File downloads.** All `download*` endpoints return the actual file (`response()->download`). Student-uploaded files live in private storage (`storage/app/uploads/...`); staff/school-uploaded files live in `public/uploads/...`; the API resolves both. The old JSON-filename-only responses have been replaced.
 
 ---
+
+> **T-3.7 CORRECTION NOTE (2026-09-25).** Sections 2–20 below use *logical* `/api/student/...` paths from the original migration draft — **those paths do NOT exist**. The real routes are ONLY the ones in Section 0 above. Logical → actual mapping for the most-cited ones:
+> | Logical path in §§2–20 | Actual route (§0) |
+> |---|---|
+> | `GET /api/student/exams` | `GET /api/exam` |
+> | `GET /api/student/exam-results` | `POST /api/exam/examresult` |
+> | `GET /api/student/exam-schedule` | `GET /api/examschedule` |
+> | `GET /api/student/marks` | `GET /api/mark/marklist` |
+> | `GET /api/student/subjects` | `GET /api/subject` |
+> | `GET /api/student/syllabus...` | `GET /api/syllabus`, `POST /api/syllabus/get_weekdates`, `GET /api/syllabus/status` |
+> | `GET /api/student/materials` | `GET /api/content/studymaterial` (+ `/assignment`, `/syllabus`, `/other`) |
+> | `GET /api/student/timeline` | `GET /api/timeline` |
+> | `GET /api/student/homework` | `GET /api/homework` |
+> | `GET /api/student/attendance` | `GET /api/attendence/getAttendence` |
+> | `GET /api/student/notifications` | `GET /api/notification` |
+> | `GET /api/student/timetable` | `GET /api/timetable` |
+> | `GET /api/student/calendar/...` | `/api/calendar`, `/api/calendar/getevents` |
+> | `GET /api/student/chat/...` | `/api/chat/myuser`, `/api/chat/getChatRecord`, ... |
+> | `GET /api/student/leave-applications` | `GET /api/apply_leave` |
+> | `GET /api/student/fees` | `GET /api/user/getfees` (+ `/api/user/fees`) |
+> | `GET /api/student/books` | `GET /api/book` |
+> | `GET /api/student/online-exams` | `GET /api/onlineexam` |
+> | `GET /api/student/transport` | `GET /api/route` |
+> | `GET /api/student/hostels` | `GET /api/hostel` |
+> | `GET /api/student/teachers` | `GET /api/teacher` |
+> | `GET /api/student/dashboard` / `profile` | `GET /api/user/dashboard` / `GET /api/user/profile` |
 
 ## 1. How the CI app works (important for the conversion)
 

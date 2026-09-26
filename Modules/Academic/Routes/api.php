@@ -54,6 +54,8 @@ Route::middleware('auth:sanctum')->prefix('api')->group(function () {
     Route::post('/onlineexam/submit', [OnlineExamController::class, 'submit']);
     Route::get('/onlineexam/downloadattachment/{doc}', [OnlineExamController::class, 'downloadattachment']);
 
+    // G-1.7: must precede /subject/{id} or the wildcard swallows it.
+    Route::match(['get', 'post'], '/subject/getSubjctByClassandSection', [SubjectController::class, 'getSubjctByClassandSection']);
     Route::get('/subject', [SubjectController::class, 'index']);
     Route::get('/subject/{id}', [SubjectController::class, 'view']);
 

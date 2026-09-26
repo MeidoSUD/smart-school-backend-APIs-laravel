@@ -4,11 +4,13 @@ namespace Modules\Operations\Http\Controllers\Api;
 
 use Modules\Operations\Entities\Content;
 use Modules\Operations\Entities\ShareContent;
+use Modules\Academic\Entities\Classe;
 use Modules\Academic\Entities\StudentSession;
 use Modules\Academic\Entities\Student;
 use Modules\Core\Entities\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * Converted from CodeIgniter: codelgiterControllers/user/Content.php
@@ -188,6 +190,7 @@ class ContentController extends \Modules\Core\Http\Controllers\Api\Controller
 
         $data = [
             'title' => 'Upload Content',
+            'title_list' => 'Upload Content List',
             'content' => $content,
             'superadmin_restriction' => $superadmin_restriction,
             'is_valid' => $isValid,
@@ -200,14 +203,23 @@ class ContentController extends \Modules\Core\Http\Controllers\Api\Controller
 
     public function index(): JsonResponse
     {
+        // CI source: api/user/Content.php index() keys: title, title_list,
+        // list, ght (content types), classlist.
         $list = Content::where('is_active', 'yes')->get();
-        
+
         $data = [
             'title' => 'Upload Content',
             'title_list' => 'Upload Content List',
             'list' => $list,
+            'ght' => [
+                'assignments' => 'Assignments',
+                'study_material' => 'Study Material',
+                'syllabus' => 'Syllabus',
+                'other_download' => 'Other Download',
+            ],
+            'classlist' => Classe::orderBy('id')->get(),
         ];
-        
+
         return $this->successResponse($data);
         }
 
@@ -267,9 +279,12 @@ class ContentController extends \Modules\Core\Http\Controllers\Api\Controller
 
 
 
-    public function download($file): JsonResponse
+    public function download($file): JsonResponse|BinaryFileResponse
     {
-        return $this->successResponse(['file' => $file]);
+        // CI source: api/user/Content.php download($file) streams the file
+        // from uploads/school_content/material via media_storage->filedownload.
+        // Stream the file when present; otherwise 404 (never JSON-only).
+        return $this->sendStoredFile($file, 'uploads/school_content/material');
     }
 
     public function syllabus(Request $request): JsonResponse

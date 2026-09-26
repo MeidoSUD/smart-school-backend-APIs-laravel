@@ -22,6 +22,11 @@ Route::prefix('api')->group(function () {
             Route::get('/profile', [UserController::class, 'profile']);
             Route::get('/fees', [UserController::class, 'fees']);
             Route::get('/getfees', [UserController::class, 'getfees']);
+            // T-4.5: CI api/user/User.php fee print/collect + detail view.
+            Route::post('/getProcessingfees', [UserController::class, 'getProcessingfees']);
+            Route::post('/getcollectfee', [UserController::class, 'getcollectfee']);
+            Route::post('/printFeesByGroupArray', [UserController::class, 'printFeesByGroupArray']);
+            Route::get('/view/{id}', [UserController::class, 'view']);
 
             Route::get('/documents', [UserController::class, 'documents']);
             Route::post('/documents', [UserController::class, 'adddoc']);

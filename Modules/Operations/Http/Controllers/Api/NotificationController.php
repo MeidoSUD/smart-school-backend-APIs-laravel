@@ -43,7 +43,10 @@ class NotificationController extends \Modules\Core\Http\Controllers\Api\Controll
             ->filter(fn ($notification) => strtotime(date('Y-m-d')) >= strtotime($notification->publish_date))
             ->values();
 
-        return $this->successResponse(['notificationlist' => $notificationList]);
+        return $this->successResponse([
+            'title' => 'Notifications',
+            'notificationlist' => $notificationList,
+        ]);
     }
 
 
@@ -77,7 +80,7 @@ class NotificationController extends \Modules\Core\Http\Controllers\Api\Controll
                 return $this->errorResponse('Unable to mark notification as read');
             }
 
-            return $this->successResponse(null, 'Notification marked as read');
+            return $this->successResponse(['notification' => true], 'Notification marked as read');
         }
 
 
@@ -125,12 +128,17 @@ class NotificationController extends \Modules\Core\Http\Controllers\Api\Controll
 
         
         $setting = Setting::first();
-        $superadminRestriction = $setting ? ($setting->superadmin_restriction ?? false) : false;
-        
+        // CI source: api/user/Notification.php notification(): when
+        // superadmin_restriction == 'disabled' hide creator only for role_id 7,
+        // otherwise always show creator.
+        $superadminRestriction = $setting ? ($setting->superadmin_restriction ?? 'enabled') : 'enabled';
+
         if ($notificationlist->created_id) {
             $staff = Staff::find($notificationlist->created_id);
-            if ($staff && (!$superadminRestriction || $staff->role_id != 7)) {
-                $notificationlist->created_by = ($staff->surname ? $staff->name . ' ' . $staff->surname : $staff->name) . ' (' . $staff->employee_id . ')';
+            if ($staff && !($superadminRestriction === 'disabled' && (int) $staff->role_id === 7)) {
+                $notificationlist->created_by = ($staff->surname !== '' && $staff->surname !== null)
+                    ? $staff->name . ' ' . $staff->surname . '  (' . $staff->employee_id . ')'
+                    : $staff->name . ' (' . $staff->employee_id . ')';
             } else {
                 $notificationlist->created_by = '';
                 }

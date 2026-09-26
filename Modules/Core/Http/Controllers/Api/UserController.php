@@ -4,6 +4,7 @@ namespace Modules\Core\Http\Controllers\Api;
 
 use Modules\Academic\Entities\Student;
 use Modules\Academic\Entities\StudentSession;
+use Modules\Academic\Entities\ExamSchedule;
 use Modules\Academic\Entities\StudentAttendence;
 use Modules\Academic\Entities\AttendenceType;
 use Modules\Academic\Entities\Homework;
@@ -717,6 +718,366 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
             'transport_fees' => $transport_fees,
             'student_processing_fee' => $student_processing_fee,
         ]);
+    }
+
+    public function view($id, Request $request): JsonResponse
+    {
+        // CI source: api/user/User.php view($id) keys: title, student_due_fee,
+        // transport_fee, examSchedule [{exam_name, exam_result:
+        // [{exam_schedule_id, exam_id, full_marks, passing_marks, exam_name,
+        // exam_type, attendence, get_marks}]}], student.
+        // T-4.4: CI has no ownership check; Laravel enforces it (IDOR guard).
+        $user = $request->user();
+
+        if (!$user) {
+            return $this->errorResponse('Unauthorized', null, 401);
+        }
+
+        $allowedIds = $user->role === 'parent'
+            ? Student::where('parent_id', $user->id)->pluck('id')->map(fn ($v) => (int) $v)->all()
+            : [$this->getStudentId($user)];
+
+        if (!in_array((int) $id, $allowedIds, true)) {
+            return $this->errorResponse('Forbidden', null, 403);
+        }
+
+        $student = Student::find($id);
+        if (!$student) {
+            return $this->errorResponse('Student not found', null, 404);
+        }
+
+        $setting = $this->schoolSettingsService->getSettings();
+        $targetSession = StudentSession::where('student_id', $id)
+            ->when($setting, fn ($q) => $q->where('session_id', $setting->session_id))
+            ->first()
+            ?? StudentSession::where('student_id', $id)->orderBy('id', 'desc')->first();
+
+        if (!$targetSession) {
+            return $this->errorResponse('Student session not found');
+        }
+
+        $studentDueFee = $this->getDueFeeByStudent(
+            $targetSession->class_id,
+            $targetSession->section_id,
+            (int) $id,
+            $targetSession->session_id
+        );
+
+        $transportFee = DB::table('transport_feemaster')
+            ->leftJoin('student_transport_fees', function ($join) use ($targetSession) {
+                $join->on('transport_feemaster.id', '=', 'student_transport_fees.transport_feemaster_id')
+                    ->where('student_transport_fees.student_session_id', '=', $targetSession->id);
+            })
+            ->where('transport_feemaster.session_id', $targetSession->session_id)
+            ->orderBy('transport_feemaster.id')
+            ->select('transport_feemaster.*', 'student_transport_fees.id as student_transport_fee_id')
+            ->get();
+
+        $examList = ExamSchedule::getExamsByClassAndSection(
+            $targetSession->class_id,
+            $targetSession->section_id,
+            $targetSession->session_id
+        );
+
+        $examSchedule = [];
+        foreach ($examList as $exam) {
+            $rows = ExamSchedule::getResultsByStudentAndExam(
+                $exam->exam_id,
+                (int) $id,
+                $targetSession->session_id
+            );
+
+            $x = [];
+            foreach ($rows as $value) {
+                $x[] = [
+                    'exam_schedule_id' => $value->exam_schedule_id,
+                    'exam_id' => $value->exam_id,
+                    'full_marks' => $value->full_marks,
+                    'passing_marks' => $value->passing_marks,
+                    'exam_name' => $value->name,
+                    'exam_type' => $value->type,
+                    'attendence' => $value->attendence,
+                    'get_marks' => $value->get_marks,
+                ];
+            }
+
+            $examSchedule[] = [
+                'exam_name' => $exam->name ?? 'Exam',
+                'exam_result' => $x,
+            ];
+        }
+
+        return $this->successResponse([
+            'title' => 'Student Details',
+            'student_due_fee' => $studentDueFee,
+            'transport_fee' => $transportFee,
+            'examSchedule' => $examSchedule,
+            'student' => $student,
+        ]);
+    }
+
+    public function getProcessingfees(Request $request): JsonResponse
+    {
+        // CI source: api/user/User.php getProcessingfees() — same keys as
+        // getfees except student_due_fee comes from getStudentProcessingFees
+        // and there is no student_processing_fee flag / no transport gate.
+        $user = $request->user();
+
+        if (!$user) {
+            return $this->errorResponse('Unauthorized', null, 401);
+        }
+
+        $studentSession = $this->studentSessionService->getStudentSession($user);
+        if (!$studentSession) {
+            return $this->errorResponse('Student session not found');
+        }
+
+        $student = Student::find($studentSession->student_id);
+        $setting = $this->schoolSettingsService->getSettings();
+        $feeData = $this->buildStudentFeeData($studentSession);
+
+        $processingDueFee = array_values(array_filter(
+            $feeData['student_due_fee'],
+            fn ($master) => DB::table('student_fees_processing')
+                ->where('student_fees_master_id', $master->id)
+                ->exists()
+        ));
+
+        $categorylist = Category::query()->get()->map(fn ($cat) => [
+            'id' => $cat->id,
+            'category' => $cat->category,
+        ])->values();
+
+        return $this->successResponse([
+            'categorylist' => $categorylist,
+            'sch_setting' => $setting,
+            'adm_auto_insert' => $setting ? $setting->adm_auto_insert : false,
+            'paymentoption' => false,
+            'payment_method' => !empty($this->payment_method ?? false),
+            'title' => 'Student Details',
+            'student_discount_fee' => $feeData['student_discount_fee'],
+            'student_due_fee' => $processingDueFee,
+            'student' => $this->presentFeeStudent($student, $studentSession),
+            'transport_fees' => $feeData['transport_fees'],
+        ]);
+    }
+
+    public function getcollectfee(Request $request): JsonResponse
+    {
+        // CI source: api/user/User.php getcollectfee() — POST `data` (JSON
+        // array) → settinglist + feearray (transport vs non-transport branch).
+        return $this->collectFeeArray($request, false);
+    }
+
+    public function printFeesByGroupArray(Request $request): JsonResponse
+    {
+        // CI source: api/user/User.php printFeesByGroupArray() — same loop as
+        // getcollectfee but returns sch_setting instead of settinglist.
+        return $this->collectFeeArray($request, true);
+    }
+
+    private function collectFeeArray(Request $request, bool $withSchSetting): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return $this->errorResponse('Unauthorized', null, 401);
+        }
+
+        $studentSession = $this->studentSessionService->getStudentSession($user);
+        if (!$studentSession) {
+            return $this->errorResponse('Student session not found');
+        }
+
+        $raw = $request->post('data', $request->get('data', '[]'));
+        $records = is_string($raw) ? (json_decode($raw) ?? []) : $raw;
+        if (!is_array($records)) {
+            return $this->errorResponse('Invalid data payload');
+        }
+
+        $feesArray = [];
+        foreach ($records as $item) {
+            $item = (array) $item;
+            $feeCategory = $item['fee_category'] ?? null;
+
+            if ($feeCategory === 'transport') {
+                $row = $this->getTransportFeeRow((int) ($item['trans_fee_id'] ?? 0));
+            } else {
+                $row = $this->getDueFeeRow(
+                    (int) ($item['fee_session_group_id'] ?? 0),
+                    (int) ($item['fee_master_id'] ?? 0),
+                    (int) ($item['fee_groups_feetype_id'] ?? 0)
+                );
+            }
+
+            if (!$row) {
+                return $this->errorResponse('Fee record not found', null, 404);
+            }
+
+            if ((int) $row->student_session_id !== (int) $studentSession->id) {
+                return $this->errorResponse('Forbidden', null, 403);
+            }
+
+            $row->fee_category = $feeCategory;
+            $feesArray[] = $row;
+        }
+
+        if ($withSchSetting) {
+            return $this->successResponse([
+                'sch_setting' => $this->schoolSettingsService->getSettings(),
+                'feearray' => $feesArray,
+            ]);
+        }
+
+        return $this->successResponse([
+            'settinglist' => DB::table('settings')->get(),
+            'feearray' => $feesArray,
+        ]);
+    }
+
+    private function getDueFeeRow(int $feeSessionGroupId, int $feeMasterId, int $feeGroupsFeetypeId): ?object
+    {
+        // Mirrors Studentfeemaster_model::getDueFeeByFeeSessionGroupFeetype().
+        if ($feeSessionGroupId <= 0 || $feeMasterId <= 0 || $feeGroupsFeetypeId <= 0) {
+            return null;
+        }
+
+        return DB::table('student_fees_master')
+            ->join('fee_session_groups', 'fee_session_groups.id', '=', 'student_fees_master.fee_session_group_id')
+            ->join('fee_groups_feetype', 'fee_groups_feetype.fee_session_group_id', '=', 'fee_session_groups.id')
+            ->join('fee_groups', 'fee_groups.id', '=', 'fee_groups_feetype.fee_groups_id')
+            ->join('feetype', 'feetype.id', '=', 'fee_groups_feetype.feetype_id')
+            ->leftJoin('student_fees_deposite', function ($join) {
+                $join->on('student_fees_deposite.student_fees_master_id', '=', 'student_fees_master.id')
+                    ->on('student_fees_deposite.fee_groups_feetype_id', '=', 'fee_groups_feetype.id');
+            })
+            ->join('student_session', 'student_session.id', '=', 'student_fees_master.student_session_id')
+            ->join('classes', 'classes.id', '=', 'student_session.class_id')
+            ->join('sections', 'sections.id', '=', 'student_session.section_id')
+            ->join('students', 'students.id', '=', 'student_session.student_id')
+            ->where('student_fees_master.fee_session_group_id', $feeSessionGroupId)
+            ->where('student_fees_master.id', $feeMasterId)
+            ->where('fee_groups_feetype.id', $feeGroupsFeetypeId)
+            ->select(
+                'student_fees_master.id',
+                'student_fees_master.is_system',
+                'student_fees_master.student_session_id',
+                'student_fees_master.fee_session_group_id',
+                'student_fees_master.amount as student_fees_master_amount',
+                'fee_groups_feetype.id as fee_groups_feetype_id',
+                'students.id as student_id',
+                'students.firstname',
+                'students.middlename',
+                'students.admission_no',
+                'students.lastname',
+                'student_session.class_id',
+                'classes.class',
+                'sections.section',
+                'students.guardian_name',
+                'students.guardian_phone',
+                'students.father_name',
+                'student_session.section_id',
+                'fee_groups_feetype.amount',
+                'fee_groups_feetype.due_date',
+                'fee_groups_feetype.fine_amount',
+                'fee_groups_feetype.fee_groups_id',
+                'fee_groups.name',
+                'fee_groups_feetype.feetype_id',
+                'feetype.code',
+                'feetype.type',
+                DB::raw('IFNULL(student_fees_deposite.id,0) as student_fees_deposite_id'),
+                DB::raw('IFNULL(student_fees_deposite.amount_detail,0) as amount_detail')
+            )
+            ->first();
+    }
+
+    private function getTransportFeeRow(int $transportFeeId): ?object
+    {
+        // Mirrors Studentfeemaster_model::getTransportFeeByID().
+        if ($transportFeeId <= 0) {
+            return null;
+        }
+
+        return DB::table('student_transport_fees')
+            ->join('transport_feemaster', 'transport_feemaster.id', '=', 'student_transport_fees.transport_feemaster_id')
+            ->leftJoin('student_fees_deposite', 'student_fees_deposite.student_transport_fee_id', '=', 'student_transport_fees.id')
+            ->join('student_session', 'student_session.id', '=', 'student_transport_fees.student_session_id')
+            ->join('classes', 'classes.id', '=', 'student_session.class_id')
+            ->join('sections', 'sections.id', '=', 'student_session.section_id')
+            ->join('students', 'students.id', '=', 'student_session.student_id')
+            ->join('route_pickup_point', 'route_pickup_point.id', '=', 'student_transport_fees.route_pickup_point_id')
+            ->where('student_transport_fees.id', $transportFeeId)
+            ->select(
+                'student_transport_fees.*',
+                'route_pickup_point.fees',
+                'transport_feemaster.month',
+                'transport_feemaster.due_date',
+                'transport_feemaster.fine_amount',
+                'transport_feemaster.fine_type',
+                'transport_feemaster.fine_percentage',
+                'students.id as student_id',
+                'students.firstname',
+                'students.middlename',
+                'students.admission_no',
+                'students.lastname',
+                'student_session.class_id',
+                'classes.class',
+                'sections.section',
+                'students.guardian_name',
+                'students.guardian_phone',
+                'students.father_name',
+                'student_session.section_id',
+                DB::raw('IFNULL(student_fees_deposite.id,0) as student_fees_deposite_id'),
+                DB::raw('IFNULL(student_fees_deposite.amount_detail,0) as amount_detail')
+            )
+            ->first();
+    }
+
+    private function getDueFeeByStudent(int $classId, int $sectionId, int $studentId, int $sessionId): array
+    {
+        // Mirrors Studentfee_model::getDueFeeBystudent() (same as MarkController).
+        $sql = "SELECT feemasters.id as feemastersid, feemasters.amount as amount,"
+            . "IFNULL(student_fees.id, 'xxx') as invoiceno,"
+            . "IFNULL(student_fees.amount_discount, 'xxx') as discount,"
+            . "IFNULL(student_fees.amount_fine, 'xxx') as fine,"
+            . "IFNULL(student_fees.payment_mode, 'xxx') as payment_mode,"
+            . "IFNULL(student_fees.date, 'xxx') as date,"
+            . "feetype.type, feecategory.category, student_fees.description "
+            . "FROM feemasters LEFT JOIN (select student_fees.id,student_fees.feemaster_id,"
+            . "student_fees.payment_mode,student_fees.amount_fine,student_fees.amount_discount,"
+            . "student_fees.date,student_fees.student_session_id,student_fees.description "
+            . "from student_fees, student_session where "
+            . "student_fees.student_session_id=student_session.id and student_session.student_id=? "
+            . "and student_session.class_id=? and student_session.section_id=?) as student_fees "
+            . "ON student_fees.feemaster_id=feemasters.id "
+            . "JOIN feetype ON feemasters.feetype_id = feetype.id "
+            . "JOIN feecategory ON feetype.feecategory_id = feecategory.id "
+            . "where feemasters.class_id=? and feemasters.session_id=?";
+
+        return DB::select($sql, [$studentId, $classId, $sectionId, $classId, $sessionId]);
+    }
+
+    private function presentFeeStudent($student, StudentSession $studentSession): array
+    {
+        return [
+            'id' => $student->id,
+            'admission_no' => $student->admission_no,
+            'roll_no' => $student->roll_no,
+            'firstname' => $student->firstname,
+            'middlename' => $student->middlename,
+            'lastname' => $student->lastname,
+            'image' => $student->image,
+            'mobileno' => $student->mobileno,
+            'category_id' => $student->category_id,
+            'rte' => $student->rte,
+            'father_name' => $student->father_name,
+            'guardian_phone' => $student->guardian_phone,
+            'guardian_email' => $student->guardian_email,
+            'parent_app_key' => $student->parent_app_key,
+            'class' => $studentSession->class->class ?? null,
+            'section' => $studentSession->section->section ?? null,
+            'student_session_id' => $studentSession->id,
+        ];
     }
 
     private function buildStudentFeeData(StudentSession $studentSession): array

@@ -215,9 +215,14 @@ class TeacherController extends Controller
             return $this->errorResponse('Student session not found');
         }
 
-        $isAssignedTeacher = TeacherSubject::where('teacher_id', $id)
-            ->where('class_section_id', $studentSession->id)
-            ->exists();
+        $classSectionId = ClassSection::where('class_id', $studentSession->class_id)
+            ->where('section_id', $studentSession->section_id)
+            ->value('id');
+
+        $isAssignedTeacher = $classSectionId
+            && TeacherSubject::where('teacher_id', $id)
+                ->where('class_section_id', $classSectionId)
+                ->exists();
 
         if (! $isAssignedTeacher) {
             return $this->errorResponse('Teacher not found for your class', null, 404);

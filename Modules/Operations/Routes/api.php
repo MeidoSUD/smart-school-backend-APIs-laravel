@@ -31,6 +31,7 @@ Route::middleware('auth:sanctum')->prefix('api')->group(function () {
     Route::get('/book', [BookController::class, 'index']);
     Route::get('/book/issue', [BookController::class, 'issue']);
     
+    Route::get('/chat', [ChatController::class, 'index']);
     Route::get('/chat/myuser', [ChatController::class, 'myuser']);
     Route::post('/chat/getChatRecord', [ChatController::class, 'getChatRecord']);
     Route::post('/chat/chatUpdate', [ChatController::class, 'chatUpdate'])->middleware('throttle:30,1');
@@ -40,6 +41,7 @@ Route::middleware('auth:sanctum')->prefix('api')->group(function () {
     Route::get('/chat/mychatnotification', [ChatController::class, 'mychatnotification']);
     Route::post('/chat/newMessage', [ChatController::class, 'newMessage'])->middleware('throttle:30,1');
     
+    Route::get('/content', [ContentController::class, 'index']);
     Route::get('/content/list', [ContentController::class, 'list']);
     Route::get('/content/getsharelist', [ContentController::class, 'getsharelist']);
     Route::get('/content/assignment', [ContentController::class, 'assignment']);
