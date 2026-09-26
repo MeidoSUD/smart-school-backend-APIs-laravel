@@ -49,10 +49,11 @@ Route::middleware('auth:sanctum')->prefix('api')->group(function () {
 
     Route::get('/onlineexam', [OnlineExamController::class, 'index']);
     Route::get('/onlineexam/closed', [OnlineExamController::class, 'closed']);
-    Route::get('/onlineexam/{id}', [OnlineExamController::class, 'exam_detail']);
     Route::post('/onlineexam/startexam', [OnlineExamController::class, 'startexam']);
     Route::post('/onlineexam/submit', [OnlineExamController::class, 'submit']);
+    Route::post('/onlineexam/print', [OnlineExamController::class, 'print']);
     Route::get('/onlineexam/downloadattachment/{doc}', [OnlineExamController::class, 'downloadattachment']);
+    Route::get('/onlineexam/{id}', [OnlineExamController::class, 'exam_detail'])->whereNumber('id');
 
     // G-1.7: must precede /subject/{id} or the wildcard swallows it.
     Route::match(['get', 'post'], '/subject/getSubjctByClassandSection', [SubjectController::class, 'getSubjctByClassandSection']);

@@ -101,9 +101,44 @@ final class OnlineExamController extends Controller
             return $this->errorResponse('Student session not found', null, 404);
         }
 
-        $examId = $this->exams->startExam($request->examId(), $session);
+        // Mirrors CI getExamForm(): exam + questions + adjusted duration + question_status.
+        $payload = $this->exams->startExam($request->examId(), $session);
 
-        return $this->successResponse(['exam_id' => $examId, 'started' => true], 'Exam started successfully');
+        return $this->successResponse([
+            'exam_id' => $request->examId(),
+            'started' => true,
+            'status' => 0,
+            'exam' => $payload['exam'],
+            'duration' => $payload['duration'],
+            'question_status' => $payload['question_status'],
+            'total_question' => $payload['total_question'],
+            'onlineexam_student_id' => $payload['onlineexam_student_id'],
+            'questions' => OnlineExamQuestionResource::collection($payload['questions']),
+        ], 'Exam started successfully');
+    }
+
+    public function print(Request $request): JsonResponse
+    {
+        // Mirrors CI user/Onlineexam::print() (POST exam_id -> printable payload).
+        $examId = (int) ($request->input('exam_id') ?? $request->input('onlineexam_id') ?? 0);
+        if ($examId < 1) {
+            return $this->errorResponse('Validation failed', ['exam_id' => ['The exam id field is required.']], 422);
+        }
+        $session = $this->getStudentSession($request->user());
+
+        if (! $session instanceof StudentSession) {
+            return $this->errorResponse('Student session not found', null, 404);
+        }
+
+        $detail = $this->exams->getExamDetail($examId, $session);
+
+        return $this->successResponse([
+            'exam' => $detail['exam'],
+            'student' => $detail['student'],
+            'questions' => OnlineExamQuestionResource::collection($detail['questions'])
+                ->each(fn (OnlineExamQuestionResource $r) => $r->showCorrect($detail['publishResult'])),
+            'stats' => $detail['stats'],
+        ]);
     }
 
     public function submit(SubmitOnlineExamRequest $request): JsonResponse

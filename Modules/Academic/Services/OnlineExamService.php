@@ -16,16 +16,22 @@ final class OnlineExamService
     public function getExamsForSession(StudentSession $session): Collection
     {
         if (Schema::hasTable('onlineexam')) {
+            // CI: getstudentexamlist() filters exam_to >= now (upcoming tab).
+            // CI: getStudentexam() selects counter = attempts count per student.
             return DB::table('onlineexam')
                 ->join('onlineexam_students', 'onlineexam_students.onlineexam_id', '=', 'onlineexam.id')
                 ->where('onlineexam_students.student_session_id', $session->id)
                 ->where('onlineexam.is_active', 1)
+                ->where('onlineexam.exam_to', '>=', now())
                 ->select([
                     'onlineexam.*',
                     'onlineexam_students.id as onlineexam_student_id',
                     'onlineexam_students.is_attempted',
                     'onlineexam_students.rank',
+                    DB::raw('(select count(*) from onlineexam_attempts where onlineexam_attempts.onlineexam_student_id = onlineexam_students.id) as counter'),
+                    DB::raw('(select count(*) from onlineexam_questions where onlineexam_questions.onlineexam_id = onlineexam.id) as total_ques'),
                 ])
+                ->orderByDesc('onlineexam.exam_from')
                 ->get();
         }
 
@@ -38,6 +44,7 @@ final class OnlineExamService
     public function getClosedExamsForSession(StudentSession $session): Collection
     {
         if (Schema::hasTable('onlineexam')) {
+            // CI: getstudentclosedexamlist() filters exam_to < now (closed tab).
             return DB::table('onlineexam')
                 ->join('onlineexam_students', 'onlineexam_students.onlineexam_id', '=', 'onlineexam.id')
                 ->where('onlineexam_students.student_session_id', $session->id)
@@ -48,7 +55,10 @@ final class OnlineExamService
                     'onlineexam_students.id as onlineexam_student_id',
                     'onlineexam_students.is_attempted',
                     'onlineexam_students.rank',
+                    DB::raw('(select count(*) from onlineexam_attempts where onlineexam_attempts.onlineexam_student_id = onlineexam_students.id) as counter'),
+                    DB::raw('(select count(*) from onlineexam_questions where onlineexam_questions.onlineexam_id = onlineexam.id) as total_ques'),
                 ])
+                ->orderByDesc('onlineexam.exam_from')
                 ->get();
         }
 
@@ -116,17 +126,27 @@ final class OnlineExamService
         ];
     }
 
-    public function startExam(int $examId, StudentSession $session): int
+    /**
+     * Mirrors CI user/Onlineexam::getExamForm().
+     * CI logic: if now >= exam_to => question_status=1 (blocked);
+     * else if attempt > attempts_count => record new attempt, status=0 (allowed);
+     * else question_status=1 (max attempts reached).
+     * Also adjusts duration to min(remaining_time, exam.duration).
+     *
+     * @return array{exam: object, questions: Collection, duration: string, question_status: int, total_question: int, onlineexam_student_id: int}
+     */
+    public function startExam(int $examId, StudentSession $session): array
     {
-        return DB::transaction(function () use ($examId, $session): int {
+        return DB::transaction(function () use ($examId, $session): array {
             $exam = DB::table('onlineexam')->where('id', $examId)->lockForUpdate()->first();
 
             if (! $exam) {
                 abort(404, 'Exam not found');
             }
 
+            // CI: question_status=1 when exam date passed.
             if (! empty($exam->exam_to) && Carbon::now()->gte(Carbon::parse($exam->exam_to))) {
-                abort(422, 'Exam duration has expired');
+                abort(422, 'You have reached total attempts or exam date passed, please contact to administrator');
             }
 
             $onlineExamStudent = DB::table('onlineexam_students')
@@ -155,8 +175,9 @@ final class OnlineExamService
 
             $maxAttempts = (int) ($exam->attempt ?? 1);
 
+            // CI: $exam->attempt > $getStudentAttemts => allow + add attempt.
             if ($attempts >= $maxAttempts) {
-                abort(422, 'Maximum attempts reached');
+                abort(422, 'You have reached total attempts or exam date passed, please contact to administrator');
             }
 
             DB::table('onlineexam_attempts')->insert([
@@ -165,8 +186,78 @@ final class OnlineExamService
                 'updated_at' => now(),
             ]);
 
-            return $examId;
+            // CI: getExamQuestions($recordid, $exam->is_random_question).
+            $isRandom = (bool) ($exam->is_random_question ?? $exam->is_random ?? false);
+            $questionsQuery = DB::table('onlineexam_questions')
+                ->join('questions', 'questions.id', '=', 'onlineexam_questions.question_id')
+                ->leftJoin('subjects', 'subjects.id', '=', 'questions.subject_id')
+                ->where('onlineexam_questions.onlineexam_id', $examId)
+                ->select([
+                    'onlineexam_questions.id as onlineexam_question_id',
+                    'onlineexam_questions.marks',
+                    'onlineexam_questions.neg_marks',
+                    'onlineexam_questions.question_id',
+                    'questions.question',
+                    'questions.question_type',
+                    'questions.level',
+                    'questions.opt_a',
+                    'questions.opt_b',
+                    'questions.opt_c',
+                    'questions.opt_d',
+                    'questions.opt_e',
+                    // Never expose answer key on start; detail exposes it only when published.
+                    'questions.descriptive_word_limit',
+                    'subjects.name as subject_name',
+                    'subjects.code as subject_code',
+                ]);
+            if ($isRandom) {
+                $questionsQuery->inRandomOrder();
+            } else {
+                $questionsQuery->orderByDesc('onlineexam_questions.id');
+            }
+            $questions = $questionsQuery->get();
+
+            // CI duration adjustment: min(remaining, exam.duration).
+            $duration = (string) ($exam->duration ?? '00:30:00');
+            if (! empty($exam->exam_to)) {
+                $remaining = (int) round((Carbon::parse($exam->exam_to)->timestamp - Carbon::now()->timestamp));
+                if ($remaining < 0) {
+                    $remaining = 0;
+                }
+                $examSecs = $this->hmsToSeconds($duration);
+                $duration = $remaining < $examSecs ? $this->secondsToHms($remaining) : $duration;
+            }
+
+            return [
+                'exam' => $exam,
+                'questions' => $questions,
+                'duration' => $duration,
+                'question_status' => 0,
+                'total_question' => $questions->count(),
+                'onlineexam_student_id' => (int) $onlineExamStudentId,
+            ];
         });
+    }
+
+    private function hmsToSeconds(string $time): int
+    {
+        // Mirrors CI getSecondsFromHMS().
+        $parts = array_reverse(explode(':', $time));
+        $seconds = 0;
+        foreach ($parts as $key => $value) {
+            if ($key > 2) {
+                break;
+            }
+            $seconds += (60 ** $key) * (int) $value;
+        }
+        return $seconds;
+    }
+
+    private function secondsToHms(int $seconds): string
+    {
+        // Mirrors CI getHMSFromSeconds().
+        $seconds = max(0, (int) round($seconds));
+        return sprintf('%02d:%02d:%02d', ($seconds / 3600), ($seconds / 60 % 60), $seconds % 60);
     }
 
     /**
