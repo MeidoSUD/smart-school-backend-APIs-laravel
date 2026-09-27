@@ -19,6 +19,8 @@ Route::middleware('auth:sanctum')->prefix('api')->group(function () {
     Route::get('/attendence/getAttendence', [AttendenceController::class, 'getAttendence']);
     Route::get('/attendence/getevents', [AttendenceController::class, 'getevents']);
     Route::post('/attendence/getdaysubattendence', [AttendenceController::class, 'getdaysubattendence']);
+    // Alias: CI client posts, but docs/Postman historically used GET ?date=.
+    Route::get('/attendence/getdaysubattendence', [AttendenceController::class, 'getdaysubattendence']);
 
     // G-1.4/1.5/1.6: must precede /exam/{id} or the wildcard swallows them.
     Route::get('/exam/getByFeecategory', [ExamController::class, 'getByFeecategory']);
