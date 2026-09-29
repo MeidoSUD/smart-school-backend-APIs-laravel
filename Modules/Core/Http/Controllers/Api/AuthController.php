@@ -16,7 +16,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 
 class AuthController extends \Modules\Core\Http\Controllers\Api\Controller
 {
@@ -178,7 +177,7 @@ class AuthController extends \Modules\Core\Http\Controllers\Api\Controller
             return $this->errorResponse('Invalid email or user type', null, 404);
         }
 
-        $verificationCode = Str::random(64);
+        $verificationCode = $this->generateResetCode();
         $user->verification_code = $verificationCode;
         $user->save();
 
@@ -229,7 +228,7 @@ class AuthController extends \Modules\Core\Http\Controllers\Api\Controller
     {
         $validated = $request->validated();
         $userType = $validated['user_type'];
-        $code = trim((string) $validated['verification_code']);
+        $code = strtoupper(trim((string) $validated['verification_code']));
         $newPassword = $validated['password'];
 
         $user = $this->findUserByResetCode($userType, $code);
@@ -312,6 +311,24 @@ class AuthController extends \Modules\Core\Http\Controllers\Api\Controller
         }
 
         return null;
+    }
+
+    /**
+     * 6-character mobile-friendly reset code (uppercase, unambiguous chars).
+     * Retried until unique in users.verification_code.
+     */
+    private function generateResetCode(): string
+    {
+        $alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+        $max = strlen($alphabet) - 1;
+        do {
+            $code = '';
+            for ($i = 0; $i < 6; $i++) {
+                $code .= $alphabet[random_int(0, $max)];
+            }
+        } while (User::where('verification_code', $code)->exists());
+
+        return $code;
     }
 
     /**

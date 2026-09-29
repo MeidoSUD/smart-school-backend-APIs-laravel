@@ -20,6 +20,10 @@ class ResetPasswordRequest extends FormRequest
                 $this->merge([$key => trim($this->input($key))]);
             }
         }
+        // Codes are generated uppercase; accept any case from mobile keyboards.
+        if (is_string($this->input('verification_code'))) {
+            $this->merge(['verification_code' => strtoupper($this->input('verification_code'))]);
+        }
     }
 
     public function rules(): array
