@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Academic\Http\Controllers\Api\ApplyLeaveController;
 use Modules\Academic\Http\Controllers\Api\AttendenceController;
 use Modules\Academic\Http\Controllers\Api\CalendarController;
+use Modules\Academic\Http\Controllers\Api\CbseExamController;
 use Modules\Academic\Http\Controllers\Api\ExamController;
 use Modules\Academic\Http\Controllers\Api\ExamScheduleController;
 use Modules\Academic\Http\Controllers\Api\HomeworkController;
@@ -31,6 +32,10 @@ Route::middleware('auth:sanctum')->prefix('api')->group(function () {
     Route::get('/exam/{id}', [ExamController::class, 'view']);
     Route::get('/examschedule', [ExamScheduleController::class, 'index']);
     Route::post('/examschedule/getexamscheduledetail', [ExamScheduleController::class, 'getexamscheduledetail']);
+
+    // CBSE exam timetable: mirrors CI user/cbse/exam/timetable
+    // (Exam::timetable -> getStudentExamTimetable -> user/cbse/timetable view).
+    Route::get('/cbse/exam/timetable', [CbseExamController::class, 'timetable']);
 
     Route::get('/homework', [HomeworkController::class, 'index']);
     Route::get('/homework/homework_detail/{id}/{status}', [HomeworkController::class, 'homework_detail']);

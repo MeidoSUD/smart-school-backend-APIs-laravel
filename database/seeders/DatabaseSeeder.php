@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             StudentTimelineSeeder::class,
             StudentDocumentSeeder::class,
             StudentExamSeeder::class,
+            CbseExamTimetableSeeder::class,
             StudentAttendenceSeeder::class,
             CalendarPageSeeder::class,
             VideoTutorialPageSeeder::class,
