@@ -74,7 +74,7 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
         $libraryMember = LibraryMember::where('member_type', $memberType)
             ->where('member_id', $studentId)
             ->first();
-        $bookList = false;
+        $bookList = [];
         if ($libraryMember) {
             $bookList = DB::table('book_issues')
                 ->leftJoin('libarary_members', 'libarary_members.id', '=', 'book_issues.member_id')
@@ -133,11 +133,13 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
 
         $notifications = DB::table('send_notification')
             ->leftJoin('staff', 'staff.id', '=', 'send_notification.created_id')
-            ->leftJoin('read_notification', function ($join) use ($user) {
+            ->leftJoin('read_notification', function ($join) use ($user, $studentId) {
                 $join->on('read_notification.notification_id', '=', 'send_notification.id');
                 if ($user->role === 'student') {
-                    $join->where('read_notification.student_id', '=', $user->id);
+                    // CI parity: Notification_model::getNotificationForStudent($students.id)
+                    $join->where('read_notification.student_id', '=', $studentId);
                 } elseif ($user->role === 'parent') {
+                    // CI parity: getNotificationForParent($users.id)
                     $join->where('read_notification.parent_id', '=', $user->id);
                 }
             })
@@ -171,38 +173,57 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
                 $complete = round(($subjectDetails->complete / $subjectDetails->total) * 100);
                 $incomplete = round(($subjectDetails->incomplete / $subjectDetails->total) * 100);
             }
-            $lebel = $value->name . ($value->code ? ' (' . $value->code . ')' : '');
-            $subjectsData[] = [
+            $lebel = ($value->code === null || $value->code === '') ? $value->name : $value->name . ' (' . $value->code . ')';
+            // CI parity: $data['subjects_data'][$subject_group_subjects_id] (assoc map).
+            $subjectsData[$value->subject_group_subjects_id] = [
                 'lebel' => $lebel,
                 'complete' => $complete,
                 'incomplete' => $incomplete,
                 'id' => $value->subject_group_subjects_id . '_' . $value->code,
-                'total' => $subjectDetails->total ?? 0,
+                'total' => $subjectDetails?->total ?? 0,
                 'name' => $value->name,
                 'graph_id' => $value->subject_group_subjects_id . time(),
             ];
         }
 
-        $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        // CI parity: Customlib::getDaysname() starts from sch_settings.start_week.
+        $weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        $startWeek = $setting->start_week ?? 'Monday';
+        $startIndex = array_search($startWeek, $weekDays);
+        $days = $startIndex === false
+            ? $weekDays
+            : array_merge(array_slice($weekDays, $startIndex), array_slice($weekDays, 0, $startIndex));
         $daysRecord = [];
         foreach ($days as $day) {
+            // CI parity: Subjecttimetable_model::getparentSubjectByClassandSectionDay()
+            // filters subject_timetable.session_id = current_session,
+            // staff.is_active = 1, orders by start_time.
             $daysRecord[$day] = ClassTimetable::where('class_id', $classId)
                 ->where('section_id', $sectionId)
                 ->where('day', $day)
-                ->with('subjectGroupSubject.subjectGroup.subjects')
+                ->where('session_id', $sessionId)
+                ->whereHas('staff', fn ($q) => $q->where('is_active', '1'))
+                ->with('subjectGroupSubject.subject')
                 ->with('staff')
-                ->orderBy('time_from')
+                // CI parity: getparentSubjectByClassandSectionDay() orders by
+                // `subject_timetable.start_time ASC`, where start_time is the
+                // 24h form of time_from (Customlib::timeFormat). Verified live:
+                // start_time/end_time are NULL for all 119 rows, so MySQL
+                // returns CI rows in NONDETERMINISTIC order (same query gave
+                // 1,2,6,3,4,5 then 3,4,5,1,2,6 across runs; CI web itself
+                // reshuffles every refresh). Backend therefore orders by the
+                // deterministic chronological intent: real start_time when
+                // present, else parsed time_from, then id. This equals CI's
+                // order whenever CI is deterministic.
+                ->orderByRaw("COALESCE(subject_timetable.start_time, STR_TO_DATE(subject_timetable.time_from, '%H:%i'))")
+                ->orderBy('subject_timetable.id')
                 ->get()
                 ->map(function ($row) {
-                    $subjectName = 'N/A';
-                    $subjectCode = '';
-                    if ($row->subjectGroupSubject && $row->subjectGroupSubject->subjectGroup && $row->subjectGroupSubject->subjectGroup->subjects) {
-                        $subject = $row->subjectGroupSubject->subjectGroup->subjects->first();
-                        if ($subject) {
-                            $subjectName = $subject->name;
-                            $subjectCode = $subject->code;
-                        }
-                    }
+                    // CI parity: getparentSubjectByClassandSectionDay() joins
+                    // subject_group_subjects.subject_id -> subjects directly
+                    // (the row's own subject), NOT the first subject of the group.
+                    $subjectName = $row->subjectGroupSubject?->subject?->name ?? 'N/A';
+                    $subjectCode = $row->subjectGroupSubject?->subject?->code ?? '';
                     return [
                         'id' => $row->id,
                         'subject_name' => $subjectName,
@@ -220,7 +241,8 @@ class UserController extends \Modules\Core\Http\Controllers\Api\Controller
                 });
         }
 
-        $visitors = Visitor::where('student_session_id', $studentSessionId)->get();
+        // CI parity: Visitors_model::visitorbystudentid() orders by id desc.
+        $visitors = Visitor::where('student_session_id', $studentSessionId)->orderBy('id', 'desc')->get();
 
         $teachers = [];
         $sessionId = $this->schoolSettingsService->getSettings()->session_id;
