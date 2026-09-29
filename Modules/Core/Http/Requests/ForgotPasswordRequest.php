@@ -6,7 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Contracts\Validation\Validator;
 
-class LoginRequest extends FormRequest
+class ForgotPasswordRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -16,26 +16,27 @@ class LoginRequest extends FormRequest
     public function prepareForValidation(): void
     {
         $this->merge([
-            'username' => is_string($this->input('username')) ? trim($this->input('username')) : $this->input('username'),
-            'password' => is_string($this->input('password')) ? trim($this->input('password')) : $this->input('password'),
+            'email' => is_string($this->input('email')) ? trim($this->input('email')) : $this->input('email'),
+            'user_type' => is_string($this->input('user_type')) ? trim($this->input('user_type')) : $this->input('user_type'),
         ]);
     }
 
     public function rules(): array
     {
         return [
-            'username' => 'required|string|max:50',
-            'password' => 'required|string|max:50',
+            // CI parity: Site::ufpassword() validates username (email) + user[] as required.
+            'email' => 'required|email|max:100',
+            'user_type' => 'required|in:student,parent',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'username.required' => 'Username is required',
-            'username.max' => 'Username must not exceed 50 characters',
-            'password.required' => 'Password is required',
-            'password.max' => 'Password must not exceed 50 characters',
+            'email.required' => 'Email is required',
+            'email.email' => 'Invalid email address',
+            'user_type.required' => 'User type is required',
+            'user_type.in' => 'Invalid email or user type',
         ];
     }
 

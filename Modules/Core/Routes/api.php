@@ -8,6 +8,8 @@ Route::prefix('api')->group(function () {
     // Public Routes
     Route::prefix('auth')->group(function () {
         Route::post('/login', [AuthController::class, 'login'])->name('api.auth.login')->middleware('throttle:5,1');
+        Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->name('api.auth.forgot-password')->middleware('throttle:5,1');
+        Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('api.auth.reset-password')->middleware('throttle:5,1');
     });
 
     // Protected Routes
