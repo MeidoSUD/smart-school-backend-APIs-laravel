@@ -35,6 +35,7 @@ class DatabaseSeeder extends Seeder
             CalendarPageSeeder::class,
             VideoTutorialPageSeeder::class,
             RoutePageSeeder::class,
+            StudentIncidentPageSeeder::class,
         ]);
     }
 }

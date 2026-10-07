@@ -91,6 +91,10 @@ class ApplyLeaveController extends \Modules\Core\Http\Controllers\Api\Controller
 
         $leaveId = $this->storeLeave($validated, $studentSession->id);
 
+        if ($leaveId === null) {
+            return $this->errorResponse('Leave not found', null, 404);
+        }
+
         $this->uploadLeaveDocument($request, $leaveId);
 
         return response()->json([
@@ -112,7 +116,19 @@ class ApplyLeaveController extends \Modules\Core\Http\Controllers\Api\Controller
         ];
 
         if (!empty($input['leave_id'])) {
-            ApplyLeave::where('id', $input['leave_id'])->update($data);
+            // CI `add()` updates when `leave_id` is posted (edit flow via
+            // `get_details`). Enforce ownership: only own student_session_id.
+            $owned = ApplyLeave::where('id', $input['leave_id'])
+                ->where('student_session_id', $studentSessionId)
+                ->exists();
+
+            if (!$owned) {
+                return null;
+            }
+
+            ApplyLeave::where('id', $input['leave_id'])
+                ->where('student_session_id', $studentSessionId)
+                ->update($data);
 
             return $input['leave_id'];
         }
@@ -152,9 +168,21 @@ class ApplyLeaveController extends \Modules\Core\Http\Controllers\Api\Controller
         ApplyLeave::where('id', $leaveId)->update(['docs' => $document]);
     }
 
-    public function remove_leave($id): JsonResponse
+    public function remove_leave($id, Request $request): JsonResponse
     {
-        $row = ApplyLeave::find($id);
+        $studentSession = $this->studentSessionService->getStudentSession($request->user());
+
+        if (!$studentSession) {
+            return $this->errorResponse('Student session not found');
+        }
+
+        $row = ApplyLeave::where('id', $id)
+            ->where('student_session_id', $studentSession->id)
+            ->first();
+
+        if (!$row) {
+            return $this->errorResponse('Leave not found', null, 404);
+        }
 
         if ($row && $row->docs) {
             $filePath = public_path('uploads/student_leavedocuments/' . $row->docs);
@@ -170,9 +198,17 @@ class ApplyLeaveController extends \Modules\Core\Http\Controllers\Api\Controller
         return $this->successResponse(null, 'Leave removed successfully');
     }
 
-    public function download($id): JsonResponse|BinaryFileResponse
+    public function download($id, Request $request): JsonResponse|BinaryFileResponse
     {
-        $row = ApplyLeave::find($id);
+        $studentSession = $this->studentSessionService->getStudentSession($request->user());
+
+        if (!$studentSession) {
+            return $this->errorResponse('Student session not found');
+        }
+
+        $row = ApplyLeave::where('id', $id)
+            ->where('student_session_id', $studentSession->id)
+            ->first();
 
         if (!$row || !$row->docs) {
             return $this->errorResponse('Document not found', null, 404);

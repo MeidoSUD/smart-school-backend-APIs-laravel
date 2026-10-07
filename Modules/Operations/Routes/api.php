@@ -59,6 +59,8 @@ Route::middleware('auth:sanctum')->prefix('api')->group(function () {
     Route::post('/notification/read', [NotificationController::class, 'read']);
     Route::get('/notification/download/{id}', [NotificationController::class, 'download']);
     Route::get('/notification/{id}', [NotificationController::class, 'notification']);
+    // CI parity: user/notification/notification POST {message_id}
+    Route::post('/notification/detail', [NotificationController::class, 'notification']);
     
     Route::get('/route', [RouteController::class, 'index']);
     Route::post('/route/getbusdetail', [RouteController::class, 'getbusdetail']);
