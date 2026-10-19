@@ -30,6 +30,10 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        // تفعيل كل الأدوار النظامية (1..7) حتى لا يظهر Staff بدل Teacher
+        // بسبب roles.is_active=0. هذا إصلاح بيانات فقط ولا يمس كود CodeIgniter.
+        DB::table('roles')->whereIn('id', [1, 2, 3, 4, 5, 6, 7])->update(['is_active' => 1]);
+
         // بيانات أساسية (لا تحذف الموجود)
         $session = Session::firstOrCreate(
             ['session' => '2024-2025'],
@@ -67,31 +71,31 @@ class UserSeeder extends Seeder
             ],
             'admin@school.com' => [
                 'employee_id' => 'ADM001', 'name' => 'Super Admin', 'surname' => '',
-                'password' => 'admin123', 'roles' => [5], // Staff (دور فعال)
+                'password' => 'admin123', 'roles' => [7], // Super Admin (يطابق site/login)
             ],
             'superadmin@gmail.com' => [
                 'employee_id' => 'DEMO-SADMIN', 'name' => 'Super Admin', 'surname' => '',
-                'password' => 'password', 'roles' => [5],
+                'password' => 'password', 'roles' => [7], // Super Admin
             ],
             'william@gmail.com' => [
                 'employee_id' => 'DEMO-ADMIN', 'name' => 'William', 'surname' => '',
-                'password' => 'password', 'roles' => [5],
+                'password' => 'password', 'roles' => [1], // Admin
             ],
             'jason@gmail.com' => [
                 'employee_id' => 'DEMO-TEACHER', 'name' => 'Jason', 'surname' => '',
-                'password' => 'password', 'roles' => [5],
+                'password' => 'password', 'roles' => [2], // Teacher (يطابق زر Teacher في CI login)
             ],
             'james.deckar@gmail.com' => [
                 'employee_id' => 'DEMO-ACCOUNTANT', 'name' => 'James Deckar', 'surname' => '',
-                'password' => 'password', 'roles' => [5],
+                'password' => 'password', 'roles' => [3], // Accountant
             ],
             'maria.ford@gmail.com' => [
                 'employee_id' => 'DEMO-RECEPTION', 'name' => 'Maria Ford', 'surname' => '',
-                'password' => 'password', 'roles' => [5],
+                'password' => 'password', 'roles' => [6], // Receptionist
             ],
             'brandon@gmail.com' => [
                 'employee_id' => 'DEMO-LIBRARIAN', 'name' => 'Brandon', 'surname' => '',
-                'password' => 'password', 'roles' => [5],
+                'password' => 'password', 'roles' => [4], // Librarian
             ],
         ];
 
@@ -135,13 +139,18 @@ class UserSeeder extends Seeder
                 $staff->save();
             }
 
-            // أدوار الموظف (staff_roles) - idempotent
+            // أدوار الموظف (staff_roles) - idempotent + تنظيف الأدوار الدخيلة
+            // حتى لا يبقى دور قديم خاطئ (مثل Staff=5 لجيسون) بجانب الدور الصحيح.
             foreach ($s['roles'] as $roleId) {
                 DB::table('staff_roles')->updateOrInsert(
                     ['staff_id' => $staff->id, 'role_id' => $roleId],
                     ['is_active' => 1, 'updated_at' => now()]
                 );
             }
+            DB::table('staff_roles')
+                ->where('staff_id', $staff->id)
+                ->whereNotIn('role_id', $s['roles'])
+                ->update(['is_active' => 0]);
         }
 
         // -------------------------------------------------

@@ -87,6 +87,8 @@ class DashboardSupportSeeder extends Seeder
             ['id' => 6, 'name' => 'Receptionist', 'is_active' => 1, 'is_system' => 1, 'is_superadmin' => 0],
             ['id' => 7, 'name' => 'Super Admin', 'is_active' => 1, 'is_system' => 1, 'is_superadmin' => 1],
         ];
+        // تفعيل الأدوار الموجودة مسبقاً (قد تكون معطلة is_active=0 في DB القديمة)
+        DB::table('roles')->whereIn('id', [1, 2, 3, 4, 5, 6, 7])->update(['is_active' => 1]);
         $existingRoleIds = DB::table('roles')->pluck('id')->toArray();
         foreach ($roles as $r) {
             if (!in_array($r['id'], $existingRoleIds)) {
@@ -101,6 +103,10 @@ class DashboardSupportSeeder extends Seeder
         $roleMap = [
             'TCH2024001' => 2, 'STF2024001' => 5,
             'ACC2024001' => 3, 'LIB2024001' => 4,
+            // الحسابات التجريبية مطابقة لأزرار الديمو في CI views/admin/login.php
+            'ADM001' => 7,
+            'DEMO-SADMIN' => 7, 'DEMO-ADMIN' => 1, 'DEMO-TEACHER' => 2,
+            'DEMO-ACCOUNTANT' => 3, 'DEMO-RECEPTION' => 6, 'DEMO-LIBRARIAN' => 4,
         ];
         $existingStaffRoles = DB::table('staff_roles')->get()->map(fn($sr) => $sr->role_id . '-' . $sr->staff_id)->toArray();
         foreach ($staff as $s) {

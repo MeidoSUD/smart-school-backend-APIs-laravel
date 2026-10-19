@@ -8,5 +8,7 @@ Route::middleware('auth:sanctum')->prefix('api')->group(function () {
     Route::post('/teacher/getSubjctByClassandSection', [TeacherController::class, 'getSubjctByClassandSection']);
     Route::post('/teacher/getSubjectTeachers', [TeacherController::class, 'getSubjectTeachers']);
     // G-1.10: registered last so the wildcard does not swallow fixed segments.
-    Route::get('/teacher/{id}', [TeacherController::class, 'view']);
+    // P0: numeric constraint so teacher.php fixed segments (/me, /dashboard,
+    // /my-classes) registered afterwards are never swallowed by {id}.
+    Route::get('/teacher/{id}', [TeacherController::class, 'view'])->whereNumber('id');
 });
