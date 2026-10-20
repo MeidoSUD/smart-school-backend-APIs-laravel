@@ -127,39 +127,131 @@ class TeacherStudentController extends TeacherController
     {
         $ctx = $this->context($request);
 
+        if (! TeacherRbac::hasPrivilege((int) $ctx->staff->id, 'student', 'can_view')) {
+            return $this->errorResponse('Forbidden: missing student can_view permission', null, 403);
+        }
+
         $sessionId = $ctx->sessionId;
 
         $student = DB::table('students')
             ->join('student_session', 'student_session.student_id', '=', 'students.id')
-            ->leftJoin('classes', 'student_session.class_id', '=', 'classes.id')
-            ->leftJoin('sections', 'sections.id', '=', 'student_session.section_id')
+            ->join('classes', 'student_session.class_id', '=', 'classes.id')
+            ->join('sections', 'sections.id', '=', 'student_session.section_id')
+            ->leftJoin('categories', 'students.category_id', '=', 'categories.id')
+            ->leftJoin('hostel_rooms', 'hostel_rooms.id', '=', 'students.hostel_room_id')
+            ->leftJoin('hostel', 'hostel.id', '=', 'hostel_rooms.hostel_id')
+            ->leftJoin('room_types', 'room_types.id', '=', 'hostel_rooms.room_type_id')
+            ->leftJoin('route_pickup_point', 'route_pickup_point.id', '=', 'student_session.route_pickup_point_id')
+            ->leftJoin('pickup_point', 'route_pickup_point.pickup_point_id', '=', 'pickup_point.id')
+            ->leftJoin('vehicle_routes', 'vehicle_routes.id', '=', 'student_session.vehroute_id')
+            ->leftJoin('transport_route', 'vehicle_routes.route_id', '=', 'transport_route.id')
+            ->leftJoin('vehicles', 'vehicles.id', '=', 'vehicle_routes.vehicle_id')
+            ->leftJoin('school_houses', 'school_houses.id', '=', 'students.school_house_id')
+            ->leftJoin('users', function ($join) {
+                $join->on('users.user_id', '=', 'students.id')->where('users.role', '=', 'student');
+            })
             ->where('students.id', $id)
             ->where('students.is_active', 'yes')
             ->when($sessionId, fn ($q) => $q->where('student_session.session_id', $sessionId))
-            ->select(
-                'students.*', 'student_session.id as student_session_id',
-                'student_session.class_id', 'student_session.section_id',
-                'classes.class as class_name', 'sections.section as section_name'
-            )
+            ->selectRaw('students.*, student_session.id as student_session_id, student_session.class_id, student_session.section_id, student_session.route_pickup_point_id, student_session.vehroute_id, student_session.transport_fees, student_session.fees_discount, classes.class, classes.class as class_name, sections.section, sections.section as section_name, categories.category, categories.category as category_name, hostel.id as hostel_id, hostel.hostel_name, hostel_rooms.room_no, room_types.id as room_type_id, room_types.room_type, pickup_point.name as pickup_point_name, transport_route.route_title, vehicles.vehicle_no, vehicles.driver_name, vehicles.driver_contact, vehicles.vehicle_model, vehicles.manufacture_year, vehicles.driver_licence, vehicles.vehicle_photo, school_houses.house_name, users.username, users.id as user_id')
             ->first();
 
         if (! $student) {
             return $this->errorResponse('Student not found', null, 404);
         }
 
-        $classSectionId = (int) DB::table('class_sections')
-            ->where('class_id', $student->class_id)
-            ->where('section_id', $student->section_id)
-            ->value('id');
-
-        if (! $classSectionId || ! TeacherScope::inScope($ctx->staff->id, $sessionId, $classSectionId)) {
-            return $this->errorResponse('Student is not in your scope', null, 403);
-        }
-
         unset($student->password);
         $student->full_name = trim(implode(' ', array_filter([$student->firstname, $student->middlename, $student->lastname])));
 
-        return $this->successResponse(['student' => $student]);
+        $studentSessionId = (int) $student->student_session_id;
+
+        $dueFees = $this->getStudentDueFees($studentSessionId);
+        $discountFees = $this->getStudentFeeDiscounts($studentSessionId);
+        $transportFees = $this->getStudentTransportFees($studentSessionId);
+        $siblings = $this->getStudentSiblings((int) ($student->parent_id ?? 0), (int) $student->id, $sessionId);
+        $studentDoc = DB::table('student_doc')->where('student_id', $student->id)->get()->all();
+        $timelineList = DB::table('student_timeline')->where('student_id', $student->id)->where('status', 'yes')->orderByDesc('timeline_date')->get()->all();
+        $behaviour = $this->getStudentBehaviour((int) $student->id, $sessionId);
+        $student->total_points = $behaviour['total_points'];
+        $examResult = $this->getStudentExamResults($studentSessionId);
+        $cbseExams = $this->getStudentCbseExams($studentSessionId);
+        $selectedYear = $request->query('year');
+        $attendance = $this->getStudentAttendance($studentSessionId, $sessionId, $selectedYear);
+        $yearList = DB::table('student_attendences')->selectRaw('DISTINCT YEAR(date) as year')->get()->all();
+
+        $gradeList = DB::table('grades')->get()->all();
+        $categoryList = DB::table('categories')->get()->all();
+        $attendanceTypesList = DB::table('attendence_type')->orderBy('id')->get()->all();
+        $marksDivision = DB::table('mark_divisions')->get()->all();
+
+        $schSetting = DB::table('sch_settings')->where('session_id', $sessionId)->first() ?: DB::table('sch_settings')->orderBy('id')->first();
+        $sessionName = DB::table('sessions')->where('id', $sessionId)->value('session') ?? '';
+        $classSection = DB::table('class_sections')
+            ->join('sections', 'class_sections.section_id', '=', 'sections.id')
+            ->where('class_sections.class_id', $student->class_id)
+            ->select('class_sections.*', 'sections.section')
+            ->get()
+            ->all();
+        $studentListBySection = DB::table('students')
+            ->join('student_session', 'students.id', '=', 'student_session.student_id')
+            ->where('student_session.class_id', $student->class_id)
+            ->where('student_session.session_id', $sessionId)
+            ->where('students.is_active', 'yes')
+            ->select('students.firstname', 'students.middlename', 'students.id', 'students.lastname', 'students.image', 'student_session.section_id', 'student_session.id as student_session_id')
+            ->get()
+            ->all();
+        $guardianCredential = ((int) ($student->parent_id ?? 0) > 0)
+            ? DB::table('users')->where('id', $student->parent_id)->select('id', 'user_id', 'username')->first()
+            : null;
+        $reasons = DB::table('disable_reason')->get()->all();
+        $reasonData = ((int) ($student->dis_reason ?? 0) > 0)
+            ? DB::table('disable_reason')->where('id', $student->dis_reason)->first()
+            : null;
+
+        $staffRole = DB::table('staff_roles')
+            ->join('roles', 'staff_roles.role_id', '=', 'roles.id')
+            ->where('staff_roles.staff_id', (int) $ctx->staff->id)
+            ->select('roles.*')
+            ->first();
+
+        return $this->successResponse([
+            'title' => 'student_details',
+            'adm_auto_insert' => $schSetting->adm_auto_insert ?? null,
+            'student_timeline' => $schSetting->student_timeline ?? null,
+            'staffrole' => $staffRole,
+            'student' => $student,
+            'student_due_fee' => $dueFees,
+            'student_discount_fee' => $discountFees,
+            'transport_fees' => $transportFees,
+            'siblings' => $siblings,
+            'student_doc' => $studentDoc,
+            'student_doc_id' => $student->id,
+            'timeline_list' => $timelineList,
+            'assignstudent' => $behaviour['assignstudent'],
+            'exams' => $cbseExams,
+            'exam_result' => $examResult,
+            'exam_grade' => $attendance['exam_grade'],
+            'countAttendance' => $attendance['countAttendance'],
+            'resultlist' => $attendance['resultlist'],
+            'yearlist' => $yearList,
+            'selected_year' => $selectedYear,
+            'attendencetypeslist' => $attendanceTypesList,
+            'category_list' => $categoryList,
+            'gradeList' => $gradeList,
+            'marks_division' => $marksDivision,
+            'sch_setting' => $schSetting,
+            'class_section' => $classSection,
+            'studentlistbysection' => $studentListBySection,
+            'guardian_credential' => $guardianCredential,
+            'reason' => $reasons,
+            'reason_data' => $reasonData,
+            'session' => $sessionName,
+            'session_year_start' => $attendance['session_year_start'],
+            'session_year_end' => $attendance['session_year_end'],
+            'monthlist' => $attendance['monthlist'],
+            'superadmin_visible' => 'disabled',
+            'role_id' => 2,
+        ]);
     }
 
     /**
@@ -422,6 +514,340 @@ class TeacherStudentController extends TeacherController
             ->update(['is_active' => 'no', 'updated_at' => now()]);
 
         return $this->successResponse(['deleted_count' => $deleted], 'Students deactivated successfully');
+    }
+
+    private function getStudentDueFees(int $studentSessionId): array
+    {
+        $feeMasters = DB::table('student_fees_master')
+            ->join('fee_session_groups', 'student_fees_master.fee_session_group_id', '=', 'fee_session_groups.id')
+            ->join('fee_groups', 'fee_groups.id', '=', 'fee_session_groups.fee_groups_id')
+            ->where('student_fees_master.student_session_id', $studentSessionId)
+            ->orderBy('student_fees_master.id')
+            ->select('student_fees_master.*', 'fee_groups.name')
+            ->get();
+
+        foreach ($feeMasters as $fm) {
+            $fees = DB::table('student_fees_master')
+                ->join('fee_session_groups', 'fee_session_groups.id', '=', 'student_fees_master.fee_session_group_id')
+                ->join('fee_groups_feetype', 'fee_groups_feetype.fee_session_group_id', '=', 'fee_session_groups.id')
+                ->join('fee_groups', 'fee_groups.id', '=', 'fee_groups_feetype.fee_groups_id')
+                ->join('feetype', 'feetype.id', '=', 'fee_groups_feetype.feetype_id')
+                ->leftJoin('student_fees_deposite', function ($join) {
+                    $join->on('student_fees_deposite.student_fees_master_id', '=', 'student_fees_master.id')
+                        ->on('student_fees_deposite.fee_groups_feetype_id', '=', 'fee_groups_feetype.id');
+                })
+                ->where('student_fees_master.fee_session_group_id', $fm->fee_session_group_id)
+                ->where('student_fees_master.id', $fm->id)
+                ->orderBy('fee_groups_feetype.due_date', 'asc')
+                ->select(
+                    'student_fees_master.*',
+                    'fee_groups_feetype.id as fee_groups_feetype_id',
+                    'fee_groups_feetype.amount',
+                    'fee_groups_feetype.due_date',
+                    'fee_groups_feetype.fine_amount',
+                    'fee_groups_feetype.fee_groups_id',
+                    'fee_groups.name',
+                    'fee_groups_feetype.feetype_id',
+                    'feetype.code',
+                    'feetype.type',
+                    DB::raw('IFNULL(student_fees_deposite.id, 0) as student_fees_deposite_id'),
+                    DB::raw('IFNULL(student_fees_deposite.amount_detail, 0) as amount_detail')
+                )
+                ->get();
+
+            if ($fm->is_system != 0 && isset($fees[0])) {
+                $fees[0]->amount = $fm->amount;
+            }
+            $fm->fees = $fees;
+        }
+
+        return $feeMasters->all();
+    }
+
+    private function getStudentFeeDiscounts(int $studentSessionId): array
+    {
+        return DB::table('student_fees_discounts')
+            ->join('fees_discounts', 'fees_discounts.id', '=', 'student_fees_discounts.fees_discount_id')
+            ->where('student_fees_discounts.student_session_id', $studentSessionId)
+            ->orderBy('student_fees_discounts.id')
+            ->select(
+                'student_fees_discounts.id',
+                'student_fees_discounts.student_session_id',
+                'student_fees_discounts.status',
+                'student_fees_discounts.payment_id',
+                'student_fees_discounts.description as student_fees_discount_description',
+                'student_fees_discounts.fees_discount_id',
+                'fees_discounts.name',
+                'fees_discounts.code',
+                'fees_discounts.amount',
+                'fees_discounts.description',
+                'fees_discounts.session_id',
+                'fees_discounts.type',
+                'fees_discounts.percentage'
+            )
+            ->get()
+            ->all();
+    }
+
+    private function getStudentTransportFees(int $studentSessionId): array
+    {
+        return DB::table('student_transport_fees')
+            ->join('transport_feemaster', 'transport_feemaster.id', '=', 'student_transport_fees.transport_feemaster_id')
+            ->join('route_pickup_point', 'route_pickup_point.id', '=', 'student_transport_fees.route_pickup_point_id')
+            ->leftJoin('student_fees_deposite', 'student_transport_fees.id', '=', 'student_fees_deposite.student_transport_fee_id')
+            ->where('student_transport_fees.student_session_id', $studentSessionId)
+            ->select(
+                'student_transport_fees.*',
+                'transport_feemaster.month',
+                'transport_feemaster.due_date',
+                'route_pickup_point.fees',
+                'transport_feemaster.fine_amount',
+                'transport_feemaster.fine_type',
+                'transport_feemaster.fine_percentage',
+                DB::raw('IFNULL(student_fees_deposite.id, 0) as student_fees_deposite_id'),
+                DB::raw('IFNULL(student_fees_deposite.amount_detail, 0) as amount_detail')
+            )
+            ->get()
+            ->all();
+    }
+
+    private function getStudentSiblings(int $parentId, int $studentId, int $sessionId): array
+    {
+        if ($parentId <= 0) {
+            return [];
+        }
+
+        return DB::table('students')
+            ->join('student_session', 'student_session.student_id', '=', 'students.id')
+            ->leftJoin('classes', 'student_session.class_id', '=', 'classes.id')
+            ->leftJoin('sections', 'sections.id', '=', 'student_session.section_id')
+            ->where('student_session.session_id', $sessionId)
+            ->where('students.parent_id', $parentId)
+            ->where('students.id', '!=', $studentId)
+            ->where('students.is_active', 'yes')
+            ->select(
+                'students.id',
+                'students.firstname',
+                'students.middlename',
+                'students.lastname',
+                'students.admission_no',
+                'students.image',
+                'students.gender',
+                'classes.class as class_name',
+                'sections.section as section_name'
+            )
+            ->get()
+            ->all();
+    }
+
+    private function getStudentBehaviour(int $studentId, int $sessionId): array
+    {
+        $incidents = DB::table('student_incidents')
+            ->join('student_behaviour', 'student_behaviour.id', '=', 'student_incidents.incident_id')
+            ->join('sessions', 'sessions.id', '=', 'student_incidents.session_id')
+            ->leftJoin('staff', 'staff.id', '=', 'student_incidents.assign_by')
+            ->where('student_incidents.session_id', $sessionId)
+            ->where('student_incidents.student_id', $studentId)
+            ->orderByDesc('student_incidents.id')
+            ->select(
+                'student_incidents.id',
+                'student_incidents.created_at',
+                'student_behaviour.title',
+                'student_behaviour.point',
+                'student_behaviour.description',
+                'sessions.session as session_name',
+                'staff.name as staff_name',
+                'staff.surname as staff_surname',
+                'staff.employee_id as staff_employee_id'
+            )
+            ->get();
+
+        foreach ($incidents as $inc) {
+            $inc->totalcomments = DB::table('student_incident_comments')
+                ->where('student_incident_id', $inc->id)
+                ->count();
+        }
+
+        $totalPoints = (int) DB::table('student_incidents')
+            ->join('student_behaviour', 'student_behaviour.id', '=', 'student_incidents.incident_id')
+            ->where('student_incidents.student_id', $studentId)
+            ->where('student_incidents.session_id', $sessionId)
+            ->sum('student_behaviour.point');
+
+        return [
+            'assignstudent' => $incidents->all(),
+            'total_points' => $totalPoints,
+        ];
+    }
+
+    private function getStudentExamResults(int $studentSessionId): array
+    {
+        $exams = DB::table('exam_group_class_batch_exam_students')
+            ->join('exam_group_class_batch_exams', 'exam_group_class_batch_exams.id', '=', 'exam_group_class_batch_exam_students.exam_group_class_batch_exam_id')
+            ->join('exam_groups', 'exam_groups.id', '=', 'exam_group_class_batch_exams.exam_group_id')
+            ->where('exam_group_class_batch_exam_students.student_session_id', $studentSessionId)
+            ->select(
+                'exam_group_class_batch_exam_students.*',
+                'exam_group_class_batch_exams.exam_group_id',
+                'exam_group_class_batch_exams.exam',
+                'exam_group_class_batch_exams.date_from',
+                'exam_group_class_batch_exams.date_to',
+                'exam_group_class_batch_exams.description',
+                'exam_groups.name as exam_group_name',
+                'exam_groups.exam_type',
+                'exam_group_class_batch_exams.passing_percentage'
+            )
+            ->orderBy('exam_group_class_batch_exam_students.id')
+            ->get();
+
+        foreach ($exams as $exam) {
+            $exam->exam_result = DB::table('exam_group_exam_results')
+                ->join('exam_group_class_batch_exam_subjects', 'exam_group_class_batch_exam_subjects.id', '=', 'exam_group_exam_results.exam_group_class_batch_exam_subject_id')
+                ->join('subjects', 'subjects.id', '=', 'exam_group_class_batch_exam_subjects.subject_id')
+                ->where('exam_group_exam_results.exam_group_class_batch_exam_student_id', $exam->id)
+                ->select(
+                    'exam_group_exam_results.*',
+                    'subjects.name as subject_name',
+                    'subjects.code as subject_code',
+                    'exam_group_class_batch_exam_subjects.max_marks',
+                    'exam_group_class_batch_exam_subjects.min_marks'
+                )
+                ->get()
+                ->all();
+        }
+
+        return $exams->all();
+    }
+
+    private function getStudentAttendance(int $studentSessionId, int $sessionId, ?string $selectedYear = null): array
+    {
+        $setting = DB::table('sch_settings')->where('session_id', $sessionId)->first();
+        if (! $setting) {
+            $setting = DB::table('sch_settings')->orderBy('id')->first();
+        }
+
+        $startMonth = (int) ($setting->start_month ?? 1);
+        $sessionName = (string) ($setting->session ?? '');
+        $parts = explode('-', $sessionName);
+        $startYear = $parts[0] ?? date('Y');
+        $nextYear = isset($parts[1]) && strlen($parts[1]) == 2
+            ? substr($startYear, 0, 2) . $parts[1]
+            : ($parts[1] ?? $startYear);
+
+        if (! empty($selectedYear)) {
+            if (str_contains($selectedYear, '-')) {
+                $yParts = explode('-', $selectedYear);
+                $startYear = $yParts[0];
+                $nextYear = isset($yParts[1]) && strlen($yParts[1]) == 2
+                    ? substr($startYear, 0, 2) . $yParts[1]
+                    : ($yParts[1] ?? $startYear);
+            } else {
+                $startYear = $selectedYear;
+                $nextYear = (string) (((int) $selectedYear) + 1);
+            }
+        }
+
+        $endMonth = $startMonth === 1 ? 12 : $startMonth - 1;
+        $sessionYearStart = date('Y-m-01', strtotime($startYear . '-' . sprintf('%02d', $startMonth) . '-01'));
+        $sessionYearEnd = date('Y-m-t', strtotime($nextYear . '-' . sprintf('%02d', $endMonth) . '-01'));
+
+        $attendances = DB::table('student_attendences')
+            ->join('attendence_type', 'attendence_type.id', '=', 'student_attendences.attendence_type_id')
+            ->where('student_attendences.student_session_id', $studentSessionId)
+            ->whereBetween('student_attendences.date', [$sessionYearStart, $sessionYearEnd])
+            ->select('student_attendences.*', 'attendence_type.type as att_type', 'attendence_type.key_value')
+            ->get();
+
+        $countAttendance = [];
+        $types = DB::table('attendence_type')->get();
+        foreach ($types as $t) {
+            $countAttendance[$t->id] = 0;
+        }
+        foreach ($attendances as $att) {
+            if (isset($countAttendance[$att->attendence_type_id])) {
+                $countAttendance[$att->attendence_type_id]++;
+            }
+        }
+
+        $attendanceByDate = $attendances->keyBy('date');
+        $resultlist = [];
+        $current = strtotime($sessionYearStart);
+        $last = strtotime($sessionYearEnd);
+        while ($current <= $last) {
+            $d = date('Y-m-d', $current);
+            if (isset($attendanceByDate[$d])) {
+                $item = $attendanceByDate[$d];
+                $resultlist[$d] = [
+                    'date' => $d,
+                    'attendence_type_id' => $item->attendence_type_id,
+                    'type' => $item->att_type,
+                    'key_value' => $item->key_value,
+                    'remark' => $item->remark,
+                ];
+            } else {
+                $resultlist[$d] = [];
+            }
+            $current = strtotime('+1 day', $current);
+        }
+
+        $monthlist = [];
+        for ($x = $startMonth; $x < $startMonth + 12; $x++) {
+            $month = date('m', mktime(0, 0, 0, $x, 10));
+            $monthlist[$month] = date('F', mktime(0, 0, 0, $x, 10));
+        }
+
+        $gradeTypes = [
+            'basic_system' => 'Basic System',
+            'school_grade_system' => 'School Grade System',
+            'coll_grade_system' => 'College Grade System',
+            'gpa' => 'GPA Grading System',
+            'average_passing' => 'Average Passing',
+        ];
+        $examGrade = [];
+        foreach ($gradeTypes as $key => $label) {
+            $examGrade[] = [
+                'exam_key' => $key,
+                'exm_type_value' => $label,
+                'exam_grade_values' => DB::table('grades')->where('exam_type', $key)->get()->all(),
+            ];
+        }
+
+        return [
+            'countAttendance' => $countAttendance,
+            'resultlist' => $resultlist,
+            'session_year_start' => $sessionYearStart,
+            'session_year_end' => $sessionYearEnd,
+            'monthlist' => $monthlist,
+            'exam_grade' => $examGrade,
+        ];
+    }
+
+    private function getStudentCbseExams(int $studentSessionId): array
+    {
+        $examList = DB::table('cbse_exam_students')
+            ->join('cbse_exams', 'cbse_exam_students.cbse_exam_id', '=', 'cbse_exams.id')
+            ->where('cbse_exam_students.student_session_id', $studentSessionId)
+            ->where('cbse_exams.is_publish', 1)
+            ->orderByDesc('cbse_exams.created_at')
+            ->select('cbse_exam_students.*', 'cbse_exams.cbse_exam_assessment_id', 'cbse_exams.cbse_term_id', 'cbse_exams.name', 'cbse_exams.use_exam_roll_no', 'cbse_exams.is_active', 'cbse_exams.is_publish', 'cbse_exams.cbse_exam_grade_id', 'cbse_exams.total_working_days')
+            ->get();
+
+        foreach ($examList as $ev) {
+            $ev->subjects = DB::table('cbse_exam_timetable')
+                ->join('subjects', 'subjects.id', '=', 'cbse_exam_timetable.subject_id')
+                ->where('cbse_exam_timetable.cbse_exam_id', $ev->cbse_exam_id)
+                ->select('cbse_exam_timetable.*', 'subjects.name as subject_name', 'subjects.code as subject_code')
+                ->get();
+
+            $ev->results = DB::table('cbse_student_subject_marks')
+                ->join('cbse_exam_timetable', 'cbse_exam_timetable.id', '=', 'cbse_student_subject_marks.cbse_exam_timetable_id')
+                ->join('subjects', 'subjects.id', '=', 'cbse_exam_timetable.subject_id')
+                ->where('cbse_student_subject_marks.cbse_exam_student_id', $ev->id)
+                ->select('cbse_student_subject_marks.*', 'subjects.name as subject_name', 'subjects.code as subject_code')
+                ->get();
+        }
+
+        return $examList->all();
     }
 }
 
