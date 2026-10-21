@@ -61,6 +61,16 @@ class StudentSessionService
 
     private function resolveStudentId(User $user): ?int
     {
+        if ($user->role === 'parent') {
+            $requested = request('student_id') ?? request()->header('student-id');
+            if ($requested) {
+                $found = Student::where('id', (int) $requested)->where('parent_id', $user->id)->value('id');
+                if ($found) {
+                    return (int) $found;
+                }
+            }
+        }
+
         return match ($user->role) {
             'student' => $user->user_id,
             'parent' => Student::where('parent_id', $user->id)->value('id'),

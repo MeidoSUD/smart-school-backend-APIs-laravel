@@ -33,7 +33,7 @@ use Modules\Staff\Http\Controllers\Api\Teacher\TeacherTimetableController;
  * فيلزم دعم الشكلين: api/admin/staff و api/teacher/admin/staff.
  */
 foreach (['api', 'api/teacher'] as $ciPrefix) {
-Route::middleware('auth:sanctum')->prefix($ciPrefix)->group(function () {
+Route::middleware('auth:sanctum')->prefix($ciPrefix)->group(function () use ($ciPrefix) {
 
     // 1.1 student/search — تفاصيل الطلاب
     Route::get('/student/search', [TeacherStudentController::class, 'index']);
@@ -213,13 +213,14 @@ Route::middleware('auth:sanctum')->prefix($ciPrefix)->group(function () {
     Route::put('/admin/content/upload/{id}', [TeacherContentController::class, 'update'])->whereNumber('id');
     Route::delete('/admin/content/upload/{id}', [TeacherContentController::class, 'destroy'])->whereNumber('id');
 
-    // 10.1 homework — الواجبات المدرسية
-    Route::get('/homework', [TeacherHomeworkController::class, 'index']);
-    Route::post('/homework', [TeacherHomeworkController::class, 'store']);
-    Route::put('/homework/{id}', [TeacherHomeworkController::class, 'update'])->whereNumber('id');
-    Route::delete('/homework/{id}', [TeacherHomeworkController::class, 'destroy'])->whereNumber('id');
-    Route::get('/homework/{id}/evaluation', [TeacherHomeworkController::class, 'evaluation'])->whereNumber('id');
-    Route::post('/homework/evaluate', [TeacherHomeworkController::class, 'saveEvaluation']);
+    if ($ciPrefix === 'api/teacher') {
+        Route::get('/homework', [TeacherHomeworkController::class, 'index']);
+        Route::post('/homework', [TeacherHomeworkController::class, 'store']);
+        Route::put('/homework/{id}', [TeacherHomeworkController::class, 'update'])->whereNumber('id');
+        Route::delete('/homework/{id}', [TeacherHomeworkController::class, 'destroy'])->whereNumber('id');
+        Route::get('/homework/{id}/evaluation', [TeacherHomeworkController::class, 'evaluation'])->whereNumber('id');
+        Route::post('/homework/evaluate', [TeacherHomeworkController::class, 'saveEvaluation']);
+    }
 
     // 11.1 admin/staffidcard — بطاقات هوية الموظفين
     Route::get('/admin/staffidcard', [TeacherReferenceController::class, 'staffCardTemplates']);
@@ -250,8 +251,9 @@ Route::middleware('auth:sanctum')->prefix($ciPrefix)->group(function () {
     Route::get('/report/lesson_plan', [TeacherSyllabusController::class, 'status']);
     Route::get('/report/lesson_plan/report', [TeacherSyllabusController::class, 'report']);
 
-    // 12.7 homework/homeworkordailyassignmentreport — تقرير الواجبات
-    Route::get('/homework/homeworkordailyassignmentreport', [TeacherHomeworkExtraController::class, 'evaluationReport']);
+    if ($ciPrefix === 'api/teacher') {
+        Route::get('/homework/homeworkordailyassignmentreport', [TeacherHomeworkExtraController::class, 'evaluationReport']);
+    }
 
     // 12.8 admin/route/studenttransportdetails — تقرير النقل
     Route::get('/admin/route/studenttransportdetails', [TeacherStudentReportController::class, 'transportStudents']);

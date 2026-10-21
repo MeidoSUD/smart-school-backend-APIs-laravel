@@ -29,6 +29,10 @@ class HomeworkController extends \Modules\Core\Http\Controllers\Api\Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
+        if ($user && $user->role === 'teacher') {
+            return app(\Modules\Staff\Http\Controllers\Api\Teacher\TeacherHomeworkController::class)->index($request);
+        }
+
         $studentSession = $this->studentSessionService->getStudentSession($user);
 
         if (!$studentSession) {

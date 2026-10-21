@@ -50,6 +50,18 @@ Route::middleware('auth:sanctum')->prefix('api')->group(function () {
     Route::delete('/homework/deletedailyassignment/{id}', [HomeworkController::class, 'deletedailyassignment']);
     Route::get('/homework/dailyassigmnetdownload/{id}', [HomeworkController::class, 'dailyassigmnetdownload']);
 
+    Route::get('/user/homework', [HomeworkController::class, 'index']);
+    Route::get('/user/homework/homework_detail/{id}/{status}', [HomeworkController::class, 'homework_detail']);
+    Route::post('/user/homework/upload_docs', [HomeworkController::class, 'upload_docs']);
+    Route::get('/user/homework/download/{id}', [HomeworkController::class, 'download']);
+    Route::get('/user/homework/assigmnetDownload/{id}', [HomeworkController::class, 'assigmnetDownload']);
+    Route::get('/user/homework/dailyassignment', [HomeworkController::class, 'dailyassignment']);
+    Route::get('/user/homework/getsingle_dailyassignment/{id}', [HomeworkController::class, 'getsingledailyassignment']);
+    Route::post('/user/homework/createdailyassignment', [HomeworkController::class, 'createdailyassignment']);
+    Route::post('/user/homework/updatedailyassignment', [HomeworkController::class, 'updatedailyassignment']);
+    Route::delete('/user/homework/deletedailyassignment/{id}', [HomeworkController::class, 'deletedailyassignment']);
+    Route::get('/user/homework/dailyassigmnetdownload/{id}', [HomeworkController::class, 'dailyassigmnetdownload']);
+
     Route::get('/mark/marklist', [MarkController::class, 'marklist']);
     Route::get('/mark', [MarkController::class, 'index']);
     Route::get('/mark/{id}', [MarkController::class, 'view']);
