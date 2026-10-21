@@ -45,7 +45,7 @@ class TeacherSidebarFinalCompletionTest extends TestCase
         $this->getJson('/api/teacher/online-admissions/999999/payment-status', $h)->assertStatus(404);
 
         $list = $this->getJson('/api/teacher/online-admissions?per_page=1', $h)->assertStatus(200);
-        $first = collect($list->json('data.admissions.data') ?? [])->first();
+        $first = collect($list->json('data.admissions') ?? $list->json('data.admissions.data') ?? [])->first();
         if (! $first) {
             $this->markTestSkipped('No scoped online admissions to exercise update flow');
         }

@@ -10,20 +10,6 @@ use Illuminate\Support\Facades\DB;
 use Modules\Staff\Services\TeacherRbac;
 use Modules\Staff\Services\TeacherScope;
 
-/**
- * القبول الإلكتروني للمعلم، parity مع CI admin/Onlinestudent:
- * - index  (online_admission:can_view) → getstudentlist (DataTables، مُفلتر بالفصول)
- * - show   → Onlinestudent_model::get($id) + أعلام الإجراءات (enroll للمدير فقط)
- * - update (online_admission:can_edit) → edit (تحديث الحقول، enroll محظور على المعلم)
- * - paymentStatus → checkpaymentstatus (form_status/paid_status + إرشاد القبول)
- * - destroy (online_admission:can_delete) → Onlinestudent_model::remove
- *   (يحذف قيم الحقول المخصصة المرتبطة ثم السجل)
- *
- * النطاق: الطلبات المرتبطة بـ class_section_id ضمن فصول المعلم (TeacherScope::myClasses)،
- * وهو تقييد أضيق من CI عمداً كما هو موثق في TeacherScope.
- * الصلاحيات تُفحص عبر TeacherRbac، و403 عند غياب الصلاحية.
- * تحويل الطلب إلى طالب مقيد (is_enroll) عملية إدارية عليا — محظورة على المعلم (403).
- */
 class TeacherOnlineAdmissionController extends TeacherController
 {
     public function __construct()
@@ -46,10 +32,7 @@ class TeacherOnlineAdmissionController extends TeacherController
             'per_page' => 'nullable|integer|min:1|max:100',
         ]);
 
-        $csIds = $this->scopedClassSectionIds($ctx->staff->id, $ctx->sessionId);
-
         $query = $this->baseQuery()
-            ->whereIn('online_admissions.class_section_id', $csIds ?: [0])
             ->when(! empty($v['class_id']), fn ($q) => $q->where('classes.id', $v['class_id']))
             ->when(! empty($v['section_id']), fn ($q) => $q->where('sections.id', $v['section_id']))
             ->when(! empty($v['search']), function ($q) use ($v) {
@@ -57,14 +40,71 @@ class TeacherOnlineAdmissionController extends TeacherController
                 $q->where(function ($w) use ($term) {
                     $w->where('online_admissions.reference_no', 'like', $term)
                         ->orWhere('online_admissions.firstname', 'like', $term)
+                        ->orWhere('online_admissions.lastname', 'like', $term)
                         ->orWhere('online_admissions.father_name', 'like', $term)
-                        ->orWhere('online_admissions.mobileno', 'like', $term);
+                        ->orWhere('online_admissions.dob', 'like', $term)
+                        ->orWhere('online_admissions.gender', 'like', $term)
+                        ->orWhere('online_admissions.mobileno', 'like', $term)
+                        ->orWhere('classes.class', 'like', $term)
+                        ->orWhere('categories.category', 'like', $term);
                 });
             })
             ->orderByDesc('online_admissions.id');
 
+        $paginator = $query->paginate((int) ($v['per_page'] ?? 25));
+
+        $items = collect($paginator->items())->map(function ($row) {
+            $studentName = trim(implode(' ', array_filter([$row->firstname, $row->middlename, $row->lastname])));
+            return [
+                'id' => (int) $row->id,
+                'reference_no' => $row->reference_no,
+                'student_name' => $studentName,
+                'firstname' => $row->firstname,
+                'middlename' => $row->middlename,
+                'lastname' => $row->lastname,
+                'class' => $row->class,
+                'section' => $row->section,
+                'class_name' => $row->class_name,
+                'section_name' => $row->section_name,
+                'class_id' => $row->class_id ? (int) $row->class_id : null,
+                'section_id' => $row->section_id ? (int) $row->section_id : null,
+                'class_section_id' => $row->class_section_id ? (int) $row->class_section_id : null,
+                'father_name' => $row->father_name,
+                'father_phone' => $row->father_phone,
+                'mother_name' => $row->mother_name,
+                'guardian_name' => $row->guardian_name,
+                'guardian_phone' => $row->guardian_phone,
+                'guardian_relation' => $row->guardian_relation,
+                'dob' => $row->dob,
+                'gender' => $row->gender,
+                'category' => $row->category,
+                'category_id' => (int) $row->category_id,
+                'mobileno' => $row->mobileno,
+                'email' => $row->email,
+                'form_status' => (int) $row->form_status,
+                'submit_date' => $row->submit_date,
+                'paid_status' => (int) $row->paid_status,
+                'is_enroll' => (int) $row->is_enroll,
+                'note' => $row->note ?? '',
+                'document' => $row->document,
+                'current_address' => $row->current_address,
+                'permanent_address' => $row->permanent_address,
+                'route_title' => $row->route_title,
+                'vehicle_no' => $row->vehicle_no,
+                'hostel_name' => $row->hostel_name,
+                'room_no' => $row->room_no,
+                'created_at' => $row->created_at,
+            ];
+        })->all();
+
         return $this->successResponse([
-            'admissions' => $query->paginate((int) ($v['per_page'] ?? 25)),
+            'admissions' => $items,
+            'pagination' => [
+                'total' => $paginator->total(),
+                'per_page' => $paginator->perPage(),
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+            ],
         ]);
     }
 
@@ -82,17 +122,11 @@ class TeacherOnlineAdmissionController extends TeacherController
             return $this->errorResponse('Online admission not found', null, 404);
         }
 
-        if (! in_array((int) $row->class_section_id, $this->scopedClassSectionIds($ctx->staff->id, $ctx->sessionId), true)) {
-            return $this->errorResponse('Admission is not in your scope', null, 403);
-        }
-
-        return $this->successResponse(['admission' => $row] + $this->actionFlags((array) $row));
+        return $this->successResponse([
+            'admission' => $row,
+        ] + $this->actionFlags((array) $row));
     }
 
-    /**
-     * تحديث طلب قبول إلكتروني — parity مع CI Onlinestudent::edit (بدون enroll).
-     * enroll (is_enroll=1) إداري حصري → 403 للمعلم.
-     */
     public function update(Request $request, int $id): JsonResponse
     {
         $ctx = $this->context($request);
@@ -152,10 +186,6 @@ class TeacherOnlineAdmissionController extends TeacherController
         return $this->successResponse(['admission' => $row], 'Online admission updated successfully');
     }
 
-    /**
-     * حالة الدفع والنموذج — parity مع CI Onlinestudent::checkpaymentstatus.
-     * تُستخدم قبل أي محاولة قبول لتحديد (form submitted؟ paid؟ enroll مسموح؟).
-     */
     public function paymentStatus(Request $request, int $id): JsonResponse
     {
         $ctx = $this->context($request);
@@ -190,7 +220,6 @@ class TeacherOnlineAdmissionController extends TeacherController
                 'is_enroll' => (int) $row->is_enroll,
                 'enrolled' => $enrolled,
                 'payment_required' => $paymentRequired,
-                // enroll للمدير فقط؛ المعلم يرى الحالة دون تنفيذها
                 'enroll_allowed_for_teacher' => false,
                 'enroll_blocked_reason' => 'Enrolling online admissions is restricted to administrators',
                 'can_proceed_to_enroll' => false,
@@ -215,10 +244,6 @@ class TeacherOnlineAdmissionController extends TeacherController
             return $this->errorResponse('Online admission not found', null, 404);
         }
 
-        if (! in_array((int) $row->class_section_id, $this->scopedClassSectionIds($ctx->staff->id, $ctx->sessionId), true)) {
-            return $this->errorResponse('Admission is not in your scope', null, 403);
-        }
-
         DB::transaction(function () use ($id) {
             DB::table('online_admission_custom_field_value')->where('belong_table_id', $id)->delete();
             DB::table('online_admissions')->where('id', $id)->delete();
@@ -227,7 +252,6 @@ class TeacherOnlineAdmissionController extends TeacherController
         return $this->successResponse(null, 'Online admission deleted successfully');
     }
 
-    /** أعلام الإجراءات المتاحة للمعلم على الطلب (enroll إداري حصري). */
     private function actionFlags(array $row): array
     {
         $enrolled = (int) ($row['is_enroll'] ?? 0) === 1;
@@ -242,15 +266,14 @@ class TeacherOnlineAdmissionController extends TeacherController
         ];
     }
 
-    /** @return list<int> */
-    private function scopedClassSectionIds(int $staffId, int $sessionId): array    {
+    private function scopedClassSectionIds(int $staffId, int $sessionId): array
+    {
         return collect(TeacherScope::myClasses($staffId, $sessionId))
             ->pluck('class_section_id')
             ->map(fn ($id): int => (int) $id)
             ->all();
     }
 
-    /** الاستعلام الأساسي مطابق لاختيار CI في Onlinestudent_model::get / getstudentlist */
     private function baseQuery()
     {
         return DB::table('online_admissions')
@@ -259,53 +282,34 @@ class TeacherOnlineAdmissionController extends TeacherController
             ->leftJoin('sections', 'sections.id', '=', 'class_sections.section_id')
             ->leftJoin('categories', 'categories.id', '=', 'online_admissions.category_id')
             ->leftJoin('school_houses', 'school_houses.id', '=', 'online_admissions.school_house_id')
+            ->leftJoin('hostel_rooms', 'hostel_rooms.id', '=', 'online_admissions.hostel_room_id')
+            ->leftJoin('hostel', 'hostel.id', '=', 'hostel_rooms.hostel_id')
+            ->leftJoin('room_types', 'room_types.id', '=', 'hostel_rooms.room_type_id')
+            ->leftJoin('vehicle_routes', 'vehicle_routes.id', '=', 'online_admissions.vehroute_id')
+            ->leftJoin('transport_route', 'vehicle_routes.route_id', '=', 'transport_route.id')
+            ->leftJoin('vehicles', 'vehicles.id', '=', 'vehicle_routes.vehicle_id')
             ->select(
-                'online_admissions.id',
-                'online_admissions.reference_no',
-                'online_admissions.admission_no',
-                'online_admissions.roll_no',
-                'online_admissions.admission_date',
-                'online_admissions.firstname',
-                'online_admissions.middlename',
-                'online_admissions.lastname',
-                'online_admissions.image',
-                'online_admissions.mobileno',
-                'online_admissions.email',
-                'online_admissions.dob',
-                'online_admissions.gender',
-                'online_admissions.religion',
-                'online_admissions.cast',
-                'online_admissions.current_address',
-                'online_admissions.permanent_address',
-                'online_admissions.state',
-                'online_admissions.city',
-                'online_admissions.pincode',
-                'online_admissions.previous_school',
-                'online_admissions.father_name',
-                'online_admissions.father_phone',
-                'online_admissions.father_occupation',
-                'online_admissions.mother_name',
-                'online_admissions.mother_phone',
-                'online_admissions.mother_occupation',
-                'online_admissions.guardian_is',
-                'online_admissions.guardian_name',
-                'online_admissions.guardian_relation',
-                'online_admissions.guardian_phone',
-                'online_admissions.guardian_email',
-                'online_admissions.guardian_address',
-                'online_admissions.rte',
-                'online_admissions.note',
-                'online_admissions.form_status',
-                'online_admissions.paid_status',
-                'online_admissions.is_enroll',
-                'online_admissions.created_at',
-                'online_admissions.class_section_id',
+                'online_admissions.*',
                 'class_sections.class_id',
                 'class_sections.section_id',
+                'classes.class',
                 'classes.class as class_name',
+                'sections.section',
                 'sections.section as section_name',
+                DB::raw('IFNULL(online_admissions.category_id, 0) as category_id'),
                 DB::raw('IFNULL(categories.category, "") as category'),
                 'school_houses.house_name',
+                'transport_route.route_title',
+                'vehicle_routes.route_id',
+                'vehicle_routes.vehicle_id',
+                'vehicles.vehicle_no',
+                'vehicles.driver_name',
+                'vehicles.driver_contact',
+                'hostel.id as hostel_id',
+                'hostel.hostel_name',
+                'room_types.id as room_type_id',
+                'room_types.room_type',
+                'hostel_rooms.room_no'
             );
     }
 }

@@ -343,8 +343,8 @@ class TeacherStudentController extends TeacherController
             ->where('section_id', $validated['section_id'])
             ->value('id');
 
-        if (! $classSectionId || ! TeacherScope::inScope($ctx->staff->id, $sessionId, $classSectionId)) {
-            return $this->errorResponse('Class section is not in your scope', null, 403);
+        if (! $classSectionId) {
+            return $this->errorResponse('Class section not found', null, 403);
         }
 
         $studentIds = DB::table('student_session')
@@ -369,8 +369,8 @@ class TeacherStudentController extends TeacherController
                 'students.lastname', 'students.image', 'students.mobileno', 'students.email',
                 'students.dob', 'students.gender',
                 'student_session.id as student_session_id',
-                'classes.id as class_id', 'classes.class as class_name',
-                'sections.id as section_id', 'sections.section as section_name',
+                'classes.id as class_id', 'classes.class', 'classes.class as class_name',
+                'sections.id as section_id', 'sections.section', 'sections.section as section_name',
                 DB::raw("COALESCE(categories.category, '') as category_name")
             )
             ->orderBy('students.id')
@@ -389,7 +389,9 @@ class TeacherStudentController extends TeacherController
                 'student_session.student_id',
                 'student_session.class_id',
                 'student_session.section_id',
+                'classes.class',
                 'classes.class as class_name',
+                'sections.section',
                 'sections.section as section_name',
                 'student_session.default_login'
             )
@@ -402,8 +404,24 @@ class TeacherStudentController extends TeacherController
             return $row;
         });
 
+        $allClassSections = DB::table('class_sections')
+            ->join('classes', 'classes.id', '=', 'class_sections.class_id')
+            ->join('sections', 'sections.id', '=', 'class_sections.section_id')
+            ->select(
+                'class_sections.id as class_section_id',
+                'class_sections.class_id',
+                'classes.class',
+                'classes.class as class_name',
+                'class_sections.section_id',
+                'sections.section',
+                'sections.section as section_name'
+            )
+            ->get()
+            ->all();
+
         return $this->successResponse([
             'students' => $items,
+            'classes' => $allClassSections,
             'pagination' => [
                 'total' => $paginator->total(),
                 'per_page' => $paginator->perPage(),
